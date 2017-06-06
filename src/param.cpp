@@ -109,8 +109,8 @@ void CalcWeight(const vector<bool> &indicator_func, vector<double> &weight, cons
 
 
 PARAM::PARAM(void):
-vscale(0.0), iniType(3), saveSNP(0), saveGeno(0), saveLD(0), rv(1.0), 
-Compress_Flag(0),
+vscale(0.0), iniType(3), saveGeno(0), saveSS(0), zipSS(1), rv(1.0), 
+Compress_Flag(0), LDwindow(500000),
 mode_silence (false), a_mode (0), k_mode(1), d_pace (100000),
 GTfield("GT"), file_out("result"), 
 miss_level(0.05), maf_level(0.005), hwe_level(0.001), 
@@ -209,8 +209,8 @@ void PARAM::CheckParam (void)
 	//check parameters
 	if (k_mode!=1 && k_mode!=2) {cout<<"error! unknown kinship/relatedness input mode: "<<k_mode<<endl; error=true;}
 
-	if (a_mode!=11 && a_mode!=12 && a_mode!=21 && a_mode!=22 && a_mode!=43 && a_mode!=51 && a_mode!=52 && a_mode!=53 && a_mode!=54 && !saveGeno)   
-	{cout<<"error! unknown analysis mode: "<<a_mode<<". make sure -saveGenoe -gk or -lm or -bvsrm or -predict is sepcified correctly."<<endl; error=true;}
+	if (a_mode!=11 && a_mode!=12 && a_mode!=21 && a_mode!=22 && a_mode!=43 && a_mode!=51 && a_mode!=52 && a_mode!=53 && a_mode!=54 && !saveGeno && !saveSS)   
+	{cout<<"error! unknown analysis mode: "<<a_mode<<". make sure -saveSS -saveGenoe -gk or -lm or -bvsrm or -predict is sepcified correctly."<<endl; error=true;}
 
 	if (miss_level>1) {cout<<"error! missing level needs to be between 0 and 1. current value = "<<miss_level<<endl; error=true;}
 	if (maf_level>0.5) {cout<<"error! maf level needs to be between 0 and 0.5. current value = "<<maf_level<<endl; error=true;}
@@ -606,8 +606,45 @@ void PARAM::CopyPheno (gsl_vector *y)
 }
 
 
+void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const size_t &ns_total, const vector<bool> &indicator_snp)
+{
+    size_t pos;
+    string rs;
+    string chr;
+    long int bp;
+    size_t tt=0;
+    vector<bool> indicator_func;
+    //vector<double> weight;
+    //double weight_i;
+    double maf;
+    string a_minor;
+    string a_major;
 
+    //SNPsd.clear();
+    
+    for (size_t i=0; i < ns_total; ++i){
+        if(!indicator_snp[i]) {continue;}
+        
+        pos=tt;
+       // if(tt == pos_loglr[tt].first ) pos = tt;
+        //else cout << "error assigning position to snp_pos vector"<< endl;
+        
+        rs = snpInfo[i].rs_number;
+        chr = snpInfo[i].chr;
+        bp = snpInfo[i].base_position;
+        maf = snpInfo[i].maf;
+        a_minor = snpInfo[i].a_minor;
+        a_major = snpInfo[i].a_major;
 
+        indicator_func = snpInfo[i].indicator_func;
 
-		
+        SNPPOS snp_temp={pos, rs, chr, bp, a_minor, a_major, maf, indicator_func};
+        snp_pos.push_back(snp_temp);
+                
+        tt++;
+    }
+    snpInfo.clear();
+    
+}
+
 

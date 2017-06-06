@@ -1,4 +1,2 @@
-Bayesian Functional Genome-wide Association Study (bfGWAS) 
+Bayesian Functional Genome-wide Association Study Method with Summary Statistics (bfGWAS_SS) 
 =======
-# bfGWAS_SS
-bfGWAS with summary statitstics

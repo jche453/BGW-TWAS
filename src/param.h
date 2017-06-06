@@ -153,9 +153,11 @@ public:
     map<string, int> mapFunc2Code;
     int iniType;
     bool FIXHYP;
-    bool saveSNP;
+    
     bool saveGeno;
-    bool saveLD;
+    bool saveSS;
+    bool zipSS;
+    long int LDwindow;
 
     string iniSNPfile;
     string hypfile;
@@ -277,6 +279,8 @@ public:
     
 };
 
+
+void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const size_t &ns_total, const vector<bool> &indicator_snp);
 
 #endif
 

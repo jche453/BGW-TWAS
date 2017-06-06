@@ -93,7 +93,7 @@ void getGTgslVec(uchar ** X, gsl_vector *xvec, size_t marker_i, const size_t ni_
 
 bool getGTgslMat(uchar ** X, gsl_vector *Xgsl, std::vector<size_t> marker_idx, const size_t ni_test, const size_t ns_test);
 
-void getGTgslVec(uchar ** X, gsl_vector *xvec, size_t marker_i, const size_t ni_test, const size_t ns_test, const vector<double> &SNPsd, const vector<double> &SNPmean, std::vector <size_t> &CompBuffSizeVec, size_t UnCompBufferSize, bool Compress_Flag, const vector<pair<int, double> > &UcharTable);
+void getGTgslVec(uchar ** X, gsl_vector *xvec, size_t marker_i, const size_t ni_test, const size_t ns_test, const vector<double> &SNPmean, std::vector <size_t> &CompBuffSizeVec, size_t UnCompBufferSize, bool Compress_Flag, const vector<pair<int, double> > &UcharTable);
 
 uchar getUcharDosageFromRecord(VcfRecord &record, const uint smNum);
 double getDoubleDosageFromRecord(VcfRecord& record, const uint smNum);

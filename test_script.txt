@@ -1,0 +1,17 @@
+
+
+bfGWAS_SS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS"
+test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
+
+cd $test_dir
+
+${bfGWAS_SS_dir}/bin/Estep_mcmc \
+-vcf ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz \
+-p ${bfGWAS_SS_dir}/1KG_example/ExData/phenoAMD_1KG.txt \
+-GTfield GT -maf 0.005 \
+-o CFH_REGION_1KG -saveSS -LDwindow 10000
+
+
+-a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz \
+-fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
+-hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \

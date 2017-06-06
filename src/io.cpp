@@ -344,7 +344,7 @@ bool ReadFile_pheno (const string &file_pheno, vector<bool> &indicator_idv, vect
 	indicator_idv.clear();
 	pheno.clear();
 	
-    cout << "open phenotype file ... " << file_pheno << "\n";
+    //cout << "open phenotype file ... " << file_pheno << "\n";
     
 	igzstream infile (file_pheno.c_str(), igzstream::in);
 	if (!infile) {cout<<"error! fail to open phenotype file: "<<file_pheno<<endl; return false;}
@@ -616,7 +616,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
     ns_test=0; // variable defined in param.h
     
     igzstream infile(file_vcf.c_str(), igzstream::in);
-    cout << "open vcf file ...\n";
+    //cout << "open vcf file ...\n";
     if(!infile) {
         std::cerr << "Unable to open " << file_vcf << "\n";
         exit(-1);
@@ -655,7 +655,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
                    }
                    pch = (nch == NULL) ? NULL : nch+1;
                }
-               cout << "\n Matched phenotype sample IDs in the VCF file " << SampleVcfPos.size() << "\n";
+               cout << "\nMatched phenotype sample IDs in the VCF file: " << SampleVcfPos.size() << "\n";
             }
             continue;
         }
@@ -926,7 +926,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
     // cout << "genotype vector:\n";
     // PrintVector(genotype, 10);
     //cout << "VCF tab_count = " << tab_count << endl;
-    cout << "vcf read first time success ... \n";
+    cout << "Done reading vcf file first time ... \n";
     // cout << "analyzed sample size ns_test = " << ns_test << "; loaded sample size ns_total = " << ns_total<<"\n";
      
     gsl_vector_free (genotype);
@@ -1739,7 +1739,7 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
 
     // Open the VCF file.
     igzstream infile(file_vcf.c_str(), igzstream::in);
-    cout << "open vcf file second time ...\n";
+    //cout << "open vcf file second time ...\n";
     if(!infile) {
         std::cerr << "Unable to open " << file_vcf << "\n";
         exit(-1);
@@ -1991,7 +1991,7 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
     infile.close();
     
     //cout << "PhenoID2Ind.size() = " << PhenoID2Ind.size() << " after second vcf file loading... " << endl;
-    cout << "read vcf file second time success ... \n" ;
+    cout << "Done reading vcf file second time ... \n" ;
     return true;
 }
 

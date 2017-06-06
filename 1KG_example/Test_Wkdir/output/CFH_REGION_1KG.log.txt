@@ -1,0 +1,18 @@
+##
+## Software Version = bfGWAS_SS_MCMC
+##
+## Command Line Input = -vcf /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -GTfield GT -maf 0.005 -o CFH_REGION_1KG -saveSS -LDwindow 10000 
+##
+## Date = Sat Jun  3 21:56:38 2017
+
+##
+## Summary Statistics:
+## number of total individuals = 2504
+## number of analyzed individuals = 2504
+## number of total SNPs = 31330
+## number of analyzed SNPs = 3689
+##
+## Computation Time:
+## total computation time = 0.588503 min 
+## computation time break down: 
+##

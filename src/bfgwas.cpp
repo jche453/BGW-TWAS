@@ -37,12 +37,13 @@
 #include "lm.h"
 #include "bvsrm.h"
 #include "mathfunc.h"
+#include "calcSS.h"    
 
 using namespace std;
 
 
 BFGWAS::BFGWAS(void):	
-version("bfGWAS_MCMC"), date("08/15/2016"), year("2016")
+version("bfGWAS_SS_MCMC"), date("06/15/2017"), year("2017")
 {}
 
 void BFGWAS::PrintHeader (void)
@@ -113,7 +114,7 @@ void BFGWAS::PrintHelp(size_t option)
 		cout<<" 4: calculate relatedness matrix"<<endl;
 		cout<<" 5: apply single variate linear model"<<endl;
 		cout<<" 6: apply BVSR model"<<endl;
-		cout<<" 7: save genotype text file or LD matrix"<<endl;
+		cout<<" 7: save genotype text file, or LD matrix, or effect-size beta by SVT"<<endl;
 		cout<<" 8: note"<<endl;
 		cout<<endl;
 	}	
@@ -121,19 +122,19 @@ void BFGWAS::PrintHelp(size_t option)
 	if (option==1) {
 		cout<<" QUICK GUIDE " << endl;
 		cout<<" Generate a kinship matrix: "<<endl;
-		cout<<"         ./gemma -bfile [prefix] -gk [num] -o [prefix]"<<endl;
-		cout<<"         ./gemma -vcf [filename] -p [filename] -gk [num] -o [prefix]"<<endl;
-		cout<<"         ./gemma -g [filename] -p [filename] -gk [num] -o [prefix]"<<endl<<endl;
+		cout<<"         ./Estep_mcmc -bfile [prefix] -gk [num] -o [prefix]"<<endl;
+		cout<<"         ./Estep_mcmc -vcf [filename] -p [filename] -gk [num] -o [prefix]"<<endl;
+		cout<<"         ./Estep_mcmc -g [filename] -p [filename] -gk [num] -o [prefix]"<<endl<<endl;
 
 		cout<<" Fit a linear model for single variant test: "<<endl<<endl;
-		cout<<"         ./gemma -bfile [prefix] -lm [num] -o [prefix]"<<endl;
-		cout<<"         ./gemma -vcf [filename] -p [filename] -lm [num] -o [prefix]"<<endl;
-		cout<<"         ./gemma -g [filename] -p [filename] -lm [num] -o [prefix]"<<endl<<endl;
+		cout<<"         ./Estep_mcmc -bfile [prefix] -lm [num] -o [prefix]"<<endl;
+		cout<<"         ./Estep_mcmc -vcf [filename] -p [filename] -lm [num] -o [prefix]"<<endl;
+		cout<<"         ./Estep_mcmc -g [filename] -p [filename] -lm [num] -o [prefix]"<<endl<<endl;
 
 		cout<<" Fit a Bayesian variable selection regression model (BVSRM): "<<endl;
-		cout<<"         ./gemma -bfile [prefix] -a [filename] -fcode [filename] -hfile [filename] -bvsrm -o [prefix]"<<endl;
-		cout<<"         ./gemma -vcf [filename] -p [filename] -a [filename] -fcode [filename] -hfile [filename] -GTfield [keyword] -bvsrm -o [prefix]"<<endl;
-		cout<<"         ./gemma -g [filename] -p [filename] -a [filename] -fcode [filename] -hfile [filename] -bvsrm -o [prefix]"<<endl;
+		cout<<"         ./Estep_mcmc -bfile [prefix] -a [filename] -fcode [filename] -hfile [filename] -bvsrm -o [prefix]"<<endl;
+		cout<<"         ./Estep_mcmc -vcf [filename] -p [filename] -a [filename] -fcode [filename] -hfile [filename] -GTfield [keyword] -bvsrm -o [prefix]"<<endl;
+		cout<<"         ./Estep_mcmc -g [filename] -p [filename] -a [filename] -fcode [filename] -hfile [filename] -bvsrm -o [prefix]"<<endl;
 		cout<<endl;
 	}
 	
@@ -250,8 +251,7 @@ void BFGWAS::PrintHelp(size_t option)
 
 	if (option==7) {
 		cout<<" -saveGeno  "<<" specify whether to save a tab delimited genotype text file from the inpute genotype file" << endl;
-		cout<<" -saveLD  "<<" specify whether to save LD matrix from the analyzed variants" << endl;
-		cout<<" -saveSNP  "<<" specify whether to save a tab delimited genotype text file for the analyzed variants in bvsrm" << endl;
+		cout<<" -saveSS  "<<" specify whether to save summary statistics (LD matrix, effect-sizes) from the analyzed variants" << endl;
 		cout<<endl;
 	}
 	
@@ -435,6 +435,20 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
             str.assign(argv[i]);
             cPar.rv=atof(str.c_str());
         }
+        else if (strcmp(argv[i], "-n")==0) {
+			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
+			++i;
+			str.clear();
+			str.assign(argv[i]);
+			cPar.ni_test=atoi(str.c_str()); // read input sample size
+		}
+		else if (strcmp(argv[i], "-LDwindow")==0) {
+			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
+			++i;
+			str.clear();
+			str.assign(argv[i]);
+			cPar.LDwindow=atoi(str.c_str()); // read LDwindow
+		} 
 		else if (strcmp(argv[i], "-w")==0) {
 			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
 			++i;
@@ -569,14 +583,14 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
             str.assign(argv[i]);
             cPar.FIXHYP=atoi(str.c_str());
         }
-        else if (strcmp(argv[i], "-saveSNP")==0) {
-            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.saveSNP=1; }
-        }
         else if (strcmp(argv[i], "-saveGeno")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.saveGeno=1;}
         }
-        else if (strcmp(argv[i], "-saveLD")==0) {
-            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.saveLD=1; }
+        else if (strcmp(argv[i], "-saveSS")==0) {
+            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.saveSS=1; }
+        }
+        else if (strcmp(argv[i], "-zipSS")==0) {
+            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.zipSS=1; }
         }
         else if (strcmp(argv[i], "-comp")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.Compress_Flag=1;}
@@ -601,7 +615,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	cout<<"Reading Files ... " << endl;
 	cPar.ReadFiles();
 	if (cPar.error==true) {cout<<"error! fail to read files. "<<endl; return;}
-    cout << "Readin files first time cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << "mints \n";
+    cout << "Reading files first time cost " << (clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0) << "mints \n";
 
     //Save Genotype file 
     if(cPar.saveGeno){
@@ -643,10 +657,55 @@ void BFGWAS::BatchRun (PARAM &cPar)
 
         cout << "writting genotype file success ... "<< endl; 
         //exit(EXIT_SUCCESS);
-    }else{
-    	cPar.CheckData();
+    }
+
+    //Save Summary Statistics (LD correlation matrix of genotypes, beta, beta_sd, maf) 
+    if(cPar.saveSS){
+
+		cPar.CheckData();
 		if (cPar.error==true) {cout<<"error! fail to check data. "<<endl; return;}
     	cout << "Pass data check." << endl;
+
+		gsl_matrix *G=gsl_matrix_alloc (cPar.ni_test, cPar.ni_test);
+		gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // phenotype
+		
+		//set phenotype vector y		
+		cout << "Copy phenotype success ... "<< endl;
+		cPar.CopyPheno (y);
+
+		if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
+        	// reorder y for reading vcf/genotype files
+        	cout << "Reorder phenotype for reading vcf files ... "<< endl;
+        	cPar.ReorderPheno(y);
+    	} // reorder y for reading vcf files
+
+        //read genotypes X 
+        clock_t time_readfile = clock();
+        uchar ** X_Genotype = new uchar*[cPar.ns_test];
+        // genotype readed by the order in genotype files
+        cPar.ReadGenotypes (X_Genotype, G, false);    
+        cout << "Loading genotype data for 2nd time costs " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << "mints\n";
+        
+        // initialize SS, LD, beta
+        CalcSS SS;
+        SS.CopyFromParam(cPar);
+
+        vector< vector<double> > LD;
+        vector<double> beta;
+        vector<double> beta_sd;
+
+        // calculate LD matrix and effect-sizes from SVT
+        SS.calcSS(X_Genotype, y, LD, beta, beta_sd);
+
+        // save summary statistics
+        SS.WriteSS(LD, beta, beta_sd);
+        //SS.WriteBeta(beta);
+
+        gsl_matrix_free(G);
+        gsl_vector_free(y);
+
+        cout << "Writting Summary Statistics Success ... "<< endl; 
+        //exit(EXIT_SUCCESS);
     }
 
     
@@ -740,30 +799,39 @@ void BFGWAS::BatchRun (PARAM &cPar)
 		//run bvsrm as if rho==1
         //read genotypes X (not UtX)
             clock_t time_readfile = clock();
- 
-            //cout << "allocate uchar* vector with length : " << cPar.ns_test << endl;
             uchar ** X_Genotype = new uchar*[cPar.ns_test];
             cPar.ReadGenotypes (X_Genotype, G, false); //load genotypes
-            
             cout << "load genotype data cost " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << "mints\n";
-            
-           // PrintVector(cPar.CompBuffSizeVec);
-            //cout << "UnCompBufferSize = " << cPar.UnCompBufferSize << endl;
-           //print(X_Genotype, 10, 10, cPar.CompBuffSizeVec, cPar.UnCompBufferSize);
-           //print(X_Genotype, 10, 10);
 
             gsl_matrix_free(G);
             gsl_matrix_free(W);
+
+            // Calculate SS
+	        CalcSS SS; // initialize 
+	        SS.CopyFromParam(cPar);
+	        vector< vector<double> > LD;
+	        vector<double> beta;
+	        vector<double> beta_sd;
+	        // calculate LD matrix, beta, beta_sd
+	        SS.calcSS(X_Genotype, y, LD, beta, beta_sd);
+
 
             //perform BSVRM analysis
             BVSRM cBvsrm;
            // cout << "copy data from param ...\n";
             cBvsrm.CopyFromParam(cPar);
+            cBvsrm.snp_pos = SS.snp_pos;
+            cBvsrm.UcharTable = SS.UcharTable;
             cBvsrm.ns_neib = 2 * cBvsrm.win + 1;
+
+            vector<double> Xty;
+            getXy(LD, beta, Xty); // convert beta, LD into Xty
+            getPval(beta, beta_sd, cBvsrm.pval, cBvsrm.pos_ChisqTest);
          
            // cout << "start bslmm.mcmc ...\n";
             time_start=clock();
-            cBvsrm.MCMC(X_Genotype, y, 1);
+            //cBvsrm.MCMC(X_Genotype, y, 1);
+            cBvsrm.MCMC_SS(LD, Xty);
             cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
             cBvsrm.CopyToParam(cPar);
             
@@ -789,7 +857,7 @@ void BFGWAS::WriteLog (int argc, char ** argv, PARAM &cPar)
 	if (!outfile) {cout<<"error writing log file: "<<file_str.c_str()<<endl; return;}
 	
 	outfile<<"##"<<endl;
-	outfile<<"## GEMMA Version = "<<version<<endl;
+	outfile<<"## Software Version = "<<version<<endl;
 	
 	outfile<<"##"<<endl;
 	outfile<<"## Command Line Input = ";

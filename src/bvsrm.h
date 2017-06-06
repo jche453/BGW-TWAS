@@ -37,6 +37,14 @@ using namespace std;
 class BVSRM {
 
 public:
+    //saveSS related
+    bool saveSS;
+    bool zipSS;
+    long int LDwindow;
+    vector<pair<size_t, double> > pos_ChisqTest;
+    vector<double> pval;
+    double pheno_mean, pheno_var;
+
     //multiple function related parameters
     size_t n_type;
     vector<size_t> mFunc; // # of variants of each variant type
@@ -45,7 +53,6 @@ public:
     map<string, int> mapFunc2Code;
     int iniType;
     bool FIXHYP;
-    bool saveSNP;
     bool saveLD;
     string iniSNPfile;
     string hypfile;
@@ -86,8 +93,7 @@ public:
 	double l_max;
 	size_t n_region;
 	double pve_null;
-	double pheno_mean;
-    double pheno_var;
+	
 	
 	// BSLMM MCMC related parameters
     
@@ -127,8 +133,11 @@ public:
 	vector<bool> indicator_snp;				//sequence indicator for SNPs: 0 ignored because of (a) maf, (b) miss, (c) non-poly; 1 available for analysis
 	
 	vector<SNPINFO> snpInfo;		//record SNP information
+    vector<SNPPOS> snp_pos;
 	
 	// Not included in PARAM
+    int flag_gamma;
+    double *p_gamma;
 	gsl_rng *gsl_r;
 	gsl_ran_discrete_t *gsl_t; //JY added dynamic gsl_s
     
@@ -155,11 +164,9 @@ public:
     void WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_loglr, const vector<double> &Z_scores, const vector<double> &SE_beta, const vector<double> pval_lrt);
 
     // Initialize the model
-    void CalcPgamma (double *p_gamma, size_t p_gamma_top);
+    void SetPgamma (size_t p_gamma_top);
 
     void setHyp(double theta_temp, double subvar_temp);
-
-    void CreateSnpPosVec(vector<SNPPOS> &snp_pos);
 
     void InitialMCMC ( uchar **UtX, const gsl_vector *Uty, vector<size_t> &rank, class HYPBSLMM &cHyp, vector<pair<size_t, double> > &pos_loglr, const vector<SNPPOS> &snp_pos);
 
@@ -170,7 +177,7 @@ public:
     void WriteIniRank (const vector<string> &iniRank);
 
     // MH-related functions
-    double ProposeGamma (const vector<size_t> &rank_old, vector<size_t> &rank_new, const double *p_gamma, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, uchar **X, const gsl_vector *z, const gsl_matrix *Xgamma_old, const gsl_matrix *XtX_old, const gsl_vector *Xtz_old, const double &ztz, int &flag_gamma, gsl_matrix *Xgamma_new, gsl_matrix *XtX_new, gsl_vector *Xtz_new);
+    double ProposeGamma (const vector<size_t> &rank_old, vector<size_t> &rank_new, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, uchar **X, const gsl_vector *z, const gsl_matrix *Xgamma_old, const gsl_matrix *XtX_old, const gsl_vector *Xtz_old, const double &ztz, gsl_matrix *Xgamma_new, gsl_matrix *XtX_new, gsl_vector *Xtz_new);
 
     double CalcLikegamma(const class HYPBSLMM &cHyp);
             
@@ -205,7 +212,6 @@ public:
 
     void WriteFGWAS_InputFile(const vector<SNPPOS> &snp_pos, const vector<double> &Z_scores, const vector<double> &SE_beta);
 
-    void CalcLD(uchar **X, gsl_matrix * LD);
 
     double CalcPveLM (const gsl_matrix *UtXgamma, const gsl_vector *Uty, const double sigma_a2);
 
@@ -214,6 +220,27 @@ public:
     void CalcCC_PVEnZ (gsl_vector *z_hat, class HYPBSLMM &cHyp);
 
     void CalcCC_PVEnZ (const gsl_vector *Xb, gsl_vector *z_hat, class HYPBSLMM &cHyp);
+
+    void MCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty);
+
+    void InitialMCMC_SS (const vector< vector<double> > &LD, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval);
+
+    void SetSSgamma(const vector< vector<double> > &LD, const vector<double> &Xty, const vector <size_t> &rank, gsl_matrix *XtX_gamma, gsl_vector *Xty_gamma);
+
+    void SetSSgammaAdd (const vector< vector<double> > &LD, const vector<double> &Xty, const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const vector<size_t> &rank_old, size_t ranki, gsl_matrix *XtX_new, gsl_vector *Xty_new);
+
+    void SetSSgammaDel (const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const vector<size_t> &rank_old, size_t col_id, gsl_matrix *XtX_new, gsl_vector *Xty_new);
+
+    double CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gsl_vector *Xb, gsl_vector *beta, class HYPBSLMM &cHyp, gsl_vector *sigma_vec, bool &Error_Flag, double &loglike);
+
+    double CalcLR_cond_SS(const double &rtr, const size_t pos_j, const vector< vector<double> > &LD, const vector <size_t> &rank_cond, const gsl_vector *beta_cond, gsl_vector * Xtx_j);
+
+    gsl_ran_discrete_t * MakeProposalSS(const vector< vector<double> > &LD, const size_t &pos, double *p_cond, const map<size_t, int> &mapRank2in, const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &rtr, const vector<size_t> rank_cond);
+
+    gsl_ran_discrete_t * MakeProposalSS(const size_t &pos, double *p_cond, const map<size_t, int> &mapRank2in);
+
+    double ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &rank_new, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, const vector< vector<double> > &LD, const vector<double> &Xty, const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const gsl_vector *beta_old, gsl_matrix *XtX_new, gsl_vector *Xty_new);
+
 
 };
 

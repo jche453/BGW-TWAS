@@ -59,6 +59,7 @@ void CalcXVbeta(gsl_matrix *X, const gsl_vector * sigma_vec);
 bool comp_sigma (pair<double, size_t> a, pair<double, size_t> b);
 bool comp_lr (pair<size_t, double> a, pair<size_t, double> b);
 bool comp_res (pair<size_t, double> a, pair<size_t, double> b);
+bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs);
 
 void NormRes(gsl_vector * z_res);
 

@@ -46,8 +46,8 @@ LIBS_LNX_S_LAPACK = /usr/lib/lapack/liblapack.a -lgfortran  /usr/lib/atlas-base/
 # Options
 
 
-  SOURCES += $(SRC_DIR)/param.cpp $(SRC_DIR)/bfgwas.cpp $(SRC_DIR)/io.cpp $(SRC_DIR)/lm.cpp  $(SRC_DIR)/bvsrm.cpp $(SRC_DIR)/mathfunc.cpp $(SRC_DIR)/gzstream.cpp $(SRC_DIR)/ReadVCF.cpp $(SRC_DIR)/compress.cpp
-  HDR += $(SRC_DIR)/param.h $(SRC_DIR)/bfgwas.h $(SRC_DIR)/io.h $(SRC_DIR)/lm.h $(SRC_DIR)/bvsrm.h $(SRC_DIR)/mathfunc.h $(SRC_DIR)/gzstream.h $(SRC_DIR)/ReadVCF.h $(SRC_DIR)/compress.h
+  SOURCES += $(SRC_DIR)/param.cpp $(SRC_DIR)/bfgwas.cpp $(SRC_DIR)/io.cpp $(SRC_DIR)/lm.cpp  $(SRC_DIR)/bvsrm.cpp $(SRC_DIR)/mathfunc.cpp $(SRC_DIR)/gzstream.cpp $(SRC_DIR)/ReadVCF.cpp $(SRC_DIR)/compress.cpp $(SRC_DIR)/calcSS.cpp
+  HDR += $(SRC_DIR)/param.h $(SRC_DIR)/bfgwas.h $(SRC_DIR)/io.h $(SRC_DIR)/lm.h $(SRC_DIR)/bvsrm.h $(SRC_DIR)/mathfunc.h $(SRC_DIR)/gzstream.h $(SRC_DIR)/ReadVCF.h $(SRC_DIR)/compress.h $(SRC_DIR)/calcSS.h
 
 
 ifdef WITH_LAPACK
