@@ -20,7 +20,7 @@
 #include "calcSS.h"
 
 
-void CalcSS::CopyFromParam (PARAM &cPar) 
+void CALCSS::CopyFromParam (PARAM &cPar) 
 {
 
     zipSS=cPar.zipSS;
@@ -35,6 +35,7 @@ void CalcSS::CopyFromParam (PARAM &cPar)
     ns_total=cPar.ns_total;
     ni_test=cPar.ni_test;
     ns_test=cPar.ns_test;
+    n_type = cPar.n_type;
 
     LDwindow=cPar.LDwindow;
     
@@ -49,13 +50,15 @@ void CalcSS::CopyFromParam (PARAM &cPar)
 }
 
 //calculat LD correlation matrix
-void CalcSS::calcSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta,vector<double> &beta_sd){
+void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta,vector<double> &beta_sd){
+
+    Gvec.assign(n_type, 0.0); // set 
 
     // center phenotype 
-    double mean_y = CenterVector(y); 
-    double yty = 0.0;
+    pheno_mean = CenterVector(y); 
+    double yty;
     gsl_blas_ddot(y, y, &yty); // yty is the sum square of total SST
-    double pheno_var = yty / ((double)(ni_test-1)) ;
+    pheno_var = yty / ((double)(ni_test-1)) ;
 
     // standardize phenotype y
     gsl_vector_scale(y, 1.0 / sqrt(pheno_var)); 
@@ -86,6 +89,14 @@ void CalcSS::calcSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vect
         getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
         gsl_blas_ddot(xvec_i, xvec_i, &xtx_i);
         LD[i].push_back(xtx_i);
+
+        for (size_t j=0; j<n_type; j++) {
+            if (snp_pos[i].indicator_func[j]) {
+                Gvec[j] += (xtx_i / (double)ni_test);
+                //Gvec[j] += (xtx );
+                continue;
+            }
+        }
 
         //calculate effect-size
         gsl_blas_ddot(xvec_i, y, &xty);
@@ -119,7 +130,7 @@ void CalcSS::calcSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vect
 }
 
 
-void CalcSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &beta_sd)
+void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &beta_sd)
 {
     cout << "\nStart writing SS ... \n";
     String fout = file_out.c_str();
@@ -212,21 +223,21 @@ void getXy(const vector< vector<double> > &LD, const vector<double> &beta, vecto
 {
     Xty.clear();
     double xty_i;
-    for(size_t i=0; i<ni_test; i++){
+    for(size_t i=0; i<beta.size(); i++){
         xty_i = beta[i] * LD[i][0];
-        Xty.push_back(xy_i);
+        Xty.push_back(xty_i);
     }
     return;
 }
 
-void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > pos_ChisqTest)
+void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > &pos_ChisqTest)
 {
     pval.clear();
     pos_ChisqTest.clear();
     double pval_i, chisq_i;
 
-    for(size_t i=0; i<ni_test; i++){
-        chisq_i = (beta[i] / beta_sd)^2;
+    for(size_t i=0; i<beta.size(); i++){
+        chisq_i = pow(beta[i] / beta_sd[i], 2);
         pos_ChisqTest.push_back( make_pair(i, chisq_i) );
 
         pval_i = gsl_cdf_chisq_Q (chisq_i, 1);
@@ -249,8 +260,8 @@ double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size
         if( (pos_i - pos_j) < LD[pos_j].size() ) xtx_ij = LD[pos_j][pos_i - pos_j];
     }
 
-    if(xtx_ij > 0) r2_ij = xtx_ij^2 / ( xtx_i * xtx_j );
-    else r2_ij = 0.0;
+    if(xtx_ij > 0) { r2_ij = pow(xtx_ij, 2) / ( xtx_i * xtx_j ) ; }
+    else {r2_ij = 0.0;}
 
     return r2_ij;
 }
@@ -278,6 +289,7 @@ double CalcResVar(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, const
 {
     double rtr, xtyb, bxtxb;
     gsl_vector *XtXb = gsl_vector_alloc(beta_cond->size);
+    gsl_vector_set_zero (XtXb);
 
     gsl_blas_ddot(Xty_cond, beta_cond, &xtyb);
 

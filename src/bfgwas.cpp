@@ -687,7 +687,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         cout << "Loading genotype data for 2nd time costs " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << "mints\n";
         
         // initialize SS, LD, beta
-        CalcSS SS;
+        CALCSS SS;
         SS.CopyFromParam(cPar);
 
         vector< vector<double> > LD;
@@ -695,7 +695,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         vector<double> beta_sd;
 
         // calculate LD matrix and effect-sizes from SVT
-        SS.calcSS(X_Genotype, y, LD, beta, beta_sd);
+        SS.GetSS(X_Genotype, y, LD, beta, beta_sd);
 
         // save summary statistics
         SS.WriteSS(LD, beta, beta_sd);
@@ -807,37 +807,43 @@ void BFGWAS::BatchRun (PARAM &cPar)
             gsl_matrix_free(W);
 
             // Calculate SS
-	        CalcSS SS; // initialize 
+	        CALCSS SS; // initialize 
 	        SS.CopyFromParam(cPar);
 	        vector< vector<double> > LD;
 	        vector<double> beta;
 	        vector<double> beta_sd;
 	        // calculate LD matrix, beta, beta_sd
-	        SS.calcSS(X_Genotype, y, LD, beta, beta_sd);
+	        SS.GetSS(X_Genotype, y, LD, beta, beta_sd);
 
 
             //perform BSVRM analysis
             BVSRM cBvsrm;
            // cout << "copy data from param ...\n";
             cBvsrm.CopyFromParam(cPar);
-            cBvsrm.snp_pos = SS.snp_pos;
-            cBvsrm.UcharTable = SS.UcharTable;
+            cBvsrm.CopyFromSS(SS);
             cBvsrm.ns_neib = 2 * cBvsrm.win + 1;
+            cBvsrm.SE_beta = beta_sd;
 
+            // Using individual data
+            /*time_start=clock();
+            //cBvsrm.MCMC(X_Genotype, y, 1);
+            cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
+            cBvsrm.CopyToParam(cPar);*/
+            
+            FreeUCharMatrix(X_Genotype, cPar.ns_test); 
+			gsl_vector_free (y);
+
+			// calculate Xty, pval, pos_ChisqTest
             vector<double> Xty;
             getXy(LD, beta, Xty); // convert beta, LD into Xty
-            getPval(beta, beta_sd, cBvsrm.pval, cBvsrm.pos_ChisqTest);
+            getPval(beta, cBvsrm.SE_beta, cBvsrm.pval, cBvsrm.pos_ChisqTest);
          
-           // cout << "start bslmm.mcmc ...\n";
+           // Using summary statistics
+            cout << "\nStart MCMC with SS ... \n ";
             time_start=clock();
-            //cBvsrm.MCMC(X_Genotype, y, 1);
             cBvsrm.MCMC_SS(LD, Xty);
             cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
             cBvsrm.CopyToParam(cPar);
-            
-            FreeUCharMatrix(X_Genotype, cPar.ns_test);
-                 
-		gsl_vector_free (y);
 			
     }
 		

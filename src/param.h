@@ -26,16 +26,37 @@
 #include <iomanip>
 #include <limits>
 
-#include "gsl/gsl_vector.h"
-#include "gsl/gsl_matrix.h"
 
 #include "VcfFileReader.h"
 #include "StringBasics.h"
 #include "StringHash.h"
 #include "MemoryAllocators.h"
 
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <cstring>
+#include <sys/stat.h>
+#include <cmath>
+#include <algorithm>
+#include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "gsl/gsl_vector.h"
+#include "gsl/gsl_matrix.h"
+#include "gsl/gsl_linalg.h"
+#include "gsl/gsl_blas.h"
+#include "gsl/gsl_cdf.h"
+
+#include "lapack.h"
+#include "gzstream.h"
+#include "mathfunc.h"
+#include "ReadVCF.h"
+
 
 using namespace std;
+
 typedef unsigned char uchar;
 typedef unsigned short uint16;
 typedef unsigned int uint;
@@ -281,6 +302,8 @@ public:
 
 
 void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const size_t &ns_total, const vector<bool> &indicator_snp);
+
+bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs);
 
 #endif
 

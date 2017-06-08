@@ -48,7 +48,7 @@
 #include "mathfunc.h"
 #include "lapack.h"
 #include "lm.h"
-#include "bvsrm.h"
+
 
 using namespace std;
 
@@ -58,7 +58,7 @@ typedef unsigned short uint16;
 typedef unsigned int uint;
 
 
-class CalcSS{
+class CALCSS{
 public: 
     bool zipSS;
     long int LDwindow;
@@ -67,21 +67,27 @@ public:
     vector <size_t> CompBuffSizeVec;
     bool Compress_Flag;
     vector<pair<int, double> > UcharTable;
+    vector <double> Gvec;
 
     string file_out;
     size_t ni_total, ni_test;   //number of individuals
     size_t ns_total, ns_test;   //number of snps
+    size_t n_type;
     vector<bool> indicator_idv; //indicator for individuals (phenotypes),1 analyzed
     vector<bool> indicator_snp; //indicator for SNPs: 1 analyzed
+
+    // Phenotype information
+    double pheno_mean, pheno_var;
 
     vector<SNPINFO> snpInfo; // SNP information
     vector<SNPPOS> snp_pos;
     vector<double> SNPmean;
+    
 
     //functions
     void CopyFromParam (PARAM &cPar);
 
-    void calcSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_sd);
+    void GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_sd);
 
     void WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &beta_sd);
 
@@ -89,7 +95,7 @@ public:
 
 void getXy(const vector< vector<double> > &LD, const vector<double> &beta, vector <double> &Xty);
 
-void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > pos_ChisqTest);
+void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > &pos_ChisqTest);
 
 double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ); 
 

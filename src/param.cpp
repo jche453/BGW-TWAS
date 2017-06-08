@@ -16,36 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <cstring>
-#include <sys/stat.h>
-#include <cmath>
-#include <algorithm>
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "gsl/gsl_vector.h"
-#include "gsl/gsl_matrix.h"
-#include "gsl/gsl_linalg.h"
-#include "gsl/gsl_blas.h"
-#include "gsl/gsl_cdf.h"
-
-#include "lapack.h"
-#include "gzstream.h"
-#include "mathfunc.h"
-#include "ReadVCF.h"
-#include "bvsrm.h"
 
 #include "param.h"
+#include "bvsrm.h"
 #include "io.h"
-
-
-using namespace std;
-
 
 void genMarker::iniRecord(VcfRecord& record){
     
@@ -109,8 +83,8 @@ void CalcWeight(const vector<bool> &indicator_func, vector<double> &weight, cons
 
 
 PARAM::PARAM(void):
-vscale(0.0), iniType(3), saveGeno(0), saveSS(0), zipSS(1), rv(1.0), 
-Compress_Flag(0), LDwindow(500000),
+vscale(0.0), iniType(3), saveGeno(0), saveSS(0), zipSS(1), 
+LDwindow(500000), rv(1.0), Compress_Flag(0), 
 mode_silence (false), a_mode (0), k_mode(1), d_pace (100000),
 GTfield("GT"), file_out("result"), 
 miss_level(0.05), maf_level(0.005), hwe_level(0.001), 
@@ -125,6 +99,11 @@ w_step(50000),	s_step(500000), n_accept(0),
 n_mh(10), randseed(2016), error(false),
 time_total(0.0), time_G(0.0), time_Omega(0.0)
 {}
+
+
+bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs){
+    return (lhs.chr.compare(rhs.chr) < 0) || ((lhs.chr.compare(rhs.chr) == 0) && (lhs.bp < rhs.bp));
+} 
 
 
 //read files

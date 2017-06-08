@@ -403,9 +403,7 @@ bool comp_res (pair<size_t, double> a, pair<size_t, double> b)
 	return (a.second < b.second);
 }
 
-bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs){
-    return (lhs.chr.compare(rhs.chr) < 0) || ((lhs.chr.compare(rhs.chr) == 0) && (lhs.bp < rhs.bp));
-}		
+	
 
 
 // Inverse-Normalize vector z_res

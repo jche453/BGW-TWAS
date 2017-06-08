@@ -5,13 +5,34 @@ test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
 
 cd $test_dir
 
-${bfGWAS_SS_dir}/bin/Estep_mcmc \
+time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -vcf ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz \
 -p ${bfGWAS_SS_dir}/1KG_example/ExData/phenoAMD_1KG.txt \
--GTfield GT -maf 0.005 \
--o CFH_REGION_1KG -saveSS -LDwindow 10000
-
-
 -a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
+-GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 10 -s 10 \
+-o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 1000000  > ${test_dir}/test_SS.output.txt &
+
+# real    0m43.529s
+
+######################
+
+bfGWAS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS"
+
+time ${bfGWAS_dir}/bin/Estep_mcmc \
+-vcf ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz \
+-p ${bfGWAS_SS_dir}/1KG_example/ExData/phenoAMD_1KG.txt \
+-a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz \
+-fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
+-hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
+-GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 10000 -s 10000 \
+-o CFH_REGION_1KG -initype 3 -rv 1 > ${test_dir}/test.output.txt &
+
+real    1m37.940s
+
+
+###### profiling new model for AMD all genotype data
+
+gprof -p -b ${GMGIT}/bin/gemma_newmodel_pg gmon.out > AMD_allgeno_gprof.txt
+gprof -p -b ${GMGIT}/bin/gemma_newmodel_pg gmon.out > AMD_test_gprof.txt

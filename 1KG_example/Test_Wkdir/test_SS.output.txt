@@ -1,0 +1,695 @@
+Reading Files ... 
+Start reading pheno file ...
+Start reading vcf file first time ...
+Load VCF file genotype field: GT
+
+Matched phenotype sample IDs in the VCF file: 2504
+Done reading vcf file first time ... 
+Start reading annotation files: /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz 
+with code file /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt
+Number of annotation categories: 6
+Number of variants per category: 2792, 42, 0, 273, 0, 582, 
+Reading files first time cost 0.583224mints 
+Reorder y for reading vcf files ... 
+
+ Reorder phenotypes, final analyzed sample size ni_test = 2504
+Center phenotype ... 
+pheno_mean = 0.49401
+Done reading vcf file second time ... 
+load genotype data cost 0.108812mints
+
+Start MCMC with SS ... \n Running MCMC with Summary Statistics ... 
+ yty is 626.16
+9.75034e-35, 9.82042e-34, 9.82042e-34, 9.87063e-34, 1.00317e-33, 1.00317e-33, 7.48042e-33, 8.36341e-33, 1.01194e-32, 1.21076e-32, 
+Generate maps ... 
+ Calculate proposal distribution for gamma 
+Number of variants with p-value < 5e-8 : 59
+Start initializing MCMC ... 
+Start with top SVT SNPs not in LD > 0.95.
+Starting model has variants with ranks: 
+0, 
+rv from command line = 1
+Initial causal probability per category = 1e-06, 1e-06, 1e-06, 1e-06, 1e-06, 1e-06, 
+Initial effect-size variance per category = 10, 10, 10, 10, 10, 10, 
+Initially selected number of variants in the model = 1
+Initial number of selected variants per category : 1, 0, 0, 0, 0, 0, 
+first calculating logpost ... 
+Omega : 818.414, 
+beta_hat from solve : 0.0417197, 
+beta_hat: 0.417197, 
+R2 in CalcPosterior = 0.227522
+Initial logPost_old = -18.3242
+Running MCMC                               0.00%  & acceptance ratio 0.00
+switch a snp
+Switch step rank_old:0, 
+XtX_old: 818.413738, 
+temp rank_new:
+o_add = 1636; r_add = 3
+successfully switched a snp
+Omega : 1259.361022, 
+beta_hat from solve : -0.033147, 
+beta_hat: -0.331465, 
+R2 in CalcPosterior = 0.220991
+adding a snp ... 
+new XtX : 
+1259.361022, 0.000000, 
+0.000000, 1221.692891, 
+succesfully added a snp
+Omega : 1259.361022, 0.000000, 
+0.000000, 1221.692891, 
+beta_hat from solve : -0.033147, 0.017547, 
+beta_hat: -0.331465, 0.175465, 
+R2 in CalcPosterior = 0.281066
+switch a snp
+Switch step rank_old:3, 
+XtX_old: 1259.361022, 
+temp rank_new:
+o_add = 1663; r_add = 0
+successfully switched a snp
+Omega : 818.413738, 
+beta_hat from solve : 0.041720, 
+beta_hat: 0.417197, 
+R2 in CalcPosterior = 0.227522
+delete a snp
+succesfully deleted a snp
+adding a snp ... 
+new XtX : 
+1251.836661, 
+succesfully added a snp
+Omega : 1251.836661, 
+beta_hat from solve : -0.030674, 
+beta_hat: -0.306738, 
+R2 in CalcPosterior = 0.188119
+adding a snp ... 
+new XtX : 
+1220.910144, 
+succesfully added a snp
+Omega : 1220.910144, 
+beta_hat from solve : 0.019434, 
+beta_hat: 0.194339, 
+R2 in CalcPosterior = 0.073647
+adding a snp ... 
+new XtX : 
+231.827476, 
+succesfully added a snp
+Omega : 231.827476, 
+beta_hat from solve : 0.041847, 
+beta_hat: 0.418470, 
+R2 in CalcPosterior = 0.064863
+adding a snp ... 
+new XtX : 
+1260.721645, 
+succesfully added a snp
+Omega : 1260.721645, 
+beta_hat from solve : 0.018646, 
+beta_hat: 0.186456, 
+R2 in CalcPosterior = 0.070003
+adding a snp ... 
+new XtX : 
+1260.721645, 
+succesfully added a snp
+Omega : 1260.721645, 
+beta_hat from solve : 0.018646, 
+beta_hat: 0.186456, 
+R2 in CalcPosterior = 0.070003
+adding a snp ... 
+new XtX : 
+855.367412, 
+succesfully added a snp
+Omega : 855.367412, 
+beta_hat from solve : 0.034411, 
+beta_hat: 0.344110, 
+R2 in CalcPosterior = 0.161775
+adding a snp ... 
+new XtX : 
+1197.632188, 
+succesfully added a snp
+Omega : 1197.632188, 
+beta_hat from solve : 0.015813, 
+beta_hat: 0.158131, 
+R2 in CalcPosterior = 0.047831
+adding a snp ... 
+new XtX : 
+1270.453275, 
+succesfully added a snp
+Omega : 1270.453275, 
+beta_hat from solve : -0.032466, 
+beta_hat: -0.324665, 
+R2 in CalcPosterior = 0.213884
+adding a snp ... 
+new XtX : 
+1270.597045, 
+succesfully added a snp
+Omega : 1270.597045, 
+beta_hat from solve : -0.030551, 
+beta_hat: -0.305508, 
+R2 in CalcPosterior = 0.189410
+adding a snp ... 
+new XtX : 
+1221.692891, 
+succesfully added a snp
+Omega : 1221.692891, 
+beta_hat from solve : 0.017547, 
+beta_hat: 0.175465, 
+R2 in CalcPosterior = 0.060075
+adding a snp ... 
+new XtX : 
+1251.836661, 
+succesfully added a snp
+Omega : 1251.836661, 
+beta_hat from solve : -0.030674, 
+beta_hat: -0.306738, 
+R2 in CalcPosterior = 0.188119
+adding a snp ... 
+new XtX : 
+1250.907348, 
+succesfully added a snp
+Omega : 1250.907348, 
+beta_hat from solve : -0.030616, 
+beta_hat: -0.306158, 
+R2 in CalcPosterior = 0.187268
+adding a snp ... 
+new XtX : 
+1230.996406, 
+succesfully added a snp
+Omega : 1230.996406, 
+beta_hat from solve : -0.021323, 
+beta_hat: -0.213226, 
+R2 in CalcPosterior = 0.089390
+adding a snp ... 
+new XtX : 
+231.827476, 
+succesfully added a snp
+Omega : 231.827476, 
+beta_hat from solve : 0.041847, 
+beta_hat: 0.418470, 
+R2 in CalcPosterior = 0.064863
+adding a snp ... 
+new XtX : 
+1251.836661, 
+succesfully added a snp
+Omega : 1251.836661, 
+beta_hat from solve : -0.030674, 
+beta_hat: -0.306738, 
+R2 in CalcPosterior = 0.188119
+adding a snp ... 
+new XtX : 
+1280.788738, 
+succesfully added a snp
+Omega : 1280.788738, 
+beta_hat from solve : -0.032374, 
+beta_hat: -0.323737, 
+R2 in CalcPosterior = 0.214393
+adding a snp ... 
+new XtX : 
+492.926118, 
+succesfully added a snp
+Omega : 492.926118, 
+beta_hat from solve : 0.025409, 
+beta_hat: 0.254092, 
+R2 in CalcPosterior = 0.050835
+adding a snp ... 
+new XtX : 
+231.827476, 
+succesfully added a snp
+Omega : 231.827476, 
+beta_hat from solve : 0.041847, 
+beta_hat: 0.418470, 
+R2 in CalcPosterior = 0.064863
+adding a snp ... 
+new XtX : 
+1259.361022, 
+succesfully added a snp
+Omega : 1259.361022, 
+beta_hat from solve : -0.033147, 
+beta_hat: -0.331465, 
+R2 in CalcPosterior = 0.220991
+adding a snp ... 
+new XtX : 
+1197.632188, 
+succesfully added a snp
+Omega : 1197.632188, 
+beta_hat from solve : 0.015813, 
+beta_hat: 0.158131, 
+R2 in CalcPosterior = 0.047831
+adding a snp ... 
+new XtX : 
+907.014377, 
+succesfully added a snp
+Omega : 907.014377, 
+beta_hat from solve : -0.021031, 
+beta_hat: -0.210307, 
+R2 in CalcPosterior = 0.064074
+adding a snp ... 
+new XtX : 
+818.413738, 
+succesfully added a snp
+Omega : 818.413738, 
+beta_hat from solve : 0.041720, 
+beta_hat: 0.417197, 
+R2 in CalcPosterior = 0.227522
+adding a snp ... 
+new XtX : 
+1272.763179, 
+succesfully added a snp
+Omega : 1272.763179, 
+beta_hat from solve : -0.030497, 
+beta_hat: -0.304969, 
+R2 in CalcPosterior = 0.189064
+adding a snp ... 
+new XtX : 
+1042.405351, 
+succesfully added a snp
+Omega : 1042.405351, 
+beta_hat from solve : 0.032212, 
+beta_hat: 0.322122, 
+R2 in CalcPosterior = 0.172756
+adding a snp ... 
+new XtX : 
+1259.423323, 
+succesfully added a snp
+Omega : 1259.423323, 
+beta_hat from solve : -0.033147, 
+beta_hat: -0.331468, 
+R2 in CalcPosterior = 0.221006
+adding a snp ... 
+new XtX : 
+1247.795527, 
+succesfully added a snp
+Omega : 1247.795527, 
+beta_hat from solve : 0.019150, 
+beta_hat: 0.191501, 
+R2 in CalcPosterior = 0.073086
+adding a snp ... 
+new XtX : 
+1272.763179, 
+succesfully added a snp
+Omega : 1272.763179, 
+beta_hat from solve : -0.030497, 
+beta_hat: -0.304969, 
+R2 in CalcPosterior = 0.189064
+adding a snp ... 
+new XtX : 
+1221.692891, 
+succesfully added a snp
+Omega : 1221.692891, 
+beta_hat from solve : 0.017547, 
+beta_hat: 0.175465, 
+R2 in CalcPosterior = 0.060075
+adding a snp ... 
+new XtX : 
+818.413738, 
+succesfully added a snp
+Omega : 818.413738, 
+beta_hat from solve : 0.041720, 
+beta_hat: 0.417197, 
+R2 in CalcPosterior = 0.227522
+adding a snp ... 
+new XtX : 
+1124.017572, 
+succesfully added a snp
+Omega : 1124.017572, 
+beta_hat from solve : -0.019187, 
+beta_hat: -0.191875, 
+R2 in CalcPosterior = 0.066094
+adding a snp ... 
+new XtX : 
+1112.726837, 
+succesfully added a snp
+Omega : 1112.726837, 
+beta_hat from solve : -0.017164, 
+beta_hat: -0.171637, 
+R2 in CalcPosterior = 0.052356
+adding a snp ... 
+new XtX : 
+1260.721645, 
+succesfully added a snp
+Omega : 1260.721645, 
+beta_hat from solve : 0.018646, 
+beta_hat: 0.186456, 
+R2 in CalcPosterior = 0.070003
+adding a snp ... 
+new XtX : 
+475.749201, 
+succesfully added a snp
+Omega : 475.749201, 
+beta_hat from solve : 0.025648, 
+beta_hat: 0.256482, 
+R2 in CalcPosterior = 0.049992
+adding a snp ... 
+new XtX : 
+231.827476, 
+succesfully added a snp
+Omega : 231.827476, 
+beta_hat from solve : 0.041847, 
+beta_hat: 0.418470, 
+R2 in CalcPosterior = 0.064863
+adding a snp ... 
+new XtX : 
+1270.597045, 
+succesfully added a snp
+Omega : 1270.597045, 
+beta_hat from solve : -0.030551, 
+beta_hat: -0.305508, 
+R2 in CalcPosterior = 0.189410
+adding a snp ... 
+new XtX : 
+855.367412, 
+succesfully added a snp
+Omega : 855.367412, 
+beta_hat from solve : 0.034411, 
+beta_hat: 0.344110, 
+R2 in CalcPosterior = 0.161775
+adding a snp ... 
+new XtX : 
+1270.597045, 
+succesfully added a snp
+Omega : 1270.597045, 
+beta_hat from solve : -0.030551, 
+beta_hat: -0.305508, 
+R2 in CalcPosterior = 0.189410
+adding a snp ... 
+new XtX : 
+1194.944089, 
+succesfully added a snp
+Omega : 1194.944089, 
+beta_hat from solve : 0.015768, 
+beta_hat: 0.157680, 
+R2 in CalcPosterior = 0.047452
+adding a snp ... 
+new XtX : 
+1221.932508, 
+succesfully added a snp
+Omega : 1221.932508, 
+beta_hat from solve : 0.019256, 
+beta_hat: 0.192560, 
+R2 in CalcPosterior = 0.072365
+adding a snp ... 
+new XtX : 
+231.827476, 
+succesfully added a snp
+Omega : 231.827476, 
+beta_hat from solve : 0.041847, 
+beta_hat: 0.418470, 
+R2 in CalcPosterior = 0.064863
+adding a snp ... 
+new XtX : 
+363.723642, 
+succesfully added a snp
+Omega : 363.723642, 
+beta_hat from solve : 0.030939, 
+beta_hat: 0.309387, 
+R2 in CalcPosterior = 0.055617
+adding a snp ... 
+new XtX : 
+1259.361022, 
+succesfully added a snp
+Omega : 1259.361022, 
+beta_hat from solve : -0.033147, 
+beta_hat: -0.331465, 
+R2 in CalcPosterior = 0.220991
+adding a snp ... 
+new XtX : 
+1281.769968, 
+succesfully added a snp
+Omega : 1281.769968, 
+beta_hat from solve : -0.032426, 
+beta_hat: -0.324260, 
+R2 in CalcPosterior = 0.215251
+adding a snp ... 
+new XtX : 
+1281.769968, 
+succesfully added a snp
+Omega : 1281.769968, 
+beta_hat from solve : -0.032426, 
+beta_hat: -0.324260, 
+R2 in CalcPosterior = 0.215251
+adding a snp ... 
+new XtX : 
+26.708866, 
+succesfully added a snp
+Omega : 26.708866, 
+beta_hat from solve : -0.009982, 
+beta_hat: -0.099824, 
+R2 in CalcPosterior = 0.000427
+adding a snp ... 
+new XtX : 
+1250.907348, 
+succesfully added a snp
+Omega : 1250.907348, 
+beta_hat from solve : -0.030616, 
+beta_hat: -0.306158, 
+R2 in CalcPosterior = 0.187268
+adding a snp ... 
+new XtX : 
+855.367412, 
+succesfully added a snp
+Omega : 855.367412, 
+beta_hat from solve : 0.034411, 
+beta_hat: 0.344110, 
+R2 in CalcPosterior = 0.161775
+adding a snp ... 
+new XtX : 
+30.616214, 
+succesfully added a snp
+Omega : 30.616214, 
+beta_hat from solve : -0.015067, 
+beta_hat: -0.150670, 
+R2 in CalcPosterior = 0.001114
+adding a snp ... 
+new XtX : 
+1266.750399, 
+succesfully added a snp
+Omega : 1266.750399, 
+beta_hat from solve : -0.033046, 
+beta_hat: -0.330463, 
+R2 in CalcPosterior = 0.220945
+adding a snp ... 
+new XtX : 
+1259.423323, 
+succesfully added a snp
+Omega : 1259.423323, 
+beta_hat from solve : -0.033147, 
+beta_hat: -0.331468, 
+R2 in CalcPosterior = 0.221006
+adding a snp ... 
+new XtX : 
+932.043131, 
+succesfully added a snp
+Omega : 932.043131, 
+beta_hat from solve : 0.031948, 
+beta_hat: 0.319479, 
+R2 in CalcPosterior = 0.151944
+adding a snp ... 
+new XtX : 
+1130.944089, 
+succesfully added a snp
+Omega : 1130.944089, 
+beta_hat from solve : 0.018524, 
+beta_hat: 0.185240, 
+R2 in CalcPosterior = 0.061982
+adding a snp ... 
+new XtX : 
+27.730032, 
+succesfully added a snp
+Omega : 27.730032, 
+beta_hat from solve : 0.001119, 
+beta_hat: 0.011192, 
+R2 in CalcPosterior = 0.000006
+adding a snp ... 
+new XtX : 
+1221.932508, 
+succesfully added a snp
+Omega : 1221.932508, 
+beta_hat from solve : 0.019256, 
+beta_hat: 0.192560, 
+R2 in CalcPosterior = 0.072365
+adding a snp ... 
+new XtX : 
+1250.907348, 
+succesfully added a snp
+Omega : 1250.907348, 
+beta_hat from solve : -0.030616, 
+beta_hat: -0.306158, 
+R2 in CalcPosterior = 0.187268
+adding a snp ... 
+new XtX : 
+1054.728435, 
+succesfully added a snp
+Omega : 1054.728435, 
+beta_hat from solve : -0.020947, 
+beta_hat: -0.209474, 
+R2 in CalcPosterior = 0.073919
+adding a snp ... 
+new XtX : 
+386.739617, 
+succesfully added a snp
+Omega : 386.739617, 
+beta_hat from solve : 0.032766, 
+beta_hat: 0.327661, 
+R2 in CalcPosterior = 0.066328
+adding a snp ... 
+new XtX : 
+498.085863, 
+succesfully added a snp
+Omega : 498.085863, 
+beta_hat from solve : 0.025552, 
+beta_hat: 0.255522, 
+R2 in CalcPosterior = 0.051947
+adding a snp ... 
+new XtX : 
+1283.806709, 
+succesfully added a snp
+Omega : 1283.806709, 
+beta_hat from solve : -0.032376, 
+beta_hat: -0.323764, 
+R2 in CalcPosterior = 0.214934
+adding a snp ... 
+new XtX : 
+1266.750399, 
+succesfully added a snp
+Omega : 1266.750399, 
+beta_hat from solve : -0.033046, 
+beta_hat: -0.330463, 
+R2 in CalcPosterior = 0.220945
+adding a snp ... 
+new XtX : 
+1221.692891, 
+succesfully added a snp
+Omega : 1221.692891, 
+beta_hat from solve : 0.017547, 
+beta_hat: 0.175465, 
+R2 in CalcPosterior = 0.060075
+adding a snp ... 
+new XtX : 
+1267.845048, 
+succesfully added a snp
+Omega : 1267.845048, 
+beta_hat from solve : -0.030851, 
+beta_hat: -0.308509, 
+R2 in CalcPosterior = 0.192730
+adding a snp ... 
+new XtX : 
+1259.423323, 
+succesfully added a snp
+Omega : 1259.423323, 
+beta_hat from solve : -0.033147, 
+beta_hat: -0.331468, 
+R2 in CalcPosterior = 0.221006
+adding a snp ... 
+new XtX : 
+907.014377, 
+succesfully added a snp
+Omega : 907.014377, 
+beta_hat from solve : -0.021031, 
+beta_hat: -0.210307, 
+R2 in CalcPosterior = 0.064074
+adding a snp ... 
+new XtX : 
+922.439297, 
+succesfully added a snp
+Omega : 922.439297, 
+beta_hat from solve : 0.035721, 
+beta_hat: 0.357214, 
+R2 in CalcPosterior = 0.188000
+adding a snp ... 
+new XtX : 
+1124.017572, 
+succesfully added a snp
+Omega : 1124.017572, 
+beta_hat from solve : -0.019187, 
+beta_hat: -0.191875, 
+R2 in CalcPosterior = 0.066094
+adding a snp ... 
+new XtX : 
+1259.423323, 
+succesfully added a snp
+Omega : 1259.423323, 
+beta_hat from solve : -0.033147, 
+beta_hat: -0.331468, 
+R2 in CalcPosterior = 0.221006
+adding a snp ... 
+new XtX : 
+1260.721645, 
+succesfully added a snp
+Omega : 1260.721645, 
+beta_hat from solve : 0.018646, 
+beta_hat: 0.186456, 
+R2 in CalcPosterior = 0.070003
+adding a snp ... 
+new XtX : 
+77.929712, 
+succesfully added a snp
+Omega : 77.929712, 
+beta_hat from solve : -0.011709, 
+beta_hat: -0.117086, 
+R2 in CalcPosterior = 0.001708
+adding a snp ... 
+new XtX : 
+476.939297, 
+succesfully added a snp
+Omega : 476.939297, 
+beta_hat from solve : 0.025589, 
+beta_hat: 0.255892, 
+R2 in CalcPosterior = 0.049886
+adding a snp ... 
+new XtX : 
+1266.750399, 
+succesfully added a snp
+Omega : 1266.750399, 
+beta_hat from solve : -0.033046, 
+beta_hat: -0.330463, 
+R2 in CalcPosterior = 0.220945
+adding a snp ... 
+new XtX : 
+1280.788738, 
+succesfully added a snp
+Omega : 1280.788738, 
+beta_hat from solve : -0.032374, 
+beta_hat: -0.323737, 
+R2 in CalcPosterior = 0.214393
+Running MCMC ==============================100.00%  & acceptance ratio 0.01
+adding a snp ... 
+new XtX : 
+498.085863, 
+succesfully added a snp
+Omega : 498.085863, 
+beta_hat from solve : 0.025552, 
+beta_hat: 0.255522, 
+R2 in CalcPosterior = 0.051947
+adding a snp ... 
+new XtX : 
+1272.763179, 
+succesfully added a snp
+Omega : 1272.763179, 
+beta_hat from solve : -0.030497, 
+beta_hat: -0.304969, 
+R2 in CalcPosterior = 0.189064
+adding a snp ... 
+new XtX : 
+907.014377, 
+succesfully added a snp
+Omega : 907.014377, 
+beta_hat from solve : -0.021031, 
+beta_hat: -0.210307, 
+R2 in CalcPosterior = 0.064074
+adding a snp ... 
+new XtX : 
+500.085863, 
+succesfully added a snp
+Omega : 500.085863, 
+beta_hat from solve : 0.025450, 
+beta_hat: 0.254501, 
+R2 in CalcPosterior = 0.051740
+MCMC completed ... 
+
+region_pip = 0
+gamma acceptance percentage = 0.010000
+# of selected variants per category: 0, 0, 0, 0, 0, 0, 
+beta_hat: 
+loglike: -0.003689
+k_save_sample = 0
+write hyptemp ... 
+logpost_max = 0.000000
+write paramtemp ... 
+write snps_mcmc ... 

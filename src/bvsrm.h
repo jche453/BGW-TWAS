@@ -27,10 +27,39 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sort_vector_double.h>
 
+
+#include <fstream>
+#include <sstream>
+
+#include <iomanip>
+#include <cmath>
+#include <iostream>
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h> 
+#include <ctime>
+#include <cstring>
+#include <algorithm>
+#include <limits>
+
+#include "gsl/gsl_vector.h"
+#include "gsl/gsl_matrix.h"
+#include "gsl/gsl_linalg.h"
+#include "gsl/gsl_blas.h"
+#include "gsl/gsl_eigen.h"
+#include "gsl/gsl_randist.h"
+#include "gsl/gsl_cdf.h"
+#include "gsl/gsl_roots.h"
+
+
+#include "lapack.h"
 #include "param.h"
+#include "bvsrm.h"
+#include "lm.h"
+#include "mathfunc.h"
+#include "calcSS.h"
 
 using namespace std;
-
 
 
 
@@ -43,7 +72,7 @@ public:
     long int LDwindow;
     vector<pair<size_t, double> > pos_ChisqTest;
     vector<double> pval;
-    double pheno_mean, pheno_var;
+    double pheno_mean, pheno_var, yty;
 
     //multiple function related parameters
     size_t n_type;
@@ -59,7 +88,7 @@ public:
     vector< pair<size_t, size_t> > SNPorder_vec; //<pos, rank>
     vector< pair<size_t, size_t> > SNPrank_vec; //<pos, order>
     double GV, rv, tau, logrv;
-    vector<double> SNPsd, XtX_diagvec;
+    vector<double> SE_beta, XtX_diagvec;
     vector<double> SNPmean;
     
     
@@ -151,6 +180,7 @@ public:
 	
 	// ************* Main Functions
 	void CopyFromParam (PARAM &cPar);
+    void CopyFromSS (CALCSS &SS) ;
 	void CopyToParam (PARAM &cPar);	
 
     
@@ -160,6 +190,8 @@ public:
     void WriteMCMC(const vector<string> &snps_mcmc);
 
     void WriteHyptemp(gsl_vector *LnPost, vector<double> &em_gamma);
+
+    void WriteHyptemp_SS(gsl_vector *LnPost, vector<double> &em_gamma);
 
     void WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_loglr, const vector<double> &Z_scores, const vector<double> &SE_beta, const vector<double> pval_lrt);
 
@@ -221,9 +253,6 @@ public:
 
     void CalcCC_PVEnZ (const gsl_vector *Xb, gsl_vector *z_hat, class HYPBSLMM &cHyp);
 
-    void MCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty);
-
-    void InitialMCMC_SS (const vector< vector<double> > &LD, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval);
 
     void SetSSgamma(const vector< vector<double> > &LD, const vector<double> &Xty, const vector <size_t> &rank, gsl_matrix *XtX_gamma, gsl_vector *Xty_gamma);
 
@@ -231,19 +260,24 @@ public:
 
     void SetSSgammaDel (const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const vector<size_t> &rank_old, size_t col_id, gsl_matrix *XtX_new, gsl_vector *Xty_new);
 
-    double CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gsl_vector *Xb, gsl_vector *beta, class HYPBSLMM &cHyp, gsl_vector *sigma_vec, bool &Error_Flag, double &loglike);
+    double CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gsl_vector *beta, class HYPBSLMM &cHyp, gsl_vector *sigma_vec, bool &Error_Flag, double &loglike);
 
-    double CalcLR_cond_SS(const double &rtr, const size_t pos_j, const vector< vector<double> > &LD, const vector <size_t> &rank_cond, const gsl_vector *beta_cond, gsl_vector * Xtx_j);
+    double CalcLR_cond_SS(const double &rtr, const size_t pos_j, const vector< vector<double> > &LD, const vector<double> &Xty, const vector <size_t> &rank_cond, const gsl_vector *beta_cond, gsl_vector * Xtx_j);
 
-    gsl_ran_discrete_t * MakeProposalSS(const vector< vector<double> > &LD, const size_t &pos, double *p_cond, const map<size_t, int> &mapRank2in, const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &rtr, const vector<size_t> rank_cond);
+    gsl_ran_discrete_t * MakeProposalSS(const vector< vector<double> > &LD, const vector <double> &Xty, const size_t &pos, double *p_cond, const map<size_t, int> &mapRank2in, const gsl_vector * beta_cond, const double &rtr, const vector<size_t> rank_cond);
 
     gsl_ran_discrete_t * MakeProposalSS(const size_t &pos, double *p_cond, const map<size_t, int> &mapRank2in);
 
     double ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &rank_new, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, const vector< vector<double> > &LD, const vector<double> &Xty, const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const gsl_vector *beta_old, gsl_matrix *XtX_new, gsl_vector *Xty_new);
 
+    void InitialMCMC_SS (const vector< vector<double> > &LD, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval);
 
+    void MCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty);
+
+    void WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_ChisqTest, const vector<double> pval);
+
+    
 };
-
 
 
 #endif
