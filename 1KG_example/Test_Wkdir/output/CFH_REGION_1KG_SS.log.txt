@@ -1,9 +1,9 @@
 ##
 ## Software Version = bfGWAS_SS_MCMC
 ##
-## Command Line Input = -vcf /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz -fcode /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -hfile /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 10 -s 10 -o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 10000 
+## Command Line Input = -vcf /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz -fcode /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -hfile /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 10 -s 10 -o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 1000000 
 ##
-## Date = Thu Jun  8 11:15:26 2017
+## Date = Thu Jun  8 13:00:38 2017
 
 ##
 ## Summary Statistics:
@@ -21,10 +21,10 @@
 ## Region_PIP = 0
 ##
 ## Computation Time:
-## total computation time = 0.743627 min 
+## total computation time = 2.94508 min 
 ## computation time break down: 
 ##      time on proposal = 4.94066e-324 min 
-##      time on mcmc = 0.00073905 min 
+##      time on mcmc = 0.000856017 min 
 ##      time on Omega = 0 min 
 Accept #add=0, total add step = 77
 Accept #delete=1, total delete step = 1

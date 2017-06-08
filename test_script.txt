@@ -11,7 +11,7 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
--GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 10 -s 10 \
+-GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 10000 -s 10000 \
 -o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 1000000  > ${test_dir}/test_SS.output.txt &
 
 # real    0m43.529s
