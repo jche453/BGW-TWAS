@@ -125,6 +125,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 
     gsl_vector_free(xvec_i);
     gsl_vector_free(xvec_j);
+    gsl_vector_free(xbeta_i);
 
     return;
 }
@@ -246,27 +247,6 @@ void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <
     return;
 }
 
-
-double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ){
-
-    double xtx_i, xtx_j, xtx_ij=0.0, r2_ij;
-
-    xtx_i = LD[pos_i][0];
-    xtx_j = LD[pos_j][0];
-
-    if(pos_i < pos_j){
-        if( (pos_j - pos_i) < LD[pos_i].size()  ) xtx_ij = LD[pos_i][pos_j - pos_i];
-    }else{
-        if( (pos_i - pos_j) < LD[pos_j].size() ) xtx_ij = LD[pos_j][pos_i - pos_j];
-    }
-
-    if(xtx_ij > 0) { r2_ij = pow(xtx_ij, 2) / ( xtx_i * xtx_j ) ; }
-    else {r2_ij = 0.0;}
-
-    return r2_ij;
-}
-
-
 double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ){
 
     double xtx_ij = 0.0;
@@ -283,6 +263,25 @@ double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const siz
 
     return xtx_ij;
 }
+
+
+double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ){
+
+    double xtx_i, xtx_j, xtx_ij=0.0, r2_ij = 0.0;
+
+    xtx_ij = getXtX(LD, pos_i, pos_j);
+
+    if(xtx_ij > 0) { 
+        xtx_i = LD[pos_i][0];
+        xtx_j = LD[pos_j][0];
+        r2_ij = pow(xtx_ij, 2) / ( xtx_i * xtx_j ) ; 
+    }
+
+    return r2_ij;
+}
+
+
+
 
 
 double CalcResVar(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &yty)

@@ -807,6 +807,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
             gsl_matrix_free(W);
 
             // Calculate SS
+            time_start=clock();
 	        CALCSS SS; // initialize 
 	        SS.CopyFromParam(cPar);
 	        vector< vector<double> > LD;
@@ -814,7 +815,12 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	        vector<double> beta_sd;
 	        // calculate LD matrix, beta, beta_sd
 	        SS.GetSS(X_Genotype, y, LD, beta, beta_sd);
+	        cout << "\n Get SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 
+	        // save summary statistics
+	        time_start=clock();
+	        SS.WriteSS(LD, beta, beta_sd);
+	        cout << "\n Write SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 
             //perform BSVRM analysis
             BVSRM cBvsrm;
@@ -825,11 +831,12 @@ void BFGWAS::BatchRun (PARAM &cPar)
             cBvsrm.SE_beta = beta_sd;
 
             // Using individual data
-            /*time_start=clock();
+            //time_start=clock();
             //cBvsrm.MCMC(X_Genotype, y, 1);
-            cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
-            cBvsrm.CopyToParam(cPar);*/
-            
+            //cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
+            //cBvsrm.CopyToParam(cPar);
+            //cout << "\n MCMC cost " << cPar.time_opt << " minutes \n";
+
             FreeUCharMatrix(X_Genotype, cPar.ns_test); 
 			gsl_vector_free (y);
 
@@ -843,6 +850,8 @@ void BFGWAS::BatchRun (PARAM &cPar)
             time_start=clock();
             cBvsrm.MCMC_SS(LD, Xty);
             cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
+            cout << "\n MCMC_SS costs " << cPar.time_opt << " minutes \n";
+
             cBvsrm.CopyToParam(cPar);
 			
     }
@@ -899,7 +908,7 @@ void BFGWAS::WriteLog (int argc, char ** argv, PARAM &cPar)
 		outfile<<"## random seed = "<<cPar.randseed<<endl;
 		outfile<<"## acceptance ratio = "<<(double)cPar.n_accept/(double)((cPar.w_step+cPar.s_step)*cPar.n_mh)<<endl;
 
-		outfile<<"## Region_PIP = "<<(double)cPar.region_pip/(double)(cPar.s_step)<<endl;
+		outfile<<"## Region_PIP = "<<(double)cPar.region_pip <<endl;
 
 	}else if (cPar.a_mode >= 51 && cPar.a_mode <= 54){
 		outfile<<"## Phenotype mean = "<<cPar.pheno_mean<<endl;	

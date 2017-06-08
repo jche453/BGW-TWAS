@@ -67,3 +67,6 @@ Thumbs.db
 *.exe
 *.out
 *.app
+
+# Test script
+test_script.txt

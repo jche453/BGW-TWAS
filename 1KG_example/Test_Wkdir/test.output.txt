@@ -11,7 +11,7 @@ Start reading annotation files: /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_exam
 with code file /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt
 Number of annotation categories: 6
 Number of variants per category: 2792, 42, 0, 273, 0, 582, 
-Readin files first time cost 0.495195mints 
+Readin files first time cost 0.476536mints 
 ## number of total individuals = 2504
 ## number of individuals with full phenotypes = 2504
 ## number of total SNPs = 31330
@@ -24,7 +24,7 @@ Center phenotype ...
 pheno_mean = 0.49401
 open vcf file second time ...
 read vcf file second time success ... 
-load genotype data cost 0.0865914mints
+load genotype data cost 0.0814911mints
 Run MCMC...
 Calculating Z_scores, standard errors of effect-sizes, LRT statistics, pvals ... 
 Trace of Genotype Matrix = 0.0550513
@@ -40,48 +40,208 @@ Initial effect-size variance per category = 10, 10, 10, 10, 10, 10,
 Initially selected number of variants in the model = 2
 Initial number of selected variants per category : 2, 0, 0, 0, 0, 0, 
 Running MCMC                               0.00%  & acceptance ratio 0.00
-acceptance percentage = 0.145169
+acceptance percentage = 0.141370
 # of selected variants per category: 
 2, 0, 0, 0, 0, 0, 
 loglike: 63.354399
-acceptance percentage = 0.145571
-# of selected variants per category: 
-2, 0, 0, 0, 0, 0, 
-loglike: 59.419014
-acceptance percentage = 0.145143
-# of selected variants per category: 
-2, 0, 0, 0, 0, 0, 
-loglike: 62.080268
-acceptance percentage = 0.145704
+acceptance percentage = 0.141632
 # of selected variants per category: 
 2, 0, 0, 0, 0, 0, 
 loglike: 63.354399
-acceptance percentage = 0.145590
+acceptance percentage = 0.141601
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 61.909340
+acceptance percentage = 0.141812
 # of selected variants per category: 
 2, 0, 0, 0, 0, 0, 
 loglike: 63.051757
-acceptance percentage = 0.144241
-# of selected variants per category: 
-2, 0, 0, 0, 0, 0, 
-loglike: 63.051757
-acceptance percentage = 0.143933
+acceptance percentage = 0.141816
 # of selected variants per category: 
 2, 0, 0, 0, 0, 0, 
 loglike: 63.301910
-acceptance percentage = 0.143992
+acceptance percentage = 0.141444
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.141348
 # of selected variants per category: 
 2, 0, 0, 0, 0, 0, 
 loglike: 63.354399
-acceptance percentage = 0.142992
+acceptance percentage = 0.141480
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.141540
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.141581
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 62.080268
+acceptance percentage = 0.141965
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.141594
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 62.080268
+acceptance percentage = 0.141379
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.141123
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.141152
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.141271
+# of selected variants per category: 
+1, 0, 0, 0, 0, 1, 
+loglike: 63.182063
+acceptance percentage = 0.141520
+# of selected variants per category: 
+1, 0, 0, 0, 0, 1, 
+loglike: 63.182063
+acceptance percentage = 0.141277
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.141201
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.140912
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 62.080268
+acceptance percentage = 0.140928
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.141262
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 62.074097
+acceptance percentage = 0.141532
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.141552
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 59.325528
+acceptance percentage = 0.141865
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.141669
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.141673
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.141652
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.141783
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.141861
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.142109
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.142120
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 62.074097
+acceptance percentage = 0.142143
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 62.074097
+acceptance percentage = 0.142201
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.142081
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.142091
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.142297
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.142521
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.142526
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.142343
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.142273
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.142466
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.142386
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.142541
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.051757
+acceptance percentage = 0.142641
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.301910
+acceptance percentage = 0.142551
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.142751
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 63.354399
+acceptance percentage = 0.142631
+# of selected variants per category: 
+2, 0, 0, 0, 0, 0, 
+loglike: 59.254595
+acceptance percentage = 0.142675
 # of selected variants per category: 
 2, 0, 0, 0, 0, 0, 
 loglike: 63.051757
 Running MCMC ==============================100.00%  & acceptance ratio 0.14
 MCMC completed ... 
 
-region_pip = 10000
+region_pip = 50000
 gamma acceptance percentage = 0.14
 # of selected variants per category: 2, 0, 0, 0, 0, 0, 
-beta_hat: 0.286306, -0.221539, 
-loglike: 63.354399
-k_save_sample = 10000
+beta_hat: 0.289937, -0.213086, 
+loglike: 61.909340
+k_save_sample = 50000
