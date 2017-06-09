@@ -2434,6 +2434,33 @@ bool BVSRM::ColinearTest(uchar ** X, const gsl_matrix * Xtemp, const gsl_matrix 
     return colinear;
 }
 
+
+bool BVSRM::ColinearTest_SS(const gsl_matrix *XtX_temp, const gsl_vector * Xtx_temp, gsl_vector * beta_temp, const double &xtx)
+{
+    bool colinear = 0;
+    double vreg;
+
+    if (LapackSolve(XtX_temp, Xtx_temp, beta_temp) !=0)
+        EigenSolve(XtX_temp, Xtx_temp, beta_temp);
+    
+    gsl_blas_ddot(Xtx_temp, beta_temp, &vreg);
+    //cout << "vreg = " << vreg << endl;
+    
+    double tR2 = 0.95;
+    double R2 = (vreg / xtx);
+
+    if ( (R2 >= tR2) && (R2 <= 1.1) ) {
+        colinear = 1;
+       // cout << "R2 in ColinearTest = " << R2 << endl;
+    }
+    else if ((R2 < -0.0) || (R2 > 1.0)){
+       colinear = 1;
+    }
+
+    return colinear;
+}
+
+
 //below fits MCMC for rho=1
 void BVSRM::CalcXtX (const gsl_matrix *X, const gsl_vector *y, const size_t s_size, gsl_matrix *XtX, gsl_vector *Xty)
 {
@@ -2653,6 +2680,9 @@ gsl_ran_discrete_t * BVSRM::MakeProposalSS(const vector< vector<double> > &LD, c
                 p_cond[j] = -std::numeric_limits<double>::max();
                 j_ind.push_back(0);
             }
+        }else{
+            p_cond[j] = -std::numeric_limits<double>::max();
+            j_ind.push_back(0);
         }
     }
     p_max = *std::max_element(p_cond, p_cond+(ns_neib));
@@ -2700,6 +2730,10 @@ gsl_ran_discrete_t * BVSRM::MakeProposalSS(const size_t &pos, double *p_cond, co
                 p_cond[j] = -std::numeric_limits<double>::max();
                 j_ind.push_back(0);
             }
+        }
+        else{
+            p_cond[j] = -std::numeric_limits<double>::max();
+            j_ind.push_back(0);
         }
     }
     p_max = *std::max_element(p_cond, p_cond+(ns_neib));
@@ -2812,7 +2846,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     
     //Initial parameters
     cout << "Start initializing MCMC ... \n";
-    InitialMCMC_SS (LD, rank_old, cHyp_old, pval); // Initialize rank and cHyp
+    InitialMCMC_SS (LD, Xty, rank_old, cHyp_old, pval); // Initialize rank and cHyp
     cout << "Initial rank_old : "; 
     PrintVector(rank_old);
 
@@ -3065,7 +3099,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
 
 
 //InitialMCMC_SS with Summary Statistics
-void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval)
+void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval)
 
 {
     //cout << "significant chisquare value : " << q_genome << endl;
@@ -3112,45 +3146,94 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, vector<size_t> &
             }
         } //take rank 0 if tracked no SNPs from the iniSNPfile
     }
-    else if(iniType == 0) {iniType = 1;}
-    else if(iniType == 1) {
-        cout << "Start with top variants.\n";
+    else if(iniType == 1 ) {
+        cout << "Start with top genome-wide significant variants.\n";
         rank.clear();
         for (size_t i=0; i<cHyp.n_gamma; ++i) {
             rank.push_back(i);
         }
-    } // Start with most significant variants from SVT
-    else if(iniType == 2 || iniType == 3) {
-        cout << "Start with top SVT SNPs not in LD > 0.95.\n";
-        size_t pos_i, pos_j, i=0;
-        double r2_max, r2_ij;
+    }
+    else if(iniType == 2  || iniType == 3) {
+        cout << "Start with Step-wise selected variants.\n";
+        vector< pair<size_t, double> > rank_loglr;
+        size_t pos_r, pos_j, radd, s_size;
+        double xtx, rtr;
+
+        double sig_lr = gsl_cdf_chisq_Qinv(5e-8, 1) / ((double) ni_test) ;
+        cout << "Genome-wide significant LRT/n is " << sig_lr << endl;
+
+        size_t topMarkers = 500;
+        if(topMarkers > ni_test) topMarkers = ni_test;
+        for(size_t i=1; i < topMarkers; i++){
+            rank_loglr.push_back( make_pair(i, pos_ChisqTest[i].second) );
+        }
         
         rank.clear();
         rank.push_back(0);
+        s_size = rank.size();
         // cout << "rank added: " << 0 << ", ";
+
+        gsl_matrix *XtX_cond=gsl_matrix_alloc (s_max, s_max);
+        gsl_vector *Xty_cond=gsl_vector_alloc (s_max);
+        gsl_vector *Xtx_cond=gsl_vector_alloc (s_max);
+        gsl_vector *beta_cond = gsl_vector_alloc (s_max);
         
-        while( (rank.size() < cHyp.n_gamma) && (i < (ns_test-1) )  )
+        for(size_t i = 1; i < s_max; i++)
         {
-            i++; // consider rank i
-            pos_i = mapRank2Order[0];
-            r2_max = 0.0;
+            s_size = rank.size();
+            SetSSgamma(LD, Xty, rank, XtX_cond, Xty_cond);
 
-            for(size_t j=0; j < rank.size(); j++)
+            gsl_matrix_const_view XtX_cond_temp = gsl_matrix_const_submatrix(XtX_cond, 0, 0, s_size, s_size);
+            gsl_vector_const_view Xty_cond_temp = gsl_vector_const_subvector(Xty_cond, 0, s_size);
+
+            // calculate beta-hat
+            gsl_vector_view beta_cond_temp = gsl_vector_subvector(beta_cond, 0, s_size);
+            CalcBeta(&XtX_cond_temp.matrix, &Xty_cond_temp.vector, &beta_cond_temp.vector);
+
+            // calculate conditioned residual variance
+            gsl_vector_const_view beta_cond_const = gsl_vector_const_subvector(beta_cond, 0, s_size);
+            rtr = CalcResVar(&XtX_cond_temp.matrix, &Xty_cond_temp.vector, &beta_cond_const.vector, yty);
+
+            gsl_vector_view Xtx_cond_temp = gsl_vector_subvector(Xtx_cond, 0, s_size);
+            for(size_t j=0; j < topMarkers; j++){
+                pos_j = mapRank2pos[ rank_loglr[j].first ];
+                rank_loglr[j].second = CalcLR_cond_SS(rtr, pos_j, LD, Xty, rank, &beta_cond_const.vector, &Xtx_cond_temp.vector);
+            }
+            stable_sort(rank_loglr.begin(), rank_loglr.end(), comp_lr); //sort conditional LRT statistics
+            cout << "Top conditioned LRT is " << rank_loglr[0].second << endl;
+                
+            if(rank_loglr[0].second > sig_lr )
             {
-                pos_j = mapRank2Order[rank[j]];
-                r2_ij = getR2(LD, pos_i, pos_j);
-                if(r2_ij > r2_max) {r2_max = r2_ij;}
-            }
 
-            if(r2_max < 0.95){
-                rank.push_back(i); // include rank i into the model
+                radd = rank_loglr[0].first;
+                pos_r = mapRank2Order[radd];
+                xtx = LD[pos_r][0];
+                SetXtx(LD, rank, pos_r, &Xtx_cond_temp.vector);
+
+                gsl_vector_const_view Xtx_cond_const = gsl_vector_const_subvector(Xtx_cond, 0, s_size);
+                if ( ColinearTest_SS(&XtX_cond_temp.matrix, &Xtx_cond_const.vector, &beta_cond_temp.vector, xtx) ) continue ;
+                else{
+                    rank.push_back(radd); // include rank r into initial model
+                    rank_loglr.erase(rank_loglr.begin());
+                }
+
             }
+            else  break;
         }
+        gsl_matrix_free(XtX_cond);
+        gsl_vector_free(Xty_cond);
+        gsl_vector_free(Xtx_cond);
+        gsl_vector_free(beta_cond);
     } 
-
+    else{
+        cout << "Start with the top leading variant.\n";
+        rank.clear();
+        rank.push_back(0);
+    } 
+    
     cHyp.n_gamma = rank.size();
     //cout << "number of snps = " << cHyp.n_gamma << endl;
-    cout << "Starting model has variants with ranks: \n"; PrintVector(rank);
+    cout << "Initial model with ranks: \n"; PrintVector(rank);
     
     cHyp.logp=log((double)cHyp.n_gamma/(double)ns_test);
     cHyp.h=pve_null;
@@ -3388,8 +3471,11 @@ double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &r
 
                 j_add = gsl_ran_discrete(gsl_r, gsl_s);
                 pos_add = (pos_remove - win) + j_add;
-                if((pos_add < 0) || (pos_add >= (long int)ns_test) || (pos_add == pos_remove))
+                if((pos_add < 0) || (pos_add >= (long int)ns_test) || (pos_add == pos_remove)){
+                    //cout << "j_add = " << j_add << "; pos_add = " << pos_add << endl;
                     perror("ERROR proposing switch snp\n"); //new snp != removed snp
+                }
+
                 r_add = mapPos2Rank[pos_add];
 
                 //cout << "XtX_cond : \n"; PrintMatrix(XtX_cond, s_size, s_size);
@@ -3470,5 +3556,42 @@ double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &r
     //}
     mapRank2in.clear();
     return logp;
+}
+
+
+void BVSRM::SetXtX(const vector< vector<double> > &LD, const vector<size_t> rank, gsl_matrix *XtX){
+
+    double xtx_ij = 0.0;
+    size_t pos_i, pos_j;
+
+    for(size_t i=0; i<rank.size(); i++){
+
+        pos_i = mapRank2pos[ rank[i] ] ;
+        gsl_matrix_set(XtX, i, i, LD[pos_i][0]);
+
+        for(size_t j=1; j<rank.size(); j++){
+            pos_j = mapRank2pos[ rank[j] ] ;
+            xtx_ij = getXtX(LD, pos_i, pos_j);
+            gsl_matrix_set(XtX, i, j, xtx_ij);
+        }
+
+    }
+
+    return ;
+}
+
+
+void BVSRM::SetXtx(const vector< vector<double> > &LD, const vector<size_t> rank, const size_t &pos_j, gsl_vector *Xtx_temp){
+
+    double xtx_ij = 0.0;
+    size_t pos_i;
+
+    for(size_t i=0; i<rank.size(); i++){
+        pos_i = mapRank2pos[ rank[i] ] ;
+        xtx_ij = getXtX(LD, pos_i, pos_j);
+        gsl_vector_set(Xtx_temp, i, xtx_ij);
+    }
+
+    return ;
 }
 

@@ -23,6 +23,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 #include <iomanip>
 #include <cmath>
@@ -102,6 +103,9 @@ double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size
 double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j );
 
 double CalcResVar(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &yty); 
+
+void CalcBeta(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, gsl_vector * beta_cond);
+
 
 #endif
 

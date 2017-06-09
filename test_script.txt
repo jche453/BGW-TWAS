@@ -12,7 +12,7 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
 -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \
--o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 500000 -saveSS > ${test_dir}/test_SS.output.txt &
+-o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 500000 -saveSS -zipSS > ${test_dir}/test_SS.output.txt &
 
 
 ######################
@@ -29,15 +29,20 @@ time ${bfGWAS_dir}/bin/Estep_mcmc \
 -o CFH_REGION_1KG -initype 3 -rv 1 > ${test_dir}/test.output.txt &
 
 
-
 ######################### Test on AMD data 
 bfGWAS_SS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS"
 test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
 
+## Test on a sub amd dataset
+time ${bfGWAS_SS_dir}/bin/Estep_mcmc -vcf ${test_dir}/amd_chr1_test.vcf.gz -p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz -a ${test_dir}/Anno_amd_chr1_test.gz -fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 -o amd_test_SS -w 5 -s 5 -initype 3 -rv 1 -LDwindow 500000 -saveSS -zipSS > ${test_dir}/test_SS.output.txt &
 
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc -vcf ${test_dir}/amd_chr1_test.vcf.gz -p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz -a ${test_dir}/Anno_amd_chr1_test.gz -fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 -o amd_test_SS -w 5 -s 5 -initype 3 -rv 1 -LDwindow 500000 -saveSS > ${test_dir}/test_SS.output.txt &
 
+## Memory usage : 438MB ; computation time :
 
+bfGWAS_SS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS"
+test_dir="/net/wonderland/home/yjingj/AMD/Test_bfGWAS_SS"
+
+time ${bfGWAS_SS_dir}/bin/Estep_mcmc -vcf /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/chr1_Loci_1_sub1.vcf.gz -p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz -a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_chr1_Loci_1_sub1.gz -fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 -o amd_test_SS -w 50000 -s 50000 -initype 3 -rv 1 -LDwindow 500000 -saveSS -zipSS > ${test_dir}/amd_test_SS.output.txt &
 
 
 ## bfGWAS Memory usage : 438MB ; computation time : 
@@ -46,11 +51,6 @@ bfGWAS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS"
 test_dir="/net/wonderland/home/yjingj/AMD/Test_bfGWAS_SS"
 
 time ${bfGWAS_dir}/bin/Estep_mcmc -vcf /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/chr1_Loci_1_sub1.vcf.gz -p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz -a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_chr1_Loci_1_sub1.gz -fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 -o amd_test -w 50000 -s 50000 -initype 3 -rv 1 > ${test_dir}/amd_test.output.txt &
-
-
-
-## Memory usage : 438MB ; computation time :
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc -vcf /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/chr1_Loci_1_sub1.vcf.gz -p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz -a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_chr1_Loci_1_sub1.gz -fcode /net/wonderland/ home/yjingj/AMD/AnnoPartition/FuncAnno5.txt -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 -o amd_test_SS -w 50000 -s 50000 -initype 3 -rv 1 -LDwindow 500000 -saveSS > ${test_dir}/amd_test_SS.output.txt &
 
 
 

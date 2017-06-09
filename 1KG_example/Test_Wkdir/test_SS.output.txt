@@ -8,7 +8,7 @@ Done reading vcf file first time ...
 Start reading annotation files ...
 Number of annotation categories: 6
 Number of variants per category: 2792, 42, 0, 273, 0, 582, 
-Reading files first time cost 0.510436 mints 
+Reading files first time cost 0.461446 mints 
 
 pheno_mean = 0.49401
 Reorder phenotype for reading vcf/geno files ... 
@@ -17,14 +17,22 @@ Analyzed sample size ni_test = 2504
 
 Starting reading genotype files for the second time ...
 Done reading vcf file second time ... 
-Load genotype data cost 0.0839278 mints
+Load genotype data cost 0.0783389 mints
 
 Start calculating summary statistics ... 
 pheno_var = 0.494207
-Get SS costs 1.18545 minutes 
+Get SS costs 1.15205 minutes 
 
 Start writing summary statistics ... 
-Write SS costs 0.0935714 minutes 
+
+Tabixing .LD.gz files ... 
+
+LD output ./output/CFH_REGION_1KG_SS.LD.gz has been tabixed
+
+Tabixing .beta.gz files ... 
+
+SS output ./output/CFH_REGION_1KG_SS.beta.gz has been tabixed
+Write SS costs 0.142028 minutes 
 
 Running MCMC with Summary Statistics ... 
 yty is 1237
@@ -32,8 +40,10 @@ Generate maps ...
 Calculate proposal distribution for gamma 
 Number of variants with p-value < 5e-8 : 28
 Start initializing MCMC ... 
-Start with top SVT SNPs not in LD > 0.95.
-Starting model has variants with ranks: 
+Start with Step-wise selected variants.
+Genome-wide significant LRT/n is 0.00955596
+Top conditioned LRT is 0.00772005
+Initial model with ranks: 
 0, 
 rv = phenotype variance  = 0.494207
 Initial causal probability per category = 1e-06, 1e-06, 1e-06, 1e-06, 1e-06, 1e-06, 
@@ -255,37 +265,37 @@ acceptance percentage = 0.288157
 1, 0, 0, 0, 0, 0, 
 loglike: 19.471398
 cHyp_old.n_gamma= 1
-acceptance percentage = 0.287923
+acceptance percentage = 0.287924
 # of selected variants per category: 
 1, 0, 0, 0, 0, 0, 
 loglike: 20.506027
 cHyp_old.n_gamma= 1
-acceptance percentage = 0.287995
+acceptance percentage = 0.287996
 # of selected variants per category: 
 1, 0, 0, 0, 0, 0, 
 loglike: 20.506027
 cHyp_old.n_gamma= 1
-acceptance percentage = 0.288034
+acceptance percentage = 0.288035
 # of selected variants per category: 
 1, 0, 0, 0, 0, 0, 
 loglike: 19.473684
 cHyp_old.n_gamma= 1
-acceptance percentage = 0.287961
+acceptance percentage = 0.287962
 # of selected variants per category: 
 1, 0, 0, 0, 0, 0, 
 loglike: 19.473684
 cHyp_old.n_gamma= 1
-acceptance percentage = 0.288116
+acceptance percentage = 0.288117
 # of selected variants per category: 
 1, 0, 0, 0, 0, 0, 
 loglike: 20.506027
 cHyp_old.n_gamma= 1
-acceptance percentage = 0.287946
+acceptance percentage = 0.287947
 # of selected variants per category: 
 1, 0, 0, 0, 0, 0, 
 loglike: 19.473684
 cHyp_old.n_gamma= 1
-acceptance percentage = 0.287975
+acceptance percentage = 0.287976
 # of selected variants per category: 
 1, 0, 0, 0, 0, 0, 
 loglike: 19.473684
@@ -301,4 +311,4 @@ loglike: 20.506027
 k_save_sample = 50000
 logpost_max = 20.506027
 
-MCMC_SS costs 0.338493 minutes 
+MCMC_SS costs 0.328747 minutes 

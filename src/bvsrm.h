@@ -270,11 +270,17 @@ public:
 
     double ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &rank_new, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, const vector< vector<double> > &LD, const vector<double> &Xty, const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const gsl_vector *beta_old, gsl_matrix *XtX_new, gsl_vector *Xty_new);
 
-    void InitialMCMC_SS (const vector< vector<double> > &LD, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval);
+    void InitialMCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval);
 
     void MCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty);
 
     void WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_ChisqTest, const vector<double> pval);
+
+    bool ColinearTest_SS(const gsl_matrix *XtX_temp, const gsl_vector * Xtx_temp, gsl_vector * beta_temp, const double &xtx);
+
+    void SetXtx(const vector< vector<double> > &LD, const vector<size_t> rank, const size_t &pos_j, gsl_vector *Xtx_temp); 
+
+    void SetXtX(const vector< vector<double> > &LD, const vector<size_t> rank, gsl_matrix *XtX);
 
     
 };

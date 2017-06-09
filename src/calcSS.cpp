@@ -269,6 +269,10 @@ double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const siz
 }
 
 
+
+
+
+
 double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ){
 
     double xtx_i, xtx_j, xtx_ij=0.0, r2_ij = 0.0;
@@ -283,7 +287,6 @@ double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size
 
     return r2_ij;
 }
-
 
 
 
@@ -310,6 +313,20 @@ double CalcResVar(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, const
 }
 
 
+void CalcBeta(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, gsl_vector * beta_cond)
+{
+    size_t s_size = Xty_cond->size;
+
+    gsl_matrix *XtXinv = gsl_matrix_alloc(s_size, s_size);
+
+    gsl_matrix_memcpy(XtXinv, XtX_cond);
+
+    LapackSolve(XtXinv, Xty_cond, beta_cond);
+
+    gsl_matrix_free(XtXinv);
+
+    return ;
+}
 
 
 
