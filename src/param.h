@@ -175,15 +175,12 @@ public:
     int iniType;
     bool FIXHYP;
     
-    bool saveGeno;
-    bool saveSS;
-    bool zipSS;
+    bool calc_K, saveGeno, saveSS, zipSS;
     long int LDwindow;
 
     string iniSNPfile;
     string hypfile;
-    double rv;
-    double pheno_mean, pheno_var;
+    double rv, pheno_mean, pheno_var;
     
 	// IO related parameters
     size_t UnCompBufferSize;
@@ -287,7 +284,7 @@ public:
 	void CheckParam (); 
 	void CheckData ();	
 	void PrintSummary ();
-	void ReadGenotypes (uchar **X, gsl_matrix *K, const bool calc_K);
+	void ReadGenotypes (uchar **X, gsl_matrix *K);
 	void WriteGenotypes(uchar **X);
     
 	//void CheckCvt ();

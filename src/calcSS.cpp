@@ -42,7 +42,9 @@ void CALCSS::CopyFromParam (PARAM &cPar)
     indicator_idv=cPar.indicator_idv;   
     indicator_snp=cPar.indicator_snp;
 
-    SNPmean = cPar.SNPmean;   
+    SNPmean = cPar.SNPmean; 
+    pheno_mean = cPar.pheno_mean;
+    pheno_var = cPar.pheno_var;
 
     snpInfo=cPar.snpInfo;
     
@@ -52,16 +54,18 @@ void CALCSS::CopyFromParam (PARAM &cPar)
 //calculat LD correlation matrix
 void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta,vector<double> &beta_sd){
 
+    cout << "\nStart calculating summary statistics ... \n";
+
     Gvec.assign(n_type, 0.0); // set 
 
-    // center phenotype 
-    pheno_mean = CenterVector(y); 
+    // y is centered by cPar.CopyPheno() 
     double yty;
     gsl_blas_ddot(y, y, &yty); // yty is the sum square of total SST
     pheno_var = yty / ((double)(ni_test-1)) ;
+    cout << "pheno_var = " << pheno_var << endl;
 
     // standardize phenotype y
-    gsl_vector_scale(y, 1.0 / sqrt(pheno_var)); 
+    // gsl_vector_scale(y, 1.0 / sqrt(pheno_var)); 
     gsl_blas_ddot(y, y, &yty); // calculate yty for one more time after standardization
     
     //cout << "create UcharTable ...\n";
@@ -133,7 +137,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 
 void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &beta_sd)
 {
-    cout << "\nStart writing SS ... \n";
+    cout << "\nStart writing summary statistics ... \n";
     String fout = file_out.c_str();
 
     String LD_file_str = "./output/" + fout;

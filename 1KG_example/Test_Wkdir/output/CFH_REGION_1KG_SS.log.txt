@@ -1,9 +1,9 @@
 ##
 ## Software Version = bfGWAS_SS_MCMC
 ##
-## Command Line Input = -vcf /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz -fcode /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -hfile /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 -o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 1000000 
+## Command Line Input = -vcf /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz -fcode /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -hfile /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 -o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 500000 -saveSS 
 ##
-## Date = Thu Jun  8 17:51:04 2017
+## Date = Fri Jun  9 13:42:50 2017
 
 ##
 ## Summary Statistics:
@@ -11,23 +11,23 @@
 ## number of analyzed individuals = 2504
 ## number of total SNPs = 31330
 ## number of analyzed SNPs = 3689
-## Phenotype mean = 4.09062e-16
-## Phenotype var = 0.250064
+## Phenotype mean = 0.49401
+## Phenotype var = 0.494207
 ##
 ## MCMC related:
 ## initial value of |gamma| = 1
 ## random seed = 2016
-## acceptance ratio = 0.006329
+## acceptance ratio = 0.287977
 ## Region_PIP = 1
 ##
 ## Computation Time:
-## total computation time = 3.15851 min 
+## total computation time = 2.21692 min 
 ## computation time break down: 
 ##      time on proposal = 4.94066e-324 min 
-##      time on mcmc = 0.670128 min 
+##      time on mcmc = 0.338493 min 
 ##      time on Omega = 0 min 
-Accept #add=164, total add step = 330396
-Accept #delete=163, total delete step = 339928
-Accept #switch=6002, total switch step = 329676
+Accept #add=2207, total add step = 330453
+Accept #delete=2207, total delete step = 339872
+Accept #switch=283563, total switch step = 329675
 Accept #other=0, total other step = 0
 ##

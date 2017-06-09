@@ -1745,7 +1745,7 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
         exit(-1);
     }
     
-    if (calc_K==true) {gsl_matrix_set_zero (K);}
+    if (calc_K) {gsl_matrix_set_zero (K);}
     
     gsl_vector *genotype=gsl_vector_alloc (ni_test);
     uchar *geno_uchar = new uchar[ni_test];
@@ -1963,7 +1963,7 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
             if(vtx < 0.00000001)
             {cout << "snp has x'x = " << setprecision(9) << vtx << endl;} */
             
-            if (calc_K==true) {gsl_blas_dsyr (CblasUpper, 1.0, genotype, K);}
+            if (calc_K) {gsl_blas_dsyr (CblasUpper, 1.0, genotype, K);}
             
             c_snp++;
             ctest_snp++;
@@ -1972,7 +1972,7 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
     // cout << "ctest_snp = " << c_snp << "; ns_test = " << ns_test << endl;
      //cout << "SNPmean size = " << SNPmean.size() << endl;
 
-    if (calc_K==true) {
+    if (calc_K) {
         gsl_matrix_scale (K, 1.0/(double)ns_test);
         
         for (size_t i=0; i<genotype->size; ++i) {
@@ -2008,7 +2008,7 @@ bool ReadFile_geno (const string &file_geno, const vector<bool> &indicator_idv, 
     size_t n_miss, c_idv, ctest_idv, c_snp=0, ctest_snp=0, tab_count, pheno_index;
     int result;
 	
-	if (calc_K==true) {gsl_matrix_set_zero (K);}
+	if (calc_K) {gsl_matrix_set_zero (K);}
 	
 	gsl_vector *genotype=gsl_vector_alloc (ni_test);
     uchar *geno_uchar = new uchar[ni_test];
@@ -2122,7 +2122,7 @@ bool ReadFile_geno (const string &file_geno, const vector<bool> &indicator_idv, 
                 memcpy(X[ctest_snp], geno_uchar, ni_test);
             }
 
-		if (calc_K==true) {gsl_blas_dsyr (CblasUpper, 1.0, genotype, K);}
+		if (calc_K) {gsl_blas_dsyr (CblasUpper, 1.0, genotype, K);}
 		
 		c_snp++;
         ctest_snp++;
@@ -2131,7 +2131,7 @@ bool ReadFile_geno (const string &file_geno, const vector<bool> &indicator_idv, 
 
     if(c_snp != indicator_snp.size() ){cerr << "compressed variant number dose not equal to analyzed variant number!" << endl; exit(-1);}
 	
-    if (calc_K==true) {
+    if (calc_K) {
         gsl_matrix_scale (K, 1.0/(double)ctest_snp);
         
         for (size_t i=0; i<genotype->size; ++i) {
@@ -2179,7 +2179,7 @@ bool ReadFile_bed (const string &file_bed, vector<bool> &indicator_idv, vector<b
 		b=ch[0];
 	}
 	
-	if (calc_K==true) {gsl_matrix_set_zero (K);}
+	if (calc_K) {gsl_matrix_set_zero (K);}
 	
     //cout << "ni_test = " << ni_test << endl;
 	gsl_vector *genotype = gsl_vector_alloc (ni_test);
@@ -2253,7 +2253,7 @@ bool ReadFile_bed (const string &file_bed, vector<bool> &indicator_idv, vector<b
             memcpy(X[c_snp], geno_uchar, sourceBufferSize);
         }
 		
-		if (calc_K==true) {gsl_blas_dsyr (CblasUpper, 1.0, genotype, K);}
+		if (calc_K) {gsl_blas_dsyr (CblasUpper, 1.0, genotype, K);}
 		
 		c_snp++;
 	}
@@ -2262,7 +2262,7 @@ bool ReadFile_bed (const string &file_bed, vector<bool> &indicator_idv, vector<b
     
 	if(c_snp != ns_test) cout <<"# of readed SNP not equal to ns_test \n";
 	
-	if (calc_K==true) {
+	if (calc_K) {
 		gsl_matrix_scale (K, 1.0/(double)ns_test);
 		
 		for (size_t i=0; i<genotype->size; ++i) {

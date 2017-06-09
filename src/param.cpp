@@ -83,7 +83,7 @@ void CalcWeight(const vector<bool> &indicator_func, vector<double> &weight, cons
 
 
 PARAM::PARAM(void):
-vscale(0.0), iniType(3), saveGeno(0), saveSS(0), zipSS(1), 
+vscale(0.0), iniType(3), calc_K(0), saveGeno(0), saveSS(0), zipSS(0), 
 LDwindow(500000), rv(1.0), Compress_Flag(0), 
 mode_silence (false), a_mode (0), k_mode(1), d_pace (100000),
 GTfield("GT"), file_out("result"), 
@@ -110,6 +110,7 @@ bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs){
 //obtain ns_total, ng_total, ns_test, ni_test, n_type
 void PARAM::ReadFiles (void) 
 {
+	cout<<"Start reading files for the first time ...\n";
 	string file_str;
 	
 	// read the set of to be analyzed SNP ids if given file_snps
@@ -132,7 +133,7 @@ void PARAM::ReadFiles (void)
 		ProcessPheno();
 		
 		file_str=file_bfile+".bed";
-		cout << "First time reading Plink bed file: " << file_str << "\n";
+		cout << "First time reading Plink bed file: \n";
 		if (ReadFile_bed (file_str, setSnps, indicator_idv, indicator_snp, snpInfo, PhenoID2Ind, ni_test, ni_total, maf_level, miss_level, hwe_level, ns_test, ns_total)==false) {error=true;}
     }else{
     	if (!file_pheno.empty()){
@@ -168,7 +169,8 @@ void PARAM::ReadFiles (void)
 	}
 
     if ( (!file_anno.empty()) && (!file_func_code.empty()) ) {
-    	cout << "Start reading annotation files: " << file_anno << " \nwith code file " << file_func_code << "\n";
+    	cout << "Start reading annotation files ...\n";
+    	//cout << file_anno << " \nwith code file " << file_func_code << "\n";
         if (ReadFile_anno (file_anno, file_func_code, mapFunc2Code, indicator_snp, snpInfo, n_type, mFunc)==false) {error=true;}
     }
     else {
@@ -327,11 +329,14 @@ void PARAM::PrintSummary ()
 }
 
 
-void PARAM::ReadGenotypes (uchar **X, gsl_matrix *K, const bool calc_K) {
+void PARAM::ReadGenotypes (uchar **X, gsl_matrix *K) {
  
+ 	cout << "\nStarting reading genotype files for the second time ...\n";
     string file_str;
     UnCompBufferSize = (ni_test) * sizeof(uchar);
    // cout << "UnCompBufferSize = " << UnCompBufferSize << endl;
+
+    if(calc_K) cout << "Kinship matrix is calculated here.\n";
     
 	if (!file_bfile.empty()) {
 		file_str=file_bfile+".bed";
@@ -498,6 +503,7 @@ void PARAM::CheckCvt ()
 //reorder phenotypes
 void PARAM::ReorderPheno(gsl_vector *y)
 {
+	cout << "Reorder phenotype for reading vcf/geno files ... "<< endl;
     if (VcfSampleID.size() < ni_test) {
         cerr << "Sample size in genotype file" <<  VcfSampleID.size() << "< ni_test: " << ni_test << endl;
         exit(-1);
@@ -531,7 +537,7 @@ void PARAM::ReorderPheno(gsl_vector *y)
         }
     }
     ni_test = c_ind;
-    cout << "\n Reorder phenotypes, final analyzed sample size ni_test = " << ni_test << endl;
+    cout << "Finished reordering phenotypes. \nAnalyzed sample size ni_test = " << ni_test << endl;
     gsl_vector_memcpy(y, ytemp);
     gsl_vector_free(ytemp);
 }
@@ -574,10 +580,11 @@ void PARAM::CopyPheno (gsl_vector *y)
 	pheno_mean = 0.0;
 	
 	for (size_t i=0; i<indicator_idv.size(); ++i) {
-		if (indicator_idv[i]==0) {continue;}
-		gsl_vector_set (y, ci_test, pheno[i]);
-		pheno_mean += pheno[i];
-		ci_test++;
+		if (indicator_idv[i]) {
+			gsl_vector_set (y, ci_test, pheno[i]);
+			pheno_mean += pheno[i];
+			ci_test++;
+		}
 	}
 	pheno_mean /= (double) ci_test;
 	

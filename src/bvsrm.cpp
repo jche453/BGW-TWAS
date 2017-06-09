@@ -70,6 +70,7 @@ void BVSRM::CopyFromParam (PARAM &cPar)
 	l_min=cPar.h_min;	
 	l_max=cPar.h_max;  
 	pheno_mean=cPar.pheno_mean;
+    pheno_var=cPar.pheno_var;
 	
 	time_UtZ=0.0;
 	time_Omega=0.0;
@@ -786,7 +787,7 @@ double BVSRM::CalcPveLM (const gsl_matrix *UtXgamma, const gsl_vector *Uty, cons
 void BVSRM::setHyp(double theta_temp, double subvar_temp){
         
     // Default initial values   
-    cout << "rv from command line = " << rv << endl;
+    cout << "rv = phenotype variance  = " << rv << endl;
     tau = 1.0 / rv; logrv = log(2.0 * M_PI * rv);
 
     theta.assign(n_type, theta_temp);
@@ -806,7 +807,7 @@ void BVSRM::setHyp(double theta_temp, double subvar_temp){
             cout << "Error opening file " << hypfile << endl; 
             exit(-1);
         }
-        cout << "load hyp from hypfile... " << hypfile << endl;
+        //cout << "load hyp from hypfile... " << hypfile << endl;
         while (!safeGetline(infile, line).eof()) {
             if ((line[0] == 'h') || (line[0] == '#') || (line[0] == 'p')) {
                 continue;
@@ -1719,9 +1720,8 @@ void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
     gsl_vector *Xtz_new=gsl_vector_alloc (s_max);
     gsl_vector *beta_new=gsl_vector_alloc (s_max);
     
-    double ztz=0.0;
+    double ztz=0.0, mean_z=0.0;
     gsl_vector_memcpy (z, y);
-    double mean_z = CenterVector (z); // center phenotype in case
 
     gsl_blas_ddot(z, z, &ztz); // ztz is the sum square of total SST
     pheno_var = ztz / ((double)(ni_test-1)) ;
@@ -1827,7 +1827,7 @@ void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
     //cout << "tau = " << tau << "; log(2pi*rv) = " <<logrv << endl;
 
     //Initial parameters
-    cout << "Start initializing MCMC ... \n";
+    cout << "\nStart initializing MCMC ... \n";
     InitialMCMC (X, z, rank_old, cHyp_old, pos_loglr, snp_pos); // Initialize rank and cHyp
        
     inv_subvar.assign(n_type, 0.0), log_subvar.assign(n_type, 0.0);
@@ -1904,7 +1904,7 @@ void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
 
     for (size_t t=0; t<total_step; ++t) {
         
-       if (t%d_pace==0 || t==total_step-1) {ProgressBar ("Running MCMC ", t, total_step-1, (double)n_accept/(double)(t*n_mh+1));
+       if (t%d_pace==0 || t==total_step-1) {ProgressBar ("\nRunning MCMC ", t, total_step-1, (double)n_accept/(double)(t*n_mh+1));
                 cout << endl;
             }
         //		if (t>10) {break;}
@@ -2611,7 +2611,7 @@ double BVSRM::CalcLR_cond_SS(const double &rtr, const size_t pos_j, const vector
     xtr_j = Xty[pos_j] - Xtxb_j;
     xtx_j = getXtX(LD, pos_j, pos_j);
 
-    lrt = rtr - xtr_j * xtr_j / xtx_j ;
+    if(xtx_j>0) lrt = rtr - xtr_j * xtr_j / xtx_j ;
 
     if( lrt <= 0) 
     {
@@ -2724,11 +2724,12 @@ gsl_ran_discrete_t * BVSRM::MakeProposalSS(const size_t &pos, double *p_cond, co
 // MCMC_SS function
 void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty) {
     
-    //cout << "Running MCMC with Summary Statistics ... \n ";
+    cout << "\nRunning MCMC with Summary Statistics ... \n";
     //cout << "# of unique function types = " << n_type << endl;
 
     // obtain yty from pheno_var
-    yty = pheno_var * ni_test ;
+    yty = pheno_var * (double)(ni_test-1) ;
+    rv = pheno_var;
     cout << "yty is " << yty << endl;
     
     //new model related
@@ -2771,7 +2772,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     stable_sort (pval.begin(), pval.end()); // sort pval
     // PrintVector(pval, 10);
     
-    cout << "Generate maps ... \n ";
+    cout << "Generate maps ... \n";
     size_t pos;
     for (size_t i=0; i<ns_test; ++i) {
         mapRank2pos[i]=pos_ChisqTest[i].first;
@@ -2877,7 +2878,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
 
     for (size_t t=0; t<total_step; ++t) {
         
-       if (t%d_pace==0 || t==total_step-1) {ProgressBar ("Running MCMC ", t, total_step-1, (double)n_accept/(double)(t*n_mh+1));
+       if (t%d_pace==0 || t==total_step-1) {ProgressBar ("\nRunning MCMC ", t, total_step-1, (double)n_accept/(double)(t*n_mh+1));
                 cout << endl;
             }
         
@@ -3235,7 +3236,8 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gs
     //cout << "R2 in CalcPosterior = " << R2 << endl;
      
     if (R2 > 1.0 || R2 < -0.0) {
-        cout << "R2 in CalcPosterior = " << R2 << endl;
+        cout << "Wrong R2 in CalcPosterior = " << R2 << endl;
+        cout << "Please try enlarging your LDwindow to at least 500KB!\n";
         Error_Flag=1;
     }
     else{
