@@ -172,7 +172,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
     ifprintf(LDout, "#ID\tCHR\tPOS\tREF\tALT\tPOSvec\tLDvec\n");
     
     //Write file for LD matrix by the order of chr/bp
-    for(size_t i=0; i<ni_test; i++){
+    for(size_t i=0; i<ns_test; i++){
         // write beta
         ifprintf(Beta_out, "%s\t%s\t%ld\t%s\t%s\t%g\t%g\t%g\n", snp_pos[i].rs.c_str(), snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), beta[i], beta_sd[i], snp_pos[i].maf);
 

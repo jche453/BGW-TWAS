@@ -5,7 +5,7 @@
 *.dll
 *.so
 
-./1KG_example/Test_Wkdir/*
+./1KG_example/Test_Wkdir/**
 
 # Packages #
 ############
