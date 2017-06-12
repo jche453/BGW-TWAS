@@ -12,7 +12,7 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
 -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \
--o CFH_REGION_1KG_SS -initype 3 -rv 1 -LDwindow 500000 -saveSS -zipSS > ${test_dir}/test_SS.output.txt &
+-o CFH_REGION_1KG_SS -initype 2 -rv 1 -LDwindow 500000 -saveSS -zipSS > ${test_dir}/test_SS.output.txt &
 
 
 ######################

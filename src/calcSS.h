@@ -69,6 +69,7 @@ public:
     bool Compress_Flag;
     vector<pair<int, double> > UcharTable;
     vector <double> Gvec;
+    vector <double> xtx_vec;
 
     string file_out;
     size_t ni_total, ni_test;   //number of individuals
@@ -94,15 +95,15 @@ public:
 
 };
 
-void getXy(const vector< vector<double> > &LD, const vector<double> &beta, vector <double> &Xty);
+void getXy(const vector< vector<double> > &LD, const vector<double> &beta, vector <double> &Xty, const vector<double> &xtx);
 
 void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > &pos_ChisqTest);
 
 double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ); 
 
-double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j );
+double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx);
 
-double CalcResVar(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &yty); 
+double CalcResVar(const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &yty); 
 
 void CalcBeta(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, gsl_vector * beta_cond);
 

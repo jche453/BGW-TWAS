@@ -52,7 +52,7 @@ void CALCSS::CopyFromParam (PARAM &cPar)
 }
 
 //calculat LD correlation matrix
-void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta,vector<double> &beta_sd){
+void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_sd){
 
     cout << "\nStart calculating summary statistics ... \n";
 
@@ -80,19 +80,15 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
     gsl_vector *xvec_j = gsl_vector_alloc(ni_test);
     gsl_vector *xbeta_i = gsl_vector_alloc(ni_test);
 
-    double xtx_ij, xty, xtx_i, beta_i, beta_sd_i;
-
-    LD.clear();
+    double xtx_ij, xty, xtx_i, beta_i, beta_sd_i, xtx_j, r2;
     beta.clear();
+    xtx_vec.clear();
 
     for (size_t i=0; i<ns_test; ++i) {
-
-        LD.push_back(vector<double>());
-
         //calculate xtx_i
         getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
         gsl_blas_ddot(xvec_i, xvec_i, &xtx_i);
-        LD[i].push_back(xtx_i);
+        xtx_vec.push_back(xtx_i);
 
         for (size_t j=0; j<n_type; j++) {
             if (snp_pos[i].indicator_func[j]) {
@@ -111,8 +107,21 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
         gsl_vector_scale(xbeta_i, -beta_i);
         gsl_vector_add(xbeta_i, y);
         gsl_blas_ddot(xbeta_i, xbeta_i, &beta_sd_i);
-        beta_sd_i = sqrt(beta_sd_i / ((double)ni_test * xtx_i));
+        beta_sd_i = sqrt( beta_sd_i / ((double)ni_test * xtx_i) );
         beta_sd.push_back(beta_sd_i);
+    }
+
+    LD.clear();
+    for (size_t i=0; i<ns_test; ++i) {
+
+        LD.push_back(vector<double>()); // save r2
+
+        //get xtx_i
+        xtx_i = xtx_vec[i];
+        LD[i].push_back(1.0);
+
+        // get x_i vector
+        getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
 
         if(i < (ns_test-1) ){
             //calculate xtx_ij 
@@ -120,7 +129,9 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
                 if( (snp_pos[j].chr == snp_pos[i].chr) && (snp_pos[j].bp <= snp_pos[i].bp + LDwindow) ){
                     getGTgslVec(X, xvec_j, snp_pos[j].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
                     gsl_blas_ddot(xvec_i, xvec_j, &xtx_ij);
-                    LD[i].push_back(xtx_ij);
+                    xtx_j = xtx_vec[j];
+                    r2 = (xtx_ij * xtx_ij) / (xtx_i * xtx_j) ;
+                    LD[i].push_back(r2);
                 }else{break;}
             }
         }
@@ -150,7 +161,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
         LD_file_str +=".LD.gz";
         LDout = ifopen(LD_file_str, "w", InputFile::BGZF);
 
-        beta_file_str += ".beta.gz";
+        beta_file_str += ".VarSS.gz";
         Beta_out = ifopen(beta_file_str, "w", InputFile::BGZF);
 
         if(LDout == NULL || Beta_out == NULL){
@@ -160,7 +171,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
         LD_file_str +=".LD";
         LDout = ifopen(LD_file_str, "w", InputFile::UNCOMPRESSED);
 
-        beta_file_str += ".beta";
+        beta_file_str += ".VarSS";
         Beta_out = ifopen(beta_file_str, "w", InputFile::UNCOMPRESSED);
 
         if(LDout == NULL || Beta_out == NULL){
@@ -168,13 +179,13 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
         }
     }
 
-    ifprintf(Beta_out, "#ID\tCHR\tPOS\tREF\tALT\tbeta\tbeta_sd\tMAF\n");
+    ifprintf(Beta_out, "#ID\tCHR\tPOS\tREF\tALT\tbeta\tbeta_sd\tMAF\txtx\n");
     ifprintf(LDout, "#ID\tCHR\tPOS\tREF\tALT\tPOSvec\tLDvec\n");
     
     //Write file for LD matrix by the order of chr/bp
     for(size_t i=0; i<ns_test; i++){
         // write beta
-        ifprintf(Beta_out, "%s\t%s\t%ld\t%s\t%s\t%g\t%g\t%g\n", snp_pos[i].rs.c_str(), snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), beta[i], beta_sd[i], snp_pos[i].maf);
+        ifprintf(Beta_out, "%s\t%s\t%ld\t%s\t%s\t%g\t%g\t%g\t%g\n", snp_pos[i].rs.c_str(), snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), beta[i], beta_sd[i], snp_pos[i].maf, xtx_vec[i]);
 
         // write LD
         ifprintf(LDout, "%s\t%s\t%ld\t%s\t%s\t", snp_pos[i].rs.c_str(), snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str());
@@ -209,7 +220,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
             printf("\nUnable to tabix %s\n", LD_file_str.c_str());
         }
 
-        printf("\nTabixing .beta.gz files ... \n");
+        printf("\nTabixing .VarSS.gz files ... \n");
         cmd = String("tabix -c \"#\" -s 2 -b 3 -e 3 -f ") + beta_file_str;
         sys_status = system(cmd.c_str());
         if ( sys_status == 0 ) {
@@ -224,12 +235,13 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
 }
 
 
-void getXy(const vector< vector<double> > &LD, const vector<double> &beta, vector <double> &Xty)
+void getXy(const vector< vector<double> > &LD, const vector<double> &beta, vector <double> &Xty, const vector<double> &xtx)
 {
+	//n is the sample size
     Xty.clear();
     double xty_i;
     for(size_t i=0; i<beta.size(); i++){
-        xty_i = beta[i] * LD[i][0];
+        xty_i = beta[i] * xtx[i];
         Xty.push_back(xty_i);
     }
     return;
@@ -251,18 +263,25 @@ void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <
     return;
 }
 
-double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ){
+double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx){
 
     double xtx_ij = 0.0;
 
     if(pos_i == pos_j){
-        xtx_ij = LD[pos_i][0];
+        xtx_ij = xtx[pos_i];
     }
-    else if(pos_i < pos_j)
+    else 
     {
-        if( (pos_j - pos_i) < LD[pos_i].size()  ) xtx_ij = LD[pos_i][pos_j - pos_i];        
-    }else{
-        if( (pos_i - pos_j) < LD[pos_j].size() ) xtx_ij = LD[pos_j][pos_i - pos_j];
+        if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
+            {
+                xtx_ij = LD[pos_i][pos_j - pos_i] * xtx[pos_i] * xtx[pos_j];   
+            }     
+        else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
+            {
+                xtx_ij = LD[pos_j][pos_i - pos_j] * xtx[pos_i] * xtx[pos_j];
+            }
+
+        xtx_ij = sqrt(xtx_ij) ;
     }
 
     return xtx_ij;
@@ -275,14 +294,20 @@ double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const siz
 
 double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ){
 
-    double xtx_i, xtx_j, xtx_ij=0.0, r2_ij = 0.0;
+    double r2_ij = 0.0;
 
-    xtx_ij = getXtX(LD, pos_i, pos_j);
-
-    if(xtx_ij > 0) { 
-        xtx_i = LD[pos_i][0];
-        xtx_j = LD[pos_j][0];
-        r2_ij = pow(xtx_ij, 2) / ( xtx_i * xtx_j ) ; 
+    if(pos_i == pos_j) {
+        r2_ij = 1.0;
+    }
+    else {
+        if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
+            {
+                r2_ij = LD[pos_i][pos_j - pos_i] ;   
+            }     
+        else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
+            {
+                r2_ij = LD[pos_j][pos_i - pos_j] ;
+            }
     }
 
     return r2_ij;
@@ -291,20 +316,13 @@ double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size
 
 
 
-double CalcResVar(const gsl_matrix *XtX_cond, const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &yty)
+double CalcResVar(const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &yty)
 {
-    double rtr, xtyb, bxtxb;
-    gsl_vector *XtXb = gsl_vector_alloc(beta_cond->size);
-    gsl_vector_set_zero (XtXb);
+    double rtr, xtyb;
 
     gsl_blas_ddot(Xty_cond, beta_cond, &xtyb);
 
-    gsl_blas_dgemv(CblasNoTrans, 1.0, XtX_cond, beta_cond, 0.0, XtXb);
-    gsl_blas_ddot(XtXb, beta_cond, &bxtxb);
-
-    rtr = yty - 2 * xtyb + bxtxb;
-
-    gsl_vector_free(XtXb);
+    rtr = yty - xtyb ;
 
     if(rtr <= 0)
         perror("Nonpositive residual variance!\n");

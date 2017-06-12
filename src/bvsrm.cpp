@@ -114,6 +114,7 @@ void BVSRM::CopyFromSS (CALCSS &SS) {
     pheno_mean = SS.pheno_mean;
     pheno_var = SS.pheno_var;
     Gvec = SS.Gvec;
+    xtx_vec = SS.xtx_vec;
     return;
 }
 
@@ -739,7 +740,7 @@ void BVSRM::SetXgammaAdd (uchar **X, const gsl_matrix *X_old, const gsl_matrix *
     gsl_vector_view Xtx_row = gsl_matrix_subrow(XtX_new, s_size, 0, s_size);
     gsl_blas_dgemv(CblasTrans, 1.0, &X1old.matrix, &xvec.vector, 0.0, &Xtx_col.vector);
     gsl_vector_memcpy(&Xtx_row.vector, &Xtx_col.vector);
-    gsl_matrix_set(XtX_new, s_size, s_size, XtX_diagvec[pos]);
+    gsl_matrix_set(XtX_new, s_size, s_size, xtx_vec[pos]);
     
     gsl_blas_ddot(&xvec.vector, y, &xty);
     gsl_vector_set(Xty_new, s_size, xty);
@@ -852,7 +853,7 @@ void BVSRM::InitialMCMC (uchar **X, const gsl_vector *Uty, vector<size_t> &rank,
     //cout << "significant chisquare value : " << q_genome << endl;
     cHyp.n_gamma=0;
     for (size_t i=0; i<pos_loglr.size(); ++i) {
-        if (2.0*pos_loglr[i].second>q_genome) {cHyp.n_gamma++;}
+        if (pos_loglr[i].second>q_genome) {cHyp.n_gamma++;}
     }
     //cout << "number of snps before adjust = " << cHyp.n_gamma << endl;
     if (cHyp.n_gamma<30) {cHyp.n_gamma=30;}
@@ -911,7 +912,7 @@ void BVSRM::InitialMCMC (uchar **X, const gsl_vector *Uty, vector<size_t> &rank,
         rank.clear();
         rank.push_back(0);
         posr = SNPrank_vec[0].first;
-        xtx = XtX_diagvec[posr];
+        xtx = xtx_vec[posr];
         // cout << "rank added: " << 0 << ", ";
         
         gsl_matrix * Xr = gsl_matrix_alloc(ni_test, cHyp.n_gamma);
@@ -947,7 +948,7 @@ void BVSRM::InitialMCMC (uchar **X, const gsl_vector *Uty, vector<size_t> &rank,
                 
                 rank.push_back(j);
                 posr = SNPrank_vec[j].first;
-                xtx = XtX_diagvec[posr];
+                xtx = xtx_vec[posr];
                 getGTgslVec(X, xvec, posr, ni_test, ns_test, SNPmean,CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable); // get geno column
             }
             i++;
@@ -1752,7 +1753,7 @@ void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
     vector<double> Z_scores;
 
     cout << "Calculating Z_scores, standard errors of effect-sizes, LRT statistics, pvals ... \n";
-    MatrixCalcLmLR (X, z, pos_loglr, ns_test, ni_test, SNPmean, Gvec, XtX_diagvec, Z_scores, SE_beta, pval_lrt, snp_pos, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable); //calculate trace_G or Gvec, Z_scores, SE_beta
+    MatrixCalcLmLR (X, z, pos_loglr, ns_test, ni_test, SNPmean, Gvec, xtx_vec, Z_scores, SE_beta, pval_lrt, snp_pos, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable); //calculate trace_G or Gvec, Z_scores, SE_beta
  //calculate trace_G or Gvec
     trace_G = VectorSum(Gvec) / double(ns_test);
     cout << "Trace of Genotype Matrix = " << trace_G << endl;
@@ -2282,18 +2283,17 @@ else{
 //calculate likelihood ratio statistic
 double BVSRM::CalcLR(const gsl_vector *z_res, const gsl_vector *x_vec, size_t posj){
     double LR;
-    double xtz_res, ztz_res, xtx_vec = XtX_diagvec[posj];
+    double xtz_res, ztz_res, xtx = xtx_vec[posj];
     
     gsl_blas_ddot(z_res, z_res, &ztz_res);
-    //gsl_blas_ddot(x_vec, x_vec, &xtx_vec);
     gsl_blas_ddot(x_vec, z_res, &xtz_res);
-    //cout << "ztz_res = " << ztz_res << "; xtx_vec = " << xtx_vec << "; xtz_res = " << xtz_res << endl;
-    //double ixtx = 1.0 / xtx_vec;
+    //cout << "ztz_res = " << ztz_res << "; xtx = " << xtx << "; xtz_res = " << xtz_res << endl;
+    //double ixtx = 1.0 / xtx;
     //double bhat = ixtx * xtz_res;
     //double V = (ixtx * ztz_res - bhat * bhat) / (ni_test);
     //double Z2 = bhat * bhat / V;
     //double VpW = V + Wvar;
-    LR = (ni_test)*(log(ztz_res)-log(ztz_res-xtz_res*xtz_res/xtx_vec));
+    LR = (ni_test)*(log(ztz_res)-log(ztz_res-xtz_res*xtz_res/xtx));
     //sqrt(VpW / V) * exp(-0.5 * Z2 * Wvar / VpW);
     //cout << "log LR = " << BF << ", ";
     return (LR);
@@ -2350,7 +2350,7 @@ bool BVSRM::ColinearTest(uchar ** X, const gsl_matrix * Xtemp, const gsl_matrix 
     bool colinear = 0;
     double vreg;
     size_t pos = SNPrank_vec[r_add].first;
-    double xtx = XtX_diagvec[pos];
+    double xtx = xtx_vec[pos];
     
     
     gsl_vector *beta_temp = gsl_vector_alloc(s_size);
@@ -2358,7 +2358,7 @@ bool BVSRM::ColinearTest(uchar ** X, const gsl_matrix * Xtemp, const gsl_matrix 
     gsl_vector *xvec_temp = gsl_vector_alloc(ni_test);
     getGTgslVec(X, xvec_temp, pos, ni_test, ns_test, SNPmean,CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
     //gsl_blas_ddot(xvec_temp, xvec_temp, &xtx);
-    //cout << "XtX_diagvec[pos] = "<< XtX_diagvec[pos] << "; xtx = " << xtx << endl;
+    //cout << "xtx_vec[pos] = "<< xtx_vec[pos] << "; xtx = " << xtx << endl;
     
     gsl_matrix_const_view Xgamma_sub=gsl_matrix_const_submatrix (Xtemp, 0, 0, Xtemp->size1, s_size);
     gsl_matrix_const_view XtX_sub=gsl_matrix_const_submatrix (XtX_temp, 0, 0, s_size, s_size);
@@ -2514,11 +2514,11 @@ void BVSRM::SetSSgamma(const vector< vector<double> > &LD, const vector<double> 
     for( size_t i=0; i < r_size; ++i){
         pos_i = mapRank2pos[rank[i]];
         gsl_vector_set(Xty_gamma, i, Xty[pos_i]);
-        gsl_matrix_set(XtX_gamma, i, i, LD[pos_i][0]);
+        gsl_matrix_set(XtX_gamma, i, i, xtx_vec[pos_i]);
 
         for(size_t j=(i+1); j < (r_size); ++j ){
             pos_j = mapRank2pos[rank[j]];
-            xtx_ij = getXtX(LD, pos_i, pos_j);
+            xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
             gsl_matrix_set(XtX_gamma, i, j, xtx_ij);
             gsl_matrix_set(XtX_gamma, j, i, xtx_ij);
         }
@@ -2547,11 +2547,11 @@ void BVSRM::SetSSgammaAdd (const vector< vector<double> > &LD, const vector<doub
     gsl_vector_memcpy(&Xtynew1_sub.vector, &Xty1_sub.vector);
     
     //Set SS for ranki
-    gsl_matrix_set(XtX_new, s_size, s_size, LD[pos][0]);
+    gsl_matrix_set(XtX_new, s_size, s_size, xtx_vec[pos]);
 
     for(size_t i=0; i < s_size; i++){
         pos_i = mapRank2pos[rank_old[i]];
-        xtx_i = getXtX(LD, pos_i, pos);
+        xtx_i = getXtX(LD, pos_i, pos, xtx_vec);
         gsl_matrix_set(XtX_new, s_size, i, xtx_i);
         gsl_matrix_set(XtX_new, i, s_size, xtx_i);
     }
@@ -2630,13 +2630,13 @@ double BVSRM::CalcLR_cond_SS(const double &rtr, const size_t pos_j, const vector
     for(size_t i=0; i<rank_cond.size(); i++)
     {
         pos_i = mapRank2pos[rank_cond[i]];
-        xtx_ij = getXtX(LD, pos_i, pos_j);
+        xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
         gsl_vector_set(Xtx_j, i, xtx_ij);
     }
 
     gsl_blas_ddot(Xtx_j, beta_cond, &Xtxb_j);
     xtr_j = Xty[pos_j] - Xtxb_j;
-    xtx_j = getXtX(LD, pos_j, pos_j);
+    xtx_j = xtx_vec[pos_j];
 
     if(xtx_j>0) lrt = rtr - xtr_j * xtr_j / xtx_j ;
 
@@ -2645,7 +2645,7 @@ double BVSRM::CalcLR_cond_SS(const double &rtr, const size_t pos_j, const vector
         perror("Nonpositive var in CalcLR_cond_SS() !!\n");
     }
     else{
-        lrt = (log(rtr) - log(lrt) ); // scaled by 1/n
+        lrt = (double)(ni_test) * (log(rtr) - log(lrt) ); // scaled by 1/n
     }
     
     return lrt;
@@ -2764,7 +2764,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     // obtain yty from pheno_var
     yty = pheno_var * (double)(ni_test-1) ;
     rv = pheno_var;
-    cout << "yty is " << yty << endl;
+    cout << "yty is " << yty << "; pheno_var = " << pheno_var << "; rv = " << rv << endl;
     
     //new model related
     gsl_vector *sigma_subvec_old = gsl_vector_alloc(s_max);
@@ -2922,7 +2922,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
             //repeat = 1;
             cHyp_new = cHyp_old;
             rank_new = rank_old;
-            logMHratio = ProposeGamma_SS (rank_old, rank_new, cHyp_old, cHyp_new, repeat, LD, Xty, XtX_old, Xty_old, beta_old, XtX_new, Xty_new); //JY
+            logMHratio = ProposeGamma_SS (rank_old, rank_new, cHyp_old, cHyp_new, repeat, LD, Xty, XtX_old, Xty_old, XtX_new, Xty_new); //JY
 
             //cout << "propose new rank: "; PrintVector(rank_new);
             //cout << "flag_gamma = " << flag_gamma << endl;
@@ -3153,14 +3153,14 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
             rank.push_back(i);
         }
     }
-    else if(iniType == 2  || iniType == 3) {
+    else if( iniType == 3) {
         cout << "Start with Step-wise selected variants.\n";
         vector< pair<size_t, double> > rank_loglr;
         size_t pos_r, pos_j, radd, s_size;
         double xtx, rtr;
 
-        double sig_lr = gsl_cdf_chisq_Qinv(5e-8, 1) / ((double) ni_test) ;
-        cout << "Genome-wide significant LRT/n is " << sig_lr << endl;
+        double sig_lr = gsl_cdf_chisq_Qinv(5e-8, 1) ;
+        cout << "Genome-wide significant LRT is " << sig_lr << endl;
 
         size_t topMarkers = 500;
         if(topMarkers > ni_test) topMarkers = ni_test;
@@ -3192,7 +3192,7 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
 
             // calculate conditioned residual variance
             gsl_vector_const_view beta_cond_const = gsl_vector_const_subvector(beta_cond, 0, s_size);
-            rtr = CalcResVar(&XtX_cond_temp.matrix, &Xty_cond_temp.vector, &beta_cond_const.vector, yty);
+            rtr = CalcResVar(&Xty_cond_temp.vector, &beta_cond_const.vector, yty);
 
             gsl_vector_view Xtx_cond_temp = gsl_vector_subvector(Xtx_cond, 0, s_size);
             for(size_t j=0; j < topMarkers; j++){
@@ -3207,7 +3207,7 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
 
                 radd = rank_loglr[0].first;
                 pos_r = mapRank2Order[radd];
-                xtx = LD[pos_r][0];
+                xtx = xtx_vec[pos_r];
                 SetXtx(LD, rank, pos_r, &Xtx_cond_temp.vector);
 
                 gsl_vector_const_view Xtx_cond_const = gsl_vector_const_subvector(Xtx_cond, 0, s_size);
@@ -3309,7 +3309,7 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gs
     //cout << "logdet_O = " << logdet_O << endl;
     
     //cout << "beta_hat from solve : "; PrintVector(beta_hat);
-    gsl_vector_mul(beta_hat, &sigma_sub.vector);
+    gsl_vector_mul(beta_hat, &sigma_sub.vector); // posterior estimates of beta
     //cout << "beta_hat: "; PrintVector(beta_hat);
     gsl_vector_view beta_sub=gsl_vector_subvector(beta, 0, s_size);
     
@@ -3351,7 +3351,7 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gs
 
 
 // Propose new indicator ranks with summary statistics
-double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &rank_new, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, const vector< vector<double> > &LD, const vector<double> &Xty, const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const gsl_vector *beta_old, gsl_matrix *XtX_new, gsl_vector *Xty_new)
+double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &rank_new, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, const vector< vector<double> > &LD, const vector<double> &Xty, const gsl_matrix *XtX_old, const gsl_vector *Xty_old, gsl_matrix *XtX_new, gsl_vector *Xty_new)
 {
     map<size_t, int> mapRank2in;
     double unif, logp = 0.0;
@@ -3454,19 +3454,10 @@ double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &r
                 gsl_matrix *XtX_cond=gsl_matrix_alloc (s_size, s_size);
                 gsl_vector *Xty_cond=gsl_vector_alloc (s_size);
                 gsl_vector *beta_cond = gsl_vector_alloc (s_size);
-                for(size_t j=0; j< (s_size+1) ; j++){
-                    if (j < col_id)
-                    {
-                        gsl_vector_set(beta_cond, j, gsl_vector_get(beta_old, j));
-                    }
-                    else if (j > col_id)
-                    {
-                        gsl_vector_set( beta_cond, (j-1), gsl_vector_get(beta_old, j) );
-                    } 
-                }
-
                 SetSSgammaDel(XtX_old, Xty_old, rank_old, col_id, XtX_cond, Xty_cond);
-                rtr = CalcResVar(XtX_cond, Xty_cond, beta_cond, yty); // residual variance
+                CalcBeta(XtX_cond, Xty_cond, beta_cond);
+                
+                rtr = CalcResVar(Xty_cond, beta_cond, yty); // residual variance
                 gsl_s = MakeProposalSS(LD, Xty, pos_remove, p_cond_remove, mapRank2in, beta_cond, rtr, rank_new);
 
                 j_add = gsl_ran_discrete(gsl_r, gsl_s);
@@ -3567,12 +3558,13 @@ void BVSRM::SetXtX(const vector< vector<double> > &LD, const vector<size_t> rank
     for(size_t i=0; i<rank.size(); i++){
 
         pos_i = mapRank2pos[ rank[i] ] ;
-        gsl_matrix_set(XtX, i, i, LD[pos_i][0]);
+        gsl_matrix_set(XtX, i, i, xtx_vec[pos_i]);
 
         for(size_t j=1; j<rank.size(); j++){
             pos_j = mapRank2pos[ rank[j] ] ;
-            xtx_ij = getXtX(LD, pos_i, pos_j);
+            xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
             gsl_matrix_set(XtX, i, j, xtx_ij);
+            gsl_matrix_set(XtX, j, i, xtx_ij);
         }
 
     }
@@ -3588,7 +3580,7 @@ void BVSRM::SetXtx(const vector< vector<double> > &LD, const vector<size_t> rank
 
     for(size_t i=0; i<rank.size(); i++){
         pos_i = mapRank2pos[ rank[i] ] ;
-        xtx_ij = getXtX(LD, pos_i, pos_j);
+        xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
         gsl_vector_set(Xtx_temp, i, xtx_ij);
     }
 

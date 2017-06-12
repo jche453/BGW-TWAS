@@ -88,7 +88,7 @@ public:
     vector< pair<size_t, size_t> > SNPorder_vec; //<pos, rank>
     vector< pair<size_t, size_t> > SNPrank_vec; //<pos, order>
     double GV, rv, tau, logrv;
-    vector<double> SE_beta, XtX_diagvec;
+    vector<double> SE_beta, xtx_vec;
     vector<double> SNPmean;
     
     
@@ -268,7 +268,7 @@ public:
 
     gsl_ran_discrete_t * MakeProposalSS(const size_t &pos, double *p_cond, const map<size_t, int> &mapRank2in);
 
-    double ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &rank_new, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, const vector< vector<double> > &LD, const vector<double> &Xty, const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const gsl_vector *beta_old, gsl_matrix *XtX_new, gsl_vector *Xty_new);
+    double ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &rank_new, const class HYPBSLMM &cHyp_old, class HYPBSLMM &cHyp_new, const size_t &repeat, const vector< vector<double> > &LD, const vector<double> &Xty, const gsl_matrix *XtX_old, const gsl_vector *Xty_old, gsl_matrix *XtX_new, gsl_vector *Xty_new);
 
     void InitialMCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval);
 

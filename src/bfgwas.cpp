@@ -844,7 +844,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
 
 		// calculate Xty, pval, pos_ChisqTest
         vector<double> Xty;
-        getXy(LD, beta, Xty); // convert beta, LD into Xty
+        getXy(LD, beta, Xty, cBvsrm.xtx_vec); // convert beta, LD into Xty
         getPval(beta, cBvsrm.SE_beta, cBvsrm.pval, cBvsrm.pos_ChisqTest);
      
        // Using summary statistics
