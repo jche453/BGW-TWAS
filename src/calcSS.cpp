@@ -322,6 +322,8 @@ double CalcResVar(const gsl_vector * Xty_cond, const gsl_vector * beta_cond, con
 
     gsl_blas_ddot(Xty_cond, beta_cond, &xtyb);
 
+    cout << "Regression R2 = " << xtyb / yty << endl;
+
     rtr = yty - xtyb ;
 
     if(rtr <= 0)

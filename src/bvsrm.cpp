@@ -2440,23 +2440,19 @@ bool BVSRM::ColinearTest_SS(const gsl_matrix *XtX_temp, const gsl_vector * Xtx_t
     bool colinear = 0;
     double vreg;
 
-    if (LapackSolve(XtX_temp, Xtx_temp, beta_temp) !=0)
+    if (LapackSolve(XtX_temp, Xtx_temp, beta_temp) != 0)
         EigenSolve(XtX_temp, Xtx_temp, beta_temp);
     
     gsl_blas_ddot(Xtx_temp, beta_temp, &vreg);
     //cout << "vreg = " << vreg << endl;
     
-    double tR2 = 0.95;
     double R2 = (vreg / xtx);
 
-    if ( (R2 >= tR2) && (R2 <= 1.1) ) {
+    if ( (R2 >= 0.95) || (R2 < -0.0) ) {
         colinear = 1;
-       // cout << "R2 in ColinearTest = " << R2 << endl;
+        cout << "R2 in ColinearTest = " << R2 << endl;
     }
-    else if ((R2 < -0.0) || (R2 > 1.0)){
-       colinear = 1;
-    }
-
+   
     return colinear;
 }
 
@@ -2645,7 +2641,7 @@ double BVSRM::CalcLR_cond_SS(const double &rtr, const size_t pos_j, const vector
         perror("Nonpositive var in CalcLR_cond_SS() !!\n");
     }
     else{
-        lrt = (double)(ni_test) * (log(rtr) - log(lrt) ); // scaled by 1/n
+        lrt = (double)(ni_test) * (log(rtr) - log(lrt) ); // Likelihood Ratio Test Statistic
     }
     
     return lrt;
@@ -2764,7 +2760,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     // obtain yty from pheno_var
     yty = pheno_var * (double)(ni_test-1) ;
     rv = pheno_var;
-    cout << "yty is " << yty << "; pheno_var = " << pheno_var << "; rv = " << rv << endl;
+    cout << "yty is " << yty << endl;
     
     //new model related
     gsl_vector *sigma_subvec_old = gsl_vector_alloc(s_max);
@@ -2918,16 +2914,16 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
         
         for (size_t i=0; i<n_mh; ++i) {
             //cout << "\n \n propose gamam...\n";
-            //cout << "old rank: "; PrintVector(rank_old);
+            cout << "old rank: "; PrintVector(rank_old);
             //repeat = 1;
             cHyp_new = cHyp_old;
             rank_new = rank_old;
             logMHratio = ProposeGamma_SS (rank_old, rank_new, cHyp_old, cHyp_new, repeat, LD, Xty, XtX_old, Xty_old, XtX_new, Xty_new); //JY
 
-            //cout << "propose new rank: "; PrintVector(rank_new);
+            cout << "propose new rank: "; PrintVector(rank_new);
             //cout << "flag_gamma = " << flag_gamma << endl;
             //cout << "propose gamma success... with rank_new.size = " << rank_new.size() << endl;
-            //cout << "propose gamma logMHratio = "<<logMHratio << "; MHratio = " << exp(logMHratio) << endl;
+            cout << "propose gamma logMHratio = "<<logMHratio << "; MHratio = " << exp(logMHratio) << endl;
             
             accept = 0;
             if (flag_gamma > 0) {
@@ -2943,7 +2939,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
                     //cout << "loglikegamma = " << loglikegamma << " in the non-Null model \n";
                     logPost_new = CalcPosterior_SS (XtX_new, Xty_new, beta_new, cHyp_new, sigma_subvec_new, Error_Flag, loglike_new) + loglikegamma;
                     loglike_new += loglikegamma;
-                    //cout << "Logpos of the newly proposed non-Null model is " << logPost_new << endl;
+                    cout << "Logpos of the newly proposed non-Null model is " << logPost_new << endl;
                 }
                 else{
                     cHyp_new.m_gamma.assign(n_type, 0);
@@ -2952,7 +2948,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
                     logPost_new = loglikegamma;
                     loglike_new = loglikegamma;
                     cHyp_new.pve=0.0;
-                    //cout << "Logpos of the null model is " << logPost_new << endl;
+                    cout << "Logpos of the null model is " << logPost_new << endl;
                 }
                //cout << "cHyp_old.m_gamma = "; PrintVector(cHyp_old.m_gamma);
                //cout << "cHyp_new.m_gamma = "; PrintVector(cHyp_new.m_gamma);
@@ -2960,14 +2956,14 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
                  // cout << "Calcposterior success." << endl;
                 if (!Error_Flag) {
                     logMHratio += logPost_new-logPost_old;
-                    //cout <<"logPost_old = " << logPost_old<< "; logPost_new = "<< logPost_new<< "\n logMHratio = " << logMHratio<< "; MHratio = " << exp(logMHratio) << endl;
+                    cout <<"logPost_old = " << logPost_old<< "; logPost_new = "<< logPost_new<< "\n logMHratio = " << logMHratio<< "; MHratio = " << exp(logMHratio) << endl;
                     if (logMHratio>0 || log(gsl_rng_uniform(gsl_r))<logMHratio)
                         { accept=1;  n_accept++; }
                 }
             }
             else if (flag_gamma == 0) { nother++; }
             
-            //cout << "accept = " << accept << endl;
+            cout << "accept = " << accept << endl;
             
             if (accept==1) {
                     if(flag_gamma==1) nadd_accept++;
@@ -3286,7 +3282,6 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gs
     double logdet_O=0.0;
     size_t s_size = cHyp.n_gamma;
     Error_Flag=0;
-    double pve;
     
     gsl_matrix_const_view XtX_sub=gsl_matrix_const_submatrix (XtX, 0, 0, s_size, s_size);
     gsl_vector_const_view Xty_sub=gsl_vector_const_subvector (Xty, 0, s_size);
@@ -3316,7 +3311,7 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gs
     double bxy;
     gsl_blas_ddot (&Xty_sub.vector, beta_hat, &bxy);
     double R2 = bxy / yty;
-    //cout << "R2 in CalcPosterior = " << R2 << endl;
+    cout << "Regression R2 in CalcPosterior = " << R2 << endl;
      
     if (R2 > 1.0 || R2 < -0.0) {
         cout << "Wrong R2 in CalcPosterior = " << R2 << endl;
@@ -3326,14 +3321,7 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gs
     else{
         Error_Flag=0;
         gsl_vector_memcpy(&beta_sub.vector, beta_hat);
-
-        // Calculate pve
-        gsl_vector *XtXb = gsl_vector_alloc (s_size);
-        gsl_vector_set_zero(XtXb);
-        gsl_blas_dgemv(CblasNoTrans, 1.0, &XtX_sub.matrix, beta_hat, 0.0, XtXb);
-        gsl_blas_ddot(beta_hat, XtXb, &pve);
-        cHyp.pve = pve / (double)ni_test;
-        gsl_vector_free(XtXb);
+        cHyp.pve = R2; // Calculate pve
     }
     
     logpost = tau * bxy;
@@ -3357,9 +3345,10 @@ double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &r
     double unif, logp = 0.0;
     size_t r_add, r_remove, col_id, r;
     
-    rank_new.clear();
     if (cHyp_old.n_gamma!=rank_old.size()) {cout<<"size wrong"<<endl;}
-    if (cHyp_old.n_gamma!=0) {
+
+    rank_new.clear();
+    if (rank_old.size() > 0) {
         for (size_t i=0; i<rank_old.size(); ++i) {
             r=rank_old[i];
             rank_new.push_back(r);
@@ -3372,9 +3361,9 @@ double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &r
         
         unif=gsl_rng_uniform(gsl_r);
         
-        if (unif < 0.33 && cHyp_new.n_gamma<s_max) {flag_gamma=1;}
-        else if (unif>=0.33 && unif < 0.67 && cHyp_new.n_gamma>s_min) {flag_gamma=2;}
-        else if (unif>=0.67 && cHyp_new.n_gamma>0 && cHyp_new.n_gamma<ns_test) {flag_gamma=3;}
+        if (unif < 0.33 && cHyp_new.n_gamma < s_max) {flag_gamma=1;}
+        else if (unif>=0.33 && unif < 0.67 && cHyp_new.n_gamma > s_min) {flag_gamma=2;}
+        else if (unif>=0.67 && cHyp_new.n_gamma>0 && cHyp_new.n_gamma <= s_max) {flag_gamma=3;}
         else {flag_gamma=0;}
         
         if(flag_gamma==1)  {//add a snp;
@@ -3560,7 +3549,7 @@ void BVSRM::SetXtX(const vector< vector<double> > &LD, const vector<size_t> rank
         pos_i = mapRank2pos[ rank[i] ] ;
         gsl_matrix_set(XtX, i, i, xtx_vec[pos_i]);
 
-        for(size_t j=1; j<rank.size(); j++){
+        for(size_t j= (i+1); j<rank.size(); j++){
             pos_j = mapRank2pos[ rank[j] ] ;
             xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
             gsl_matrix_set(XtX, i, j, xtx_ij);

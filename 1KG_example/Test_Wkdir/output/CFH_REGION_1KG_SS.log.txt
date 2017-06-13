@@ -1,9 +1,9 @@
 ##
 ## Software Version = bfGWAS_SS_MCMC
 ##
-## Command Line Input = -vcf /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz -fcode /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -hfile /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 -o CFH_REGION_1KG_SS -initype 2 -rv 1 -LDwindow 500000 -saveSS -zipSS 
+## Command Line Input = -vcf /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz -fcode /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -hfile /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 10 -s 10 -o CFH_REGION_1KG_SS -initype 2 -LDwindow 100000 
 ##
-## Date = Mon Jun 12 18:07:56 2017
+## Date = Tue Jun 13 11:25:17 2017
 
 ##
 ## Summary Statistics:
@@ -17,17 +17,17 @@
 ## MCMC related:
 ## initial value of |gamma| = 1
 ## random seed = 2016
-## acceptance ratio = 0.053038
+## acceptance ratio = 0.16
 ## Region_PIP = 1
 ##
 ## Computation Time:
-## total computation time = 3.70667 min 
+## total computation time = 1.44425 min 
 ## computation time break down: 
 ##      time on proposal = 4.94066e-324 min 
-##      time on mcmc = 1.41824 min 
+##      time on mcmc = 0.00105493 min 
 ##      time on Omega = 0 min 
-Accept #add=5, total add step = 91
-Accept #delete=1, total delete step = 339162
-Accept #switch=53032, total switch step = 330761
-Accept #other=0, total other step = 329986
+Accept #add=4, total add step = 71
+Accept #delete=0, total delete step = 67
+Accept #switch=28, total switch step = 62
+Accept #other=0, total other step = 0
 ##

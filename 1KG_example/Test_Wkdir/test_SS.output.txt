@@ -8,7 +8,7 @@ Done reading vcf file first time ...
 Start reading annotation files ...
 Number of annotation categories: 6
 Number of variants per category: 2792, 42, 0, 273, 0, 582, 
-Reading files first time cost 0.617977 mints 
+Reading files first time cost 0.74558 mints 
 
 pheno_mean = 0.49401
 Reorder phenotype for reading vcf/geno files ... 
@@ -17,25 +17,14 @@ Analyzed sample size ni_test = 2504
 
 Starting reading genotype files for the second time ...
 Done reading vcf file second time ... 
-Load genotype data cost 0.102833 mints
+Load genotype data cost 0.130692 mints
 
 Start calculating summary statistics ... 
 pheno_var = 0.494207
-Get SS costs 1.33841 minutes 
-
-Start writing summary statistics ... 
-
-Tabixing .LD.gz files ... 
-
-LD output ./output/CFH_REGION_1KG_SS.LD.gz has been tabixed
-
-Tabixing .VarSS.gz files ... 
-
-SS output ./output/CFH_REGION_1KG_SS.VarSS.gz has been tabixed
-Write SS costs 0.227328 minutes 
+Get SS costs 0.559 minutes 
 
 Running MCMC with Summary Statistics ... 
-yty is 1237; pheno_var = 0.494207; rv = 0.494207
+yty is 1237
 Generate maps ... 
 Calculate proposal distribution for gamma 
 Number of variants with p-value < 5e-8 : 28
@@ -49,264 +38,1670 @@ Initial effect-size variance per category = 10, 10, 10, 10, 10, 10,
 Initially selected number of variants in the model = 1
 Initial rank_old : 0, 
 Initial number of selected variants per category : 1, 0, 0, 0, 0, 0, 
+Regression R2 in CalcPosterior = 0.0287999
 Initial logPost_old = 17.7188
 
 Running MCMC                               0.00%  & acceptance ratio 0.00
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.048703
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.048920
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.049044
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.049205
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.049388
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.049467
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.049617
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.049723
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.049835
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.049921
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050016
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050133
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050252
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050423
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050527
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050695
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050796
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050908
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.050969
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051051
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051136
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051212
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051269
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051338
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051445
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051560
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051638
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051681
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051744
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051788
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051825
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.051936
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052002
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052068
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052109
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052160
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052255
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052321
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052377
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052454
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052447
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052518
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052634
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052687
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052747
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052812
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052870
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052930
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.052992
-# of selected variants per category: 
-2, 0, 0, 0, 0, 3, 
-loglike: 369.915925
+old rank: 0, 
+propose new rank: 3, 
+propose gamma logMHratio = 1.22; MHratio = 3.40
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 16.47
+logPost_old = 17.72; logPost_new = 16.47
+ logMHratio = -0.03; MHratio = 0.97
+accept = 1
+old rank: 3, 
+propose new rank: 0, 
+propose gamma logMHratio = -1.22; MHratio = 0.29
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 17.72
+logPost_old = 16.47; logPost_new = 17.72
+ logMHratio = 0.03; MHratio = 1.03
+accept = 1
+old rank: 0, 
+propose new rank: 
+propose gamma logMHratio = -4.71; MHratio = 0.01
+Logpos of the null model is -0.00
+logPost_old = 17.72; logPost_new = -0.00
+ logMHratio = -22.43; MHratio = 0.00
+accept = 0
+old rank: 0, 
+propose new rank: 
+propose gamma logMHratio = -4.71; MHratio = 0.01
+Logpos of the null model is -0.00
+logPost_old = 17.72; logPost_new = -0.00
+ logMHratio = -22.43; MHratio = 0.00
+accept = 0
+old rank: 0, 
+propose new rank: 
+propose gamma logMHratio = -4.71; MHratio = 0.01
+Logpos of the null model is -0.00
+logPost_old = 17.72; logPost_new = -0.00
+ logMHratio = -22.43; MHratio = 0.00
+accept = 0
+old rank: 0, 
+propose new rank: 3, 
+propose gamma logMHratio = 1.22; MHratio = 3.40
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 16.47
+logPost_old = 17.72; logPost_new = 16.47
+ logMHratio = -0.03; MHratio = 0.97
+accept = 1
+old rank: 3, 
+propose new rank: 
+propose gamma logMHratio = -4.71; MHratio = 0.01
+Logpos of the null model is -0.00
+logPost_old = 16.47; logPost_new = -0.00
+ logMHratio = -21.18; MHratio = 0.00
+accept = 0
+old rank: 3, 
+propose new rank: 0, 
+propose gamma logMHratio = -1.22; MHratio = 0.29
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 17.72
+logPost_old = 16.47; logPost_new = 17.72
+ logMHratio = 0.03; MHratio = 1.03
+accept = 1
+old rank: 0, 
+propose new rank: 0, 62, 
+propose gamma logMHratio = 4.01; MHratio = 55.06
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 6.92
+logPost_old = 17.72; logPost_new = 6.92
+ logMHratio = -6.79; MHratio = 0.00
+accept = 0
+old rank: 0, 
+propose new rank: 2, 
+propose gamma logMHratio = 1.23; MHratio = 3.41
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 16.47
+logPost_old = 17.72; logPost_new = 16.47
+ logMHratio = -0.02; MHratio = 0.98
+accept = 1
+old rank: 2, 
+propose new rank: 
+propose gamma logMHratio = -4.71; MHratio = 0.01
+Logpos of the null model is -0.00
+logPost_old = 16.47; logPost_new = -0.00
+ logMHratio = -21.19; MHratio = 0.00
+accept = 0
+old rank: 2, 
+propose new rank: 
+propose gamma logMHratio = -4.71; MHratio = 0.01
+Logpos of the null model is -0.00
+logPost_old = 16.47; logPost_new = -0.00
+ logMHratio = -21.19; MHratio = 0.00
+accept = 0
+old rank: 2, 
+propose new rank: 0, 
+propose gamma logMHratio = -1.23; MHratio = 0.29
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 17.72
+logPost_old = 16.47; logPost_new = 17.72
+ logMHratio = 0.02; MHratio = 1.02
+accept = 1
+old rank: 0, 
+propose new rank: 0, 96, 
+propose gamma logMHratio = 4.01; MHratio = 55.06
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 4.52
+logPost_old = 17.72; logPost_new = 4.52
+ logMHratio = -9.19; MHratio = 0.00
+accept = 0
+old rank: 0, 
+propose new rank: 0, 15, 
+propose gamma logMHratio = 4.01; MHratio = 55.06
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.20
+logPost_old = 17.72; logPost_new = 80.20
+ logMHratio = 66.49; MHratio = 75228069597504547444582514688.00
+accept = 1
+old rank: 0, 15, 
+Regression R2 = 0.02
+propose new rank: 15, 24, 
+propose gamma logMHratio = 0.29; MHratio = 1.34
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.66
+logPost_old = 80.20; logPost_new = 97.66
+ logMHratio = 17.75; MHratio = 51328167.40
+accept = 1
+old rank: 15, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.66; logPost_new = 8.92
+ logMHratio = -92.75; MHratio = 0.00
+accept = 0
+old rank: 15, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.66; logPost_new = 8.92
+ logMHratio = -92.75; MHratio = 0.00
+accept = 0
+old rank: 15, 24, 
+Regression R2 = 0.02
+propose new rank: 15, 0, 
+propose gamma logMHratio = -0.29; MHratio = 0.75
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.20
+logPost_old = 97.66; logPost_new = 80.20
+ logMHratio = -17.75; MHratio = 0.00
+accept = 0
+old rank: 15, 24, 
+propose new rank: 15, 24, 31, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 90.90
+logPost_old = 97.66; logPost_new = 90.90
+ logMHratio = -3.16; MHratio = 0.04
+accept = 0
+old rank: 15, 24, 
+Regression R2 = 0.02
+propose new rank: 15, 25, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.66
+logPost_old = 97.66; logPost_new = 97.66
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 15, 25, 
+propose new rank: 15, 25, 38, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 80.11
+logPost_old = 97.66; logPost_new = 80.11
+ logMHratio = -13.95; MHratio = 0.00
+accept = 0
+old rank: 15, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.66; logPost_new = 8.92
+ logMHratio = -92.75; MHratio = 0.00
+accept = 0
+old rank: 15, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.66; logPost_new = 8.92
+ logMHratio = -92.75; MHratio = 0.00
+accept = 0
+old rank: 15, 25, 
+Regression R2 = 0.02
+propose new rank: 15, 0, 
+propose gamma logMHratio = -0.29; MHratio = 0.75
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.20
+logPost_old = 97.66; logPost_new = 80.20
+ logMHratio = -17.75; MHratio = 0.00
+accept = 0
+old rank: 15, 25, 
+propose new rank: 15, 25, 31, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 90.90
+logPost_old = 97.66; logPost_new = 90.90
+ logMHratio = -3.16; MHratio = 0.04
+accept = 0
+old rank: 15, 25, 
+propose new rank: 15, 25, 13, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 82.09
+logPost_old = 97.66; logPost_new = 82.09
+ logMHratio = -11.98; MHratio = 0.00
+accept = 0
+old rank: 15, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.66; logPost_new = 8.92
+ logMHratio = -92.75; MHratio = 0.00
+accept = 0
+old rank: 15, 25, 
+propose new rank: 15, 25, 91, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 84.82
+logPost_old = 97.66; logPost_new = 84.82
+ logMHratio = -9.24; MHratio = 0.00
+accept = 0
+old rank: 15, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.66; logPost_new = 8.92
+ logMHratio = -92.75; MHratio = 0.00
+accept = 0
+old rank: 15, 25, 
+Regression R2 = 0.02
+propose new rank: 25, 10, 
+propose gamma logMHratio = -1.46; MHratio = 0.23
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 98.71
+logPost_old = 97.66; logPost_new = 98.71
+ logMHratio = -0.41; MHratio = 0.66
+accept = 1
+old rank: 25, 10, 
+Regression R2 = 0.02
+propose new rank: 10, 24, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 98.71
+logPost_old = 98.71; logPost_new = 98.71
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 10, 24, 
+propose new rank: 10, 24, 71, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 87.06
+logPost_old = 98.71; logPost_new = 87.06
+ logMHratio = -8.05; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+propose new rank: 10, 24, 72, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 81.17
+logPost_old = 98.71; logPost_new = 81.17
+ logMHratio = -13.95; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 98.71; logPost_new = 8.92
+ logMHratio = -93.79; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+Regression R2 = 0.02
+propose new rank: 24, 5, 
+propose gamma logMHratio = -0.36; MHratio = 0.70
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 98.71; logPost_new = 87.68
+ logMHratio = -11.39; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+Regression R2 = 0.02
+propose new rank: 10, 0, 
+propose gamma logMHratio = -0.14; MHratio = 0.87
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.88
+logPost_old = 98.71; logPost_new = 80.88
+ logMHratio = -17.97; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 98.71; logPost_new = 8.92
+ logMHratio = -93.79; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+propose new rank: 10, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.99
+logPost_old = 98.71; logPost_new = 11.99
+ logMHratio = -90.73; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+propose new rank: 10, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.99
+logPost_old = 98.71; logPost_new = 11.99
+ logMHratio = -90.73; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 98.71; logPost_new = 8.92
+ logMHratio = -93.79; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+propose new rank: 10, 24, 3382, 
+propose gamma logMHratio = 9.37; MHratio = 11747.99
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 82.84
+logPost_old = 98.71; logPost_new = 82.84
+ logMHratio = -6.49; MHratio = 0.00
+accept = 0
+old rank: 10, 24, 
+Regression R2 = 0.02
+propose new rank: 10, 25, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 98.71
+logPost_old = 98.71; logPost_new = 98.71
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 10, 25, 
+propose new rank: 10, 25, 62, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 91.61
+logPost_old = 98.71; logPost_new = 91.61
+ logMHratio = -3.51; MHratio = 0.03
+accept = 0
+old rank: 10, 25, 
+Regression R2 = 0.02
+propose new rank: 25, 12, 
+propose gamma logMHratio = 0.52; MHratio = 1.68
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 98.21
+logPost_old = 98.71; logPost_new = 98.21
+ logMHratio = 0.02; MHratio = 1.02
+accept = 1
+old rank: 25, 12, 
+propose new rank: 25, 12, 74, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 85.74
+logPost_old = 98.21; logPost_new = 85.74
+ logMHratio = -8.87; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 68, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 86.64
+logPost_old = 98.21; logPost_new = 86.64
+ logMHratio = -7.97; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 83, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 86.27
+logPost_old = 98.21; logPost_new = 86.27
+ logMHratio = -8.35; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 62, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 91.03
+logPost_old = 98.21; logPost_new = 91.03
+ logMHratio = -3.58; MHratio = 0.03
+accept = 0
+old rank: 25, 12, 
+propose new rank: 12, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.81
+logPost_old = 98.21; logPost_new = 11.81
+ logMHratio = -90.41; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 91, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 85.37
+logPost_old = 98.21; logPost_new = 85.37
+ logMHratio = -9.24; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 69, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 92.07
+logPost_old = 98.21; logPost_new = 92.07
+ logMHratio = -2.54; MHratio = 0.08
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 26, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 84.49
+logPost_old = 98.21; logPost_new = 84.49
+ logMHratio = -10.13; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 43, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 81.19
+logPost_old = 98.21; logPost_new = 81.19
+ logMHratio = -13.42; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 72, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 80.69
+logPost_old = 98.21; logPost_new = 80.69
+ logMHratio = -13.92; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 96, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 85.01
+logPost_old = 98.21; logPost_new = 85.01
+ logMHratio = -9.60; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 12, 60, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 86.96
+logPost_old = 98.21; logPost_new = 86.96
+ logMHratio = -7.65; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 98.21; logPost_new = 8.92
+ logMHratio = -93.29; MHratio = 0.00
+accept = 0
+old rank: 25, 12, 
+Regression R2 = 0.02
+propose new rank: 12, 24, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 98.21
+logPost_old = 98.21; logPost_new = 98.21
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 12, 24, 
+propose new rank: 12, 24, 82, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 85.72
+logPost_old = 98.21; logPost_new = 85.72
+ logMHratio = -8.90; MHratio = 0.00
+accept = 0
+old rank: 12, 24, 
+propose new rank: 12, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.81
+logPost_old = 98.21; logPost_new = 11.81
+ logMHratio = -90.41; MHratio = 0.00
+accept = 0
+old rank: 12, 24, 
+propose new rank: 12, 24, 4, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 81.28
+logPost_old = 98.21; logPost_new = 81.28
+ logMHratio = -13.34; MHratio = 0.00
+accept = 0
+old rank: 12, 24, 
+propose new rank: 12, 24, 10, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 82.66
+logPost_old = 98.21; logPost_new = 82.66
+ logMHratio = -11.95; MHratio = 0.00
+accept = 0
+old rank: 12, 24, 
+propose new rank: 12, 24, 10, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 82.66
+logPost_old = 98.21; logPost_new = 82.66
+ logMHratio = -11.95; MHratio = 0.00
+accept = 0
+old rank: 12, 24, 
+propose new rank: 12, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.81
+logPost_old = 98.21; logPost_new = 11.81
+ logMHratio = -90.41; MHratio = 0.00
+accept = 0
+old rank: 12, 24, 
+Regression R2 = 0.02
+propose new rank: 24, 16, 
+propose gamma logMHratio = 1.19; MHratio = 3.30
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.41
+logPost_old = 98.21; logPost_new = 97.41
+ logMHratio = 0.40; MHratio = 1.49
+accept = 1
+old rank: 24, 16, 
+propose new rank: 24, 16, 35, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 90.36
+logPost_old = 97.41; logPost_new = 90.36
+ logMHratio = -3.46; MHratio = 0.03
+accept = 0
+old rank: 24, 16, 
+Regression R2 = 0.02
+propose new rank: 16, 0, 
+propose gamma logMHratio = -0.35; MHratio = 0.71
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.18
+logPost_old = 97.41; logPost_new = 80.18
+ logMHratio = -17.58; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+propose new rank: 24, 16, 2620, 
+propose gamma logMHratio = 9.37; MHratio = 11747.99
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 80.91
+logPost_old = 97.41; logPost_new = 80.91
+ logMHratio = -7.13; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+Regression R2 = 0.02
+propose new rank: 16, 0, 
+propose gamma logMHratio = -0.35; MHratio = 0.71
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.18
+logPost_old = 97.41; logPost_new = 80.18
+ logMHratio = -17.58; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+Regression R2 = 0.02
+propose new rank: 24, 4, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+Regression R2 = 0.02
+propose new rank: 24, 5, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+propose new rank: 24, 16, 77, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.90
+logPost_old = 97.41; logPost_new = 79.90
+ logMHratio = -13.92; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+Regression R2 = 0.02
+propose new rank: 16, 0, 
+propose gamma logMHratio = -0.35; MHratio = 0.71
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.18
+logPost_old = 97.41; logPost_new = 80.18
+ logMHratio = -17.58; MHratio = 0.00
+accept = 0
+old rank: 24, 16, 
+Regression R2 = 0.02
+propose new rank: 16, 25, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.41
+logPost_old = 97.41; logPost_new = 97.41
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 16, 25, 
+propose new rank: 16, 25, 59, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.45
+logPost_old = 97.41; logPost_new = 79.45
+ logMHratio = -14.37; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 36, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 90.24
+logPost_old = 97.41; logPost_new = 90.24
+ logMHratio = -3.58; MHratio = 0.03
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 16, 0, 
+propose gamma logMHratio = -0.35; MHratio = 0.71
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.18
+logPost_old = 97.41; logPost_new = 80.18
+ logMHratio = -17.58; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 12, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 82.16
+logPost_old = 97.41; logPost_new = 82.16
+ logMHratio = -11.66; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 7, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 80.09
+logPost_old = 97.41; logPost_new = 80.09
+ logMHratio = -13.73; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 25, 5, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 81, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.90
+logPost_old = 97.41; logPost_new = 79.90
+ logMHratio = -13.92; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 16, 24, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.41
+logPost_old = 97.41; logPost_new = 97.41
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 16, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 24, 75, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.90
+logPost_old = 97.41; logPost_new = 79.90
+ logMHratio = -13.92; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 24, 3, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 80.37
+logPost_old = 97.41; logPost_new = 80.37
+ logMHratio = -13.45; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+Regression R2 = 0.02
+propose new rank: 24, 5, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+Regression R2 = 0.02
+propose new rank: 16, 0, 
+propose gamma logMHratio = -0.35; MHratio = 0.71
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.18
+logPost_old = 97.41; logPost_new = 80.18
+ logMHratio = -17.58; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+Regression R2 = 0.02
+propose new rank: 24, 5, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 24, 2, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 80.34
+logPost_old = 97.41; logPost_new = 80.34
+ logMHratio = -13.48; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 24, 63, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.48
+logPost_old = 97.41; logPost_new = 79.48
+ logMHratio = -14.34; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 24, 28, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.04
+logPost_old = 97.41; logPost_new = 79.04
+ logMHratio = -14.78; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+Regression R2 = 0.02
+propose new rank: 16, 0, 
+propose gamma logMHratio = -0.35; MHratio = 0.71
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.18
+logPost_old = 97.41; logPost_new = 80.18
+ logMHratio = -17.58; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 24, 39, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 89.98
+logPost_old = 97.41; logPost_new = 89.98
+ logMHratio = -3.84; MHratio = 0.02
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 24, 93, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 85.14
+logPost_old = 97.41; logPost_new = 85.14
+ logMHratio = -8.69; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 24, 85, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 84.71
+logPost_old = 97.41; logPost_new = 84.71
+ logMHratio = -9.11; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+Regression R2 = 0.02
+propose new rank: 24, 10, 
+propose gamma logMHratio = -1.71; MHratio = 0.18
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 98.71
+logPost_old = 97.41; logPost_new = 98.71
+ logMHratio = -0.42; MHratio = 0.66
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+Regression R2 = 0.02
+propose new rank: 24, 5, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+propose new rank: 24, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 24, 
+Regression R2 = 0.02
+propose new rank: 16, 25, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.41
+logPost_old = 97.41; logPost_new = 97.41
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 16, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 10, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 82.54
+logPost_old = 97.41; logPost_new = 82.54
+ logMHratio = -11.28; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 1741, 
+propose gamma logMHratio = 9.37; MHratio = 11747.99
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.87
+logPost_old = 97.41; logPost_new = 79.87
+ logMHratio = -8.18; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 71, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 85.77
+logPost_old = 97.41; logPost_new = 85.77
+ logMHratio = -8.05; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 34, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.60
+logPost_old = 97.41; logPost_new = 79.60
+ logMHratio = -14.22; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 8, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 80.11
+logPost_old = 97.41; logPost_new = 80.11
+ logMHratio = -13.71; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 25, 5, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 31, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 90.66
+logPost_old = 97.41; logPost_new = 90.66
+ logMHratio = -3.16; MHratio = 0.04
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 16, 24, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.41
+logPost_old = 97.41; logPost_new = 97.41
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 16, 24, 
+Regression R2 = 0.02
+propose new rank: 16, 25, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.41
+logPost_old = 97.41; logPost_new = 97.41
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 16, 25, 
+propose new rank: 16, 25, 36, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 90.24
+logPost_old = 97.41; logPost_new = 90.24
+ logMHratio = -3.58; MHratio = 0.03
+accept = 0
+old rank: 16, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 56, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 86.48
+logPost_old = 97.41; logPost_new = 86.48
+ logMHratio = -7.34; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 16, 0, 
+propose gamma logMHratio = -0.35; MHratio = 0.71
+Regression R2 in CalcPosterior = 0.09
+Logpos of the newly proposed non-Null model is 80.18
+logPost_old = 97.41; logPost_new = 80.18
+ logMHratio = -17.58; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 78, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.90
+logPost_old = 97.41; logPost_new = 79.90
+ logMHratio = -13.92; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 25, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 8.92
+logPost_old = 97.41; logPost_new = 8.92
+ logMHratio = -92.50; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 69, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.12
+Logpos of the newly proposed non-Null model is 91.21
+logPost_old = 97.41; logPost_new = 91.21
+ logMHratio = -2.61; MHratio = 0.07
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 25, 12, 
+propose gamma logMHratio = -1.19; MHratio = 0.30
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 98.21
+logPost_old = 97.41; logPost_new = 98.21
+ logMHratio = -0.40; MHratio = 0.67
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 25, 4, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 2526, 
+propose gamma logMHratio = 9.37; MHratio = 11747.99
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 79.45
+logPost_old = 97.41; logPost_new = 79.45
+ logMHratio = -8.59; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 10, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 82.54
+logPost_old = 97.41; logPost_new = 82.54
+ logMHratio = -11.28; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+Regression R2 = 0.02
+propose new rank: 25, 5, 
+propose gamma logMHratio = -2.07; MHratio = 0.13
+Regression R2 in CalcPosterior = 0.10
+Logpos of the newly proposed non-Null model is 87.68
+logPost_old = 97.41; logPost_new = 87.68
+ logMHratio = -11.81; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 
+propose gamma logMHratio = -4.01; MHratio = 0.02
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is 11.41
+logPost_old = 97.41; logPost_new = 11.41
+ logMHratio = -90.02; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 
+propose new rank: 16, 25, 30, 
+propose gamma logMHratio = 3.59; MHratio = 36.37
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 118.45
+logPost_old = 97.41; logPost_new = 118.45
+ logMHratio = 24.63; MHratio = 49874224531.47
+accept = 1
+old rank: 16, 25, 30, 
+Regression R2 = 0.11
+propose new rank: 16, 25, 32, 
+propose gamma logMHratio = 0.51; MHratio = 1.66
+Regression R2 in CalcPosterior = 0.13
+Logpos of the newly proposed non-Null model is 105.67
+logPost_old = 118.45; logPost_new = 105.67
+ logMHratio = -12.28; MHratio = 0.00
+accept = 0
+old rank: 16, 25, 30, 
+Regression R2 = 0.03
+propose new rank: 16, 30, 24, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 118.45
+logPost_old = 118.45; logPost_new = 118.45
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 16, 30, 24, 
+propose new rank: 16, 30, 24, 77, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 101.38
+logPost_old = 118.45; logPost_new = 101.38
+ logMHratio = -13.78; MHratio = 0.00
+accept = 0
+old rank: 16, 30, 24, 
+propose new rank: 16, 30, 24, 34, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.15
+Logpos of the newly proposed non-Null model is 112.91
+logPost_old = 118.45; logPost_new = 112.91
+ logMHratio = -2.25; MHratio = 0.11
+accept = 0
+old rank: 16, 30, 24, 
+Regression R2 = 0.11
+propose new rank: 16, 24, 32, 
+propose gamma logMHratio = 0.51; MHratio = 1.66
+Regression R2 in CalcPosterior = 0.13
+Logpos of the newly proposed non-Null model is 105.67
+logPost_old = 118.45; logPost_new = 105.67
+ logMHratio = -12.28; MHratio = 0.00
+accept = 0
+old rank: 16, 30, 24, 
+propose new rank: 16, 30, 24, 86, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 105.75
+logPost_old = 118.45; logPost_new = 105.75
+ logMHratio = -9.40; MHratio = 0.00
+accept = 0
+old rank: 16, 30, 24, 
+propose new rank: 16, 24, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.41
+logPost_old = 118.45; logPost_new = 97.41
+ logMHratio = -24.63; MHratio = 0.00
+accept = 0
+old rank: 16, 30, 24, 
+Regression R2 = 0.11
+propose new rank: 16, 24, 49, 
+propose gamma logMHratio = 0.92; MHratio = 2.52
+Regression R2 in CalcPosterior = 0.13
+Logpos of the newly proposed non-Null model is 106.00
+logPost_old = 118.45; logPost_new = 106.00
+ logMHratio = -11.53; MHratio = 0.00
+accept = 0
+old rank: 16, 30, 24, 
+propose new rank: 16, 30, 24, 59, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 100.59
+logPost_old = 118.45; logPost_new = 100.59
+ logMHratio = -14.57; MHratio = 0.00
+accept = 0
+old rank: 16, 30, 24, 
+Regression R2 = 0.11
+propose new rank: 16, 24, 49, 
+propose gamma logMHratio = 0.92; MHratio = 2.52
+Regression R2 in CalcPosterior = 0.13
+Logpos of the newly proposed non-Null model is 106.00
+logPost_old = 118.45; logPost_new = 106.00
+ logMHratio = -11.53; MHratio = 0.00
+accept = 0
+old rank: 16, 30, 24, 
+propose new rank: 16, 30, 24, 42, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = -0.49
+Wrong R2 in CalcPosterior = -0.49
+Please try enlarging your LDwindow to at least 500KB!
+Logpos of the newly proposed non-Null model is -674.63
+accept = 0
+old rank: 16, 30, 24, 
+propose new rank: 16, 24, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 97.41
+logPost_old = 118.45; logPost_new = 97.41
+ logMHratio = -24.63; MHratio = 0.00
+accept = 0
+old rank: 16, 30, 24, 
+Regression R2 = 0.04
+propose new rank: 30, 24, 10, 
+propose gamma logMHratio = -1.62; MHratio = 0.20
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 119.86
+logPost_old = 118.45; logPost_new = 119.86
+ logMHratio = -0.22; MHratio = 0.81
+accept = 1
+old rank: 30, 24, 10, 
+Regression R2 = 0.04
+propose new rank: 30, 24, 12, 
+propose gamma logMHratio = 0.42; MHratio = 1.52
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 119.30
+logPost_old = 119.86; logPost_new = 119.30
+ logMHratio = -0.14; MHratio = 0.87
+accept = 1
+old rank: 30, 24, 12, 
+propose new rank: 30, 24, 12, 66, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 101.67
+logPost_old = 119.30; logPost_new = 101.67
+ logMHratio = -14.33; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 12, 
+propose new rank: 30, 24, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.04
+Logpos of the newly proposed non-Null model is 12.35
+logPost_old = 119.30; logPost_new = 12.35
+ logMHratio = -110.55; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 12, 
+Regression R2 = 0.11
+propose new rank: 24, 12, 49, 
+propose gamma logMHratio = 0.91; MHratio = 2.49
+Regression R2 in CalcPosterior = 0.13
+Logpos of the newly proposed non-Null model is 106.83
+logPost_old = 119.30; logPost_new = 106.83
+ logMHratio = -11.55; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 12, 
+propose new rank: 30, 24, 12, 9, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 101.89
+logPost_old = 119.30; logPost_new = 101.89
+ logMHratio = -14.11; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 12, 
+propose new rank: 30, 24, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.04
+Logpos of the newly proposed non-Null model is 12.35
+logPost_old = 119.30; logPost_new = 12.35
+ logMHratio = -110.55; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 12, 
+Regression R2 = 0.03
+propose new rank: 30, 12, 25, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 119.30
+logPost_old = 119.30; logPost_new = 119.30
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 30, 12, 25, 
+propose new rank: 30, 12, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 5.50
+logPost_old = 119.30; logPost_new = 5.50
+ logMHratio = -117.39; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 25, 
+propose new rank: 30, 12, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 5.50
+logPost_old = 119.30; logPost_new = 5.50
+ logMHratio = -117.39; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 25, 
+propose new rank: 30, 25, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.04
+Logpos of the newly proposed non-Null model is 12.35
+logPost_old = 119.30; logPost_new = 12.35
+ logMHratio = -110.55; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 25, 
+propose new rank: 12, 25, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.11
+Logpos of the newly proposed non-Null model is 98.21
+logPost_old = 119.30; logPost_new = 98.21
+ logMHratio = -24.68; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 25, 
+propose new rank: 30, 12, 25, 3, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 101.86
+logPost_old = 119.30; logPost_new = 101.86
+ logMHratio = -14.14; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 25, 
+propose new rank: 30, 12, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.03
+Logpos of the newly proposed non-Null model is 5.50
+logPost_old = 119.30; logPost_new = 5.50
+ logMHratio = -117.39; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 25, 
+Regression R2 = 0.11
+propose new rank: 12, 25, 49, 
+propose gamma logMHratio = 0.91; MHratio = 2.49
+Regression R2 in CalcPosterior = 0.13
+Logpos of the newly proposed non-Null model is 106.83
+logPost_old = 119.30; logPost_new = 106.83
+ logMHratio = -11.55; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 25, 
+propose new rank: 30, 25, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.04
+Logpos of the newly proposed non-Null model is 12.35
+logPost_old = 119.30; logPost_new = 12.35
+ logMHratio = -110.55; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 25, 
+Regression R2 = 0.03
+propose new rank: 30, 12, 24, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 119.30
+logPost_old = 119.30; logPost_new = 119.30
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 30, 12, 24, 
+propose new rank: 30, 12, 24, 48, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 105.88
+logPost_old = 119.30; logPost_new = 105.88
+ logMHratio = -10.12; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 24, 
+Regression R2 = 0.11
+propose new rank: 12, 24, 49, 
+propose gamma logMHratio = 0.91; MHratio = 2.49
+Regression R2 in CalcPosterior = 0.13
+Logpos of the newly proposed non-Null model is 106.83
+logPost_old = 119.30; logPost_new = 106.83
+ logMHratio = -11.55; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 24, 
+propose new rank: 30, 24, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.04
+Logpos of the newly proposed non-Null model is 12.35
+logPost_old = 119.30; logPost_new = 12.35
+ logMHratio = -110.55; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 24, 
+propose new rank: 30, 12, 24, 96, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 106.10
+logPost_old = 119.30; logPost_new = 106.10
+ logMHratio = -9.90; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 24, 
+propose new rank: 30, 24, 
+propose gamma logMHratio = -3.59; MHratio = 0.03
+Regression R2 in CalcPosterior = 0.04
+Logpos of the newly proposed non-Null model is 12.35
+logPost_old = 119.30; logPost_new = 12.35
+ logMHratio = -110.55; MHratio = 0.00
+accept = 0
+old rank: 30, 12, 24, 
+Regression R2 = 0.04
+propose new rank: 30, 24, 18, 
+propose gamma logMHratio = 1.20; MHratio = 3.32
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 118.45
+logPost_old = 119.30; logPost_new = 118.45
+ logMHratio = 0.35; MHratio = 1.42
+accept = 1
+old rank: 30, 24, 18, 
+propose new rank: 30, 24, 18, 86, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 105.75
+logPost_old = 118.45; logPost_new = 105.75
+ logMHratio = -9.40; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 
+propose new rank: 30, 24, 18, 36, 
+propose gamma logMHratio = 3.30; MHratio = 27.03
+Regression R2 in CalcPosterior = 0.17
+Logpos of the newly proposed non-Null model is 135.05
+logPost_old = 118.45; logPost_new = 135.05
+ logMHratio = 19.89; MHratio = 434887564.90
+accept = 1
+old rank: 30, 24, 18, 36, 
+propose new rank: 30, 24, 18, 36, 68, 
+propose gamma logMHratio = 3.06; MHratio = 21.42
+Regression R2 in CalcPosterior = 0.17
+Logpos of the newly proposed non-Null model is 123.48
+logPost_old = 135.05; logPost_new = 123.48
+ logMHratio = -8.50; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 36, 
+propose new rank: 30, 18, 36, 
+propose gamma logMHratio = -3.30; MHratio = 0.04
+Regression R2 in CalcPosterior = 0.05
+Logpos of the newly proposed non-Null model is 9.86
+logPost_old = 135.05; logPost_new = 9.86
+ logMHratio = -128.48; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 36, 
+propose new rank: 30, 24, 18, 36, 16, 
+propose gamma logMHratio = 3.06; MHratio = 21.42
+Regression R2 in CalcPosterior = 0.17
+Logpos of the newly proposed non-Null model is 120.89
+logPost_old = 135.05; logPost_new = 120.89
+ logMHratio = -11.09; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 36, 
+propose new rank: 30, 24, 18, 
+propose gamma logMHratio = -3.30; MHratio = 0.04
+Regression R2 in CalcPosterior = 0.14
+Logpos of the newly proposed non-Null model is 118.45
+logPost_old = 135.05; logPost_new = 118.45
+ logMHratio = -19.89; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 36, 
+propose new rank: 30, 24, 18, 36, 54, 
+propose gamma logMHratio = 3.06; MHratio = 21.42
+Regression R2 in CalcPosterior = 0.18
+Logpos of the newly proposed non-Null model is 136.56
+logPost_old = 135.05; logPost_new = 136.56
+ logMHratio = 4.57; MHratio = 96.88
+accept = 1
+old rank: 30, 24, 18, 36, 54, 
+Regression R2 = 0.06
+propose new rank: 30, 18, 36, 54, 0, 
+propose gamma logMHratio = -0.69; MHratio = 0.50
+Regression R2 in CalcPosterior = 0.15
+Logpos of the newly proposed non-Null model is 90.43
+logPost_old = 136.56; logPost_new = 90.43
+ logMHratio = -46.81; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 36, 54, 
+Regression R2 = 0.06
+propose new rank: 30, 18, 36, 54, 0, 
+propose gamma logMHratio = -0.69; MHratio = 0.50
+Regression R2 in CalcPosterior = 0.15
+Logpos of the newly proposed non-Null model is 90.43
+logPost_old = 136.56; logPost_new = 90.43
+ logMHratio = -46.81; MHratio = 0.00
+accept = 0
 
-Running MCMC ==============================100.00%  & acceptance ratio 0.05
+Running MCMC ==============================100.00%  & acceptance ratio 0.15
+old rank: 30, 24, 18, 36, 54, 
+propose new rank: 24, 18, 36, 54, 
+propose gamma logMHratio = -3.06; MHratio = 0.05
+Regression R2 in CalcPosterior = 0.13
+Logpos of the newly proposed non-Null model is 90.53
+logPost_old = 136.56; logPost_new = 90.53
+ logMHratio = -49.09; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 36, 54, 
+Regression R2 = 0.14
+propose new rank: 30, 24, 18, 54, 50, 
+propose gamma logMHratio = -37.08; MHratio = 0.00
+Regression R2 in CalcPosterior = 0.02
+Logpos of the newly proposed non-Null model is -56.29
+logPost_old = 136.56; logPost_new = -56.29
+ logMHratio = -229.92; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 36, 54, 
+Regression R2 = 0.17
+propose new rank: 30, 24, 18, 36, 49, 
+propose gamma logMHratio = -104.68; MHratio = 0.00
+Regression R2 in CalcPosterior = 0.32
+Logpos of the newly proposed non-Null model is 304.97
+logPost_old = 136.56; logPost_new = 304.97
+ logMHratio = 63.73; MHratio = 4764189478680397414597132288.00
+accept = 1
+old rank: 30, 24, 18, 36, 49, 
+propose new rank: 24, 18, 36, 49, 
+propose gamma logMHratio = -3.06; MHratio = 0.05
+Regression R2 in CalcPosterior = 0.27
+Logpos of the newly proposed non-Null model is 266.07
+logPost_old = 304.97; logPost_new = 266.07
+ logMHratio = -41.96; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 36, 49, 
+Regression R2 = 0.17
+propose new rank: 30, 24, 18, 36, 42, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = -0.13
+Wrong R2 in CalcPosterior = -0.13
+Please try enlarging your LDwindow to at least 500KB!
+Logpos of the newly proposed non-Null model is -247.36
+accept = 0
+old rank: 30, 24, 18, 36, 49, 
+Regression R2 = 0.15
+propose new rank: 30, 24, 18, 49, 31, 
+propose gamma logMHratio = -26.37; MHratio = 0.00
+Regression R2 in CalcPosterior = 0.47
+Logpos of the newly proposed non-Null model is 503.13
+logPost_old = 304.97; logPost_new = 503.13
+ logMHratio = 171.80; MHratio = 407512350673825937991257650311854332796221163015430283334124972277156020224.00
+accept = 1
+old rank: 30, 24, 18, 49, 31, 
+propose new rank: 30, 24, 18, 49, 
+propose gamma logMHratio = -3.06; MHratio = 0.05
+Regression R2 in CalcPosterior = 0.15
+Logpos of the newly proposed non-Null model is 112.13
+logPost_old = 503.13; logPost_new = 112.13
+ logMHratio = -394.07; MHratio = 0.00
+accept = 0
+old rank: 30, 24, 18, 49, 31, 
+Regression R2 = 0.17
+propose new rank: 30, 18, 49, 31, 25, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = 0.47
+Logpos of the newly proposed non-Null model is 503.13
+logPost_old = 503.13; logPost_new = 503.13
+ logMHratio = 0.00; MHratio = 1.00
+accept = 1
+old rank: 30, 18, 49, 31, 25, 
+Regression R2 = 0.17
+propose new rank: 30, 18, 31, 25, 42, 
+propose gamma logMHratio = 0.00; MHratio = 1.00
+Regression R2 in CalcPosterior = -0.08
+Wrong R2 in CalcPosterior = -0.08
+Please try enlarging your LDwindow to at least 500KB!
+Logpos of the newly proposed non-Null model is -190.20
+accept = 0
+old rank: 30, 18, 49, 31, 25, 
+propose new rank: 30, 18, 31, 25, 
+propose gamma logMHratio = -3.06; MHratio = 0.05
+Regression R2 in CalcPosterior = 0.17
+Logpos of the newly proposed non-Null model is 144.52
+logPost_old = 503.13; logPost_new = 144.52
+ logMHratio = -361.68; MHratio = 0.00
+accept = 0
 MCMC completed ... 
 
 region_pip = 1
-gamma acceptance percentage = 0.05
+gamma acceptance percentage = 0.16
 # of selected variants per category: 2, 0, 0, 0, 0, 3, 
-beta_hat: 0.730344, 0.718886, -1.711756, 1.316368, -0.961440, 
-loglike: 369.915925
-k_save_sample = 50000
-logpost_max = 369.915925
+beta_hat: -0.419643, -0.599483, -1.291056, 1.311020, 0.861872, 
+loglike: 520.196983
+k_save_sample = 10
+logpost_max = 520.196983
 
-MCMC_SS costs 1.418236 minutes 
+MCMC_SS costs 0.001055 minutes 
