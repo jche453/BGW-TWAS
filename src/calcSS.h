@@ -95,7 +95,7 @@ public:
 
 };
 
-void getXy(const vector< vector<double> > &LD, const vector<double> &beta, vector <double> &Xty, const vector<double> &xtx);
+void getXty(const vector<double> &beta, const vector<double> &xtx, vector <double> &Xty);
 
 void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > &pos_ChisqTest);
 

@@ -2706,7 +2706,7 @@ gsl_ran_discrete_t * BVSRM::MakeProposalSS(const size_t &pos, double *p_cond, co
 {
     
     size_t pos_j, rank_j;
-    vector<int> j_ind;
+    vector<bool> j_ind;
     double p_max, p_sum=0.0;
     
     for (size_t j=0; j < ns_neib; ++j){
@@ -2735,7 +2735,7 @@ gsl_ran_discrete_t * BVSRM::MakeProposalSS(const size_t &pos, double *p_cond, co
     p_max = *std::max_element(p_cond, p_cond+(ns_neib));
     
     for (size_t j=0; j < ns_neib; ++j){
-        if(j_ind[j]==1){
+        if(j_ind[j]){
             p_cond[j]=exp(p_cond[j]- p_max);
             p_sum += p_cond[j];
         }
@@ -2870,7 +2870,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     PrintVector(cHyp_old.m_gamma); 
     //cout << "Set sigma_subvec... \n";
     getSubVec(sigma_subvec_old, rank_old, snp_pos);
-    //PrintVector(sigma_subvec_old, rank_old.size());
+    PrintVector(sigma_subvec_old, rank_old.size());
     
     cHyp_initial=cHyp_old;
     gsl_vector_memcpy(sigma_subvec_new, sigma_subvec_old);
@@ -2914,16 +2914,23 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
         
         for (size_t i=0; i<n_mh; ++i) {
             //cout << "\n \n propose gamam...\n";
-            cout << "old rank: "; PrintVector(rank_old);
+            //cout << "old rank: "; PrintVector(rank_old);
+            //cout <<"XtX_old: "; PrintMatrix(XtX_old, rank_old.size(), rank_old.size());
+            //cout <<"Xty_old: "; PrintVector(Xty_old, rank_old.size());
+            //cout <<"beta_old: "; PrintVector(beta_old, rank_old.size());
+
             //repeat = 1;
             cHyp_new = cHyp_old;
             rank_new = rank_old;
             logMHratio = ProposeGamma_SS (rank_old, rank_new, cHyp_old, cHyp_new, repeat, LD, Xty, XtX_old, Xty_old, XtX_new, Xty_new); //JY
 
-            cout << "propose new rank: "; PrintVector(rank_new);
+            //cout << "propose new rank: "; PrintVector(rank_new);
+            //cout <<"XtX_new: "; PrintMatrix(XtX_new, rank_new.size(), rank_new.size());
+            //cout <<"Xty_new: "; PrintVector(Xty_new, rank_new.size());
+
             //cout << "flag_gamma = " << flag_gamma << endl;
             //cout << "propose gamma success... with rank_new.size = " << rank_new.size() << endl;
-            cout << "propose gamma logMHratio = "<<logMHratio << "; MHratio = " << exp(logMHratio) << endl;
+            //cout << "propose gamma logMHratio = "<<logMHratio << "; MHratio = " << exp(logMHratio) << endl;
             
             accept = 0;
             if (flag_gamma > 0) {
@@ -2935,11 +2942,12 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
                 if (rank_new.size() > 0) {
                     set_mgamma(cHyp_new, rank_new, snp_pos);
                     getSubVec(sigma_subvec_new, rank_new, snp_pos);
+                    //cout << "sigma_subvec_new: "; PrintVector(sigma_subvec_new, rank_new.size());
                     loglikegamma = CalcLikegamma(cHyp_new);
                     //cout << "loglikegamma = " << loglikegamma << " in the non-Null model \n";
                     logPost_new = CalcPosterior_SS (XtX_new, Xty_new, beta_new, cHyp_new, sigma_subvec_new, Error_Flag, loglike_new) + loglikegamma;
                     loglike_new += loglikegamma;
-                    cout << "Logpos of the newly proposed non-Null model is " << logPost_new << endl;
+                    //cout << "Logpos of the newly proposed non-Null model is " << logPost_new << endl;
                 }
                 else{
                     cHyp_new.m_gamma.assign(n_type, 0);
@@ -2948,22 +2956,23 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
                     logPost_new = loglikegamma;
                     loglike_new = loglikegamma;
                     cHyp_new.pve=0.0;
-                    cout << "Logpos of the null model is " << logPost_new << endl;
+                    //cout << "Logpos of the null model is " << logPost_new << endl;
                 }
                //cout << "cHyp_old.m_gamma = "; PrintVector(cHyp_old.m_gamma);
                //cout << "cHyp_new.m_gamma = "; PrintVector(cHyp_new.m_gamma);
+               //cout <<"beta_new: "; PrintVector(beta_new, rank_new.size());
 
                  // cout << "Calcposterior success." << endl;
                 if (!Error_Flag) {
                     logMHratio += logPost_new-logPost_old;
-                    cout <<"logPost_old = " << logPost_old<< "; logPost_new = "<< logPost_new<< "\n logMHratio = " << logMHratio<< "; MHratio = " << exp(logMHratio) << endl;
+                    //cout <<"logPost_old = " << logPost_old<< "; logPost_new = "<< logPost_new<< "\n logMHratio = " << logMHratio<< "; MHratio = " << exp(logMHratio) << endl;
                     if (logMHratio>0 || log(gsl_rng_uniform(gsl_r))<logMHratio)
                         { accept=1;  n_accept++; }
                 }
             }
             else if (flag_gamma == 0) { nother++; }
             
-            cout << "accept = " << accept << endl;
+            //cout << "accept = " << accept << endl;
             
             if (accept==1) {
                     if(flag_gamma==1) nadd_accept++;
@@ -3293,7 +3302,6 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gs
     //calculate Omega
     gsl_matrix_memcpy(Omega, &XtX_sub.matrix);
     //cout << "Omega : "; PrintMatrix(Omega, s_size, s_size);
-
     CalcXVbeta(Omega, &sigma_sub.vector);
     gsl_vector_view Omega_diag = gsl_matrix_diagonal(Omega);
     gsl_vector_add_constant(&Omega_diag.vector, 1.0);
@@ -3307,20 +3315,21 @@ double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gs
     gsl_vector_mul(beta_hat, &sigma_sub.vector); // posterior estimates of beta
     //cout << "beta_hat: "; PrintVector(beta_hat);
     gsl_vector_view beta_sub=gsl_vector_subvector(beta, 0, s_size);
+    gsl_vector_memcpy(&beta_sub.vector, beta_hat);
     
     double bxy;
     gsl_blas_ddot (&Xty_sub.vector, beta_hat, &bxy);
     double R2 = bxy / yty;
-    cout << "Regression R2 in CalcPosterior = " << R2 << endl;
+    //cout << "Regression R2 in CalcPosterior = " << R2 << endl;
      
     if (R2 > 1.0 || R2 < -0.0) {
         cout << "Wrong R2 in CalcPosterior = " << R2 << endl;
-        cout << "Please try enlarging your LDwindow to at least 500KB!\n";
+        cout << "Regression R2 in CalcPosterior = " << R2 << endl;
+        //cout << "Please try enlarging your LDwindow to at least 500KB!\n";
         Error_Flag=1;
     }
     else{
         Error_Flag=0;
-        gsl_vector_memcpy(&beta_sub.vector, beta_hat);
         cHyp.pve = R2; // Calculate pve
     }
     
@@ -3413,6 +3422,7 @@ double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &r
             if (rank_new.size() > 0) {
                 SetSSgammaDel(XtX_old, Xty_old, rank_old, col_id, XtX_new, Xty_new);
             }
+            //cout << "new XtX : \n"; PrintMatrix(XtX_new, rank_new.size(), rank_new.size());
             //cout << "succesfully deleted a snp" << endl;
         }
         else if (flag_gamma==3) {//switch a snp;
@@ -3480,7 +3490,7 @@ double BVSRM::ProposeGamma_SS (const vector<size_t> &rank_old, vector<size_t> &r
                 
                 SetSSgammaAdd(LD, Xty, XtX_cond, Xty_cond, rank_new, r_add, XtX_new, Xty_new);
                 //cout << "XtX from setSSgammaAdd success: \n";
-                //PrintMatrix(XtX_new, s_size+1, s_size+1);
+                // PrintMatrix(XtX_new, s_size+1, s_size+1);
                 
                 mapRank2in[r_add]=1;
                 rank_new.push_back(r_add);

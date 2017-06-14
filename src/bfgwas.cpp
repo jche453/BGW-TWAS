@@ -779,31 +779,25 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	if (cPar.a_mode==11) {
         
 		gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // phenotype
-		gsl_matrix *W=gsl_matrix_alloc (y->size, 1); // intercept column of 1's
-		gsl_matrix_set_all(W, 1); //covariate matx
-		gsl_matrix *G=gsl_matrix_alloc (y->size, y->size); // kinship matrix
+		gsl_matrix *G=gsl_matrix_alloc (cPar.ni_test, cPar.ni_test); // kinship matrix
 		
 		// set phenotype vector y		
 		// cout << "copy phenotype success ... "<< endl;
-		cPar.CopyPheno (y); // pheno_mean is set here
+		cPar.CopyPheno (y); // pheno_mean is calculated here, and y is centered here
 		cout << "\npheno_mean = " << cPar.pheno_mean << "\n";
         
         if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
         	// reorder y for reading vcf/genotype files
         	cPar.ReorderPheno(y);
     	}
+        cout << "first 10 phenotypes: "; PrintVector(y, 10);
         
-        //cout << "first 10 phenotypes: "; PrintVector(y, 10);
-        
-		//run bvsrm as if rho==1
-        //read genotypes X (not UtX)
+        //read genotypes X 
         clock_t time_readfile = clock();
         uchar ** X_Genotype = new uchar*[cPar.ns_test];
         cPar.ReadGenotypes (X_Genotype, G); //load genotypes
         cout << "Load genotype data cost " << (clock()-time_readfile)/(double(CLOCKS_PER_SEC)*60.0) << " mints\n";
-
         gsl_matrix_free(G);
-        gsl_matrix_free(W);
 
         // Calculate SS
         CALCSS SS; // initialize 
@@ -813,7 +807,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         vector<double> beta_sd;
         // calculate LD matrix, beta, beta_sd
         time_start=clock();
-        SS.GetSS(X_Genotype, y, LD, beta, beta_sd); //// pheno_var is calculated here
+        SS.GetSS(X_Genotype, y, LD, beta, beta_sd); // calculate pheno_var
         cout << "Get SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 
         // save summary statistics
@@ -823,7 +817,6 @@ void BFGWAS::BatchRun (PARAM &cPar)
         	cout << "Write SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
         }
         
-
         //perform BSVRM analysis
         BVSRM cBvsrm;
        // cout << "copy data from param ...\n";
@@ -838,13 +831,12 @@ void BFGWAS::BatchRun (PARAM &cPar)
         //cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
         //cBvsrm.CopyToParam(cPar);
         //cout << "\n MCMC cost " << cPar.time_opt << " minutes \n";
-
         FreeUCharMatrix(X_Genotype, cPar.ns_test); 
 		gsl_vector_free (y);
 
 		// calculate Xty, pval, pos_ChisqTest
         vector<double> Xty;
-        getXy(LD, beta, Xty, cBvsrm.xtx_vec); // convert beta, LD into Xty
+        getXty(beta, cBvsrm.xtx_vec, Xty); // convert beta into Xty
         getPval(beta, cBvsrm.SE_beta, cBvsrm.pval, cBvsrm.pos_ChisqTest);
      
        // Using summary statistics
@@ -853,8 +845,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
         cout << "\nMCMC_SS costs " << cPar.time_opt << " minutes \n";
 
-        cBvsrm.CopyToParam(cPar);
-			
+        cBvsrm.CopyToParam(cPar);	
     }
 		
 	cPar.time_total=(clock()-time_begin)/(double(CLOCKS_PER_SEC)*60.0);

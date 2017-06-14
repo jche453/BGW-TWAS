@@ -587,6 +587,7 @@ void PARAM::CopyPheno (gsl_vector *y)
 		}
 	}
 	pheno_mean /= (double) ci_test;
+	gsl_vector_add_constant(y, -1.0 * pheno_mean); 
 	
 	return;
 }
@@ -609,6 +610,7 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const si
     //SNPsd.clear();
     
     for (size_t i=0; i < ns_total; ++i){
+    	
         if(!indicator_snp[i]) {continue;}
         
         pos=tt;

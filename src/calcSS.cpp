@@ -58,16 +58,11 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 
     Gvec.assign(n_type, 0.0); // set 
 
-    // y is centered by cPar.CopyPheno() 
-    double yty;
-    gsl_blas_ddot(y, y, &yty); // yty is the sum square of total SST
-    pheno_var = yty / ((double)(ni_test-1)) ;
-    cout << "pheno_var = " << pheno_var << endl;
+    // Center y is centered by cPar.CopyPheno()
+    gsl_blas_ddot(y, y, &pheno_var); 
+    pheno_var /= ((double)(ni_test-1)) ;
+    cout << "pheno_var = " << pheno_var << "\n";
 
-    // standardize phenotype y
-    // gsl_vector_scale(y, 1.0 / sqrt(pheno_var)); 
-    gsl_blas_ddot(y, y, &yty); // calculate yty for one more time after standardization
-    
     //cout << "create UcharTable ...\n";
     CreateUcharTable(UcharTable);
 
@@ -80,10 +75,12 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
     gsl_vector *xvec_j = gsl_vector_alloc(ni_test);
     gsl_vector *xbeta_i = gsl_vector_alloc(ni_test);
 
-    double xtx_ij, xty, xtx_i, beta_i, beta_sd_i, xtx_j, r2;
+    double xtx_ij, xty, xtx_i, beta_i, beta_sd_i, xtx_j, r;
     beta.clear();
     xtx_vec.clear();
+    beta_sd.clear();
 
+    cout << "calculate xtx, beta, beta_sd ... \n";
     for (size_t i=0; i<ns_test; ++i) {
         //calculate xtx_i
         getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
@@ -100,17 +97,22 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 
         //calculate effect-size
         gsl_blas_ddot(xvec_i, y, &xty);
-        beta_i = xty / xtx_i;
+        if(xtx_i > 0) beta_i = xty / xtx_i;
+        else beta_i = 0.0;
         beta.push_back(beta_i);
 
         gsl_vector_memcpy(xbeta_i, xvec_i);
         gsl_vector_scale(xbeta_i, -beta_i);
         gsl_vector_add(xbeta_i, y);
         gsl_blas_ddot(xbeta_i, xbeta_i, &beta_sd_i);
-        beta_sd_i = sqrt( beta_sd_i / ((double)ni_test * xtx_i) );
+
+        if(xtx_i > 0) beta_sd_i = sqrt( beta_sd_i / ((double)ni_test * xtx_i) );
+        else beta_sd_i = 0.0; 
+
         beta_sd.push_back(beta_sd_i);
     }
 
+    cout << "start calculating LD coefficients ... \n";
     LD.clear();
     for (size_t i=0; i<ns_test; ++i) {
 
@@ -130,8 +132,11 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
                     getGTgslVec(X, xvec_j, snp_pos[j].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
                     gsl_blas_ddot(xvec_i, xvec_j, &xtx_ij);
                     xtx_j = xtx_vec[j];
-                    r2 = (xtx_ij * xtx_ij) / (xtx_i * xtx_j) ;
-                    LD[i].push_back(r2);
+
+                    if (xtx_i * xtx_j > 0) r = (xtx_ij) / sqrt(xtx_i * xtx_j) ;
+                    else r = 0.0; 
+
+                    LD[i].push_back(r);
                 }else{break;}
             }
         }
@@ -235,20 +240,20 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
 }
 
 
-void getXy(const vector< vector<double> > &LD, const vector<double> &beta, vector <double> &Xty, const vector<double> &xtx)
+void getXty(const vector<double> &beta, const vector<double> &xtx, vector <double> &Xty)
 {
 	//n is the sample size
+    cout << "Calculate Xty ... \n";
     Xty.clear();
-    double xty_i;
     for(size_t i=0; i<beta.size(); i++){
-        xty_i = beta[i] * xtx[i];
-        Xty.push_back(xty_i);
+        Xty.push_back( beta[i] * xtx[i] );
     }
     return;
 }
 
 void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > &pos_ChisqTest)
 {
+    cout << "Calculate pval ... \n";
     pval.clear();
     pos_ChisqTest.clear();
     double pval_i, chisq_i;
@@ -274,14 +279,13 @@ double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const siz
     {
         if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
             {
-                xtx_ij = LD[pos_i][pos_j - pos_i] * xtx[pos_i] * xtx[pos_j];   
+                xtx_ij = LD[pos_i][pos_j - pos_i] * sqrt(xtx[pos_i] * xtx[pos_j]);   
             }     
         else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
             {
-                xtx_ij = LD[pos_j][pos_i - pos_j] * xtx[pos_i] * xtx[pos_j];
+                xtx_ij = LD[pos_j][pos_i - pos_j] * sqrt(xtx[pos_i] * xtx[pos_j]);
             }
 
-        xtx_ij = sqrt(xtx_ij) ;
     }
 
     return xtx_ij;
@@ -306,9 +310,11 @@ double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size
             }     
         else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
             {
-                r2_ij = LD[pos_j][pos_i - pos_j] ;
+                r2_ij = LD[pos_j][pos_i - pos_j]  ;
             }
     }
+
+    r2_ij = r2_ij * r2_ij;
 
     return r2_ij;
 }
@@ -322,12 +328,14 @@ double CalcResVar(const gsl_vector * Xty_cond, const gsl_vector * beta_cond, con
 
     gsl_blas_ddot(Xty_cond, beta_cond, &xtyb);
 
-    cout << "Regression R2 = " << xtyb / yty << endl;
+    //cout << "Regression R2 in calcResVar = " << xtyb / yty << endl;
 
     rtr = yty - xtyb ;
 
-    if(rtr <= 0)
-        perror("Nonpositive residual variance!\n");
+    if(rtr <= 0){
+        cout << "Regression R2 in calcResVar = " << xtyb / yty << endl;
+        perror("Nonpositive residual variance!\n");  
+    }
 
     return rtr;
 }
