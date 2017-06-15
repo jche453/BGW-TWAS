@@ -16,37 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <iomanip>
-#include <bitset>
-#include <vector>
-#include <map>
-#include <set>
-#include <cstring>
-#include <cmath>
-#include <stdio.h>
-#include <stdlib.h> 
-#include <ctype.h>
 
-#include "gsl/gsl_vector.h"
-#include "gsl/gsl_matrix.h"
-#include "gsl/gsl_linalg.h"
-#include "gsl/gsl_blas.h"
-#include "gsl/gsl_cdf.h"
-
-#include "lapack.h"
-#include "gzstream.h"
-#include "mathfunc.h"
-#include "ReadVCF.h"
-#include "bvsrm.h"
-#include "compress.h"
 #include "io.h"
 
 
-using namespace std;
 
 // define to_string function : convert to string
 template <class T>
@@ -1759,7 +1732,7 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
     CompBuffSizeVec.clear();
     SNPmean.clear();
 
-    double geno, geno_mean, vtx;
+    double geno, geno_mean;
     size_t n_miss, c_idv=0, c_snp=0, ctest_snp = 0, ctest_idv=0;
     int result;
     
@@ -2332,6 +2305,427 @@ void WriteVector(const gsl_vector * X, const string file_str){
     return;
 }
 
+// Read summary statistics (only for studied variants)
+bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<string, int> &mapID2num, vector<double> &beta, vector<double> &beta_sd, vector<double> &xtx_vec, size_t &ns_test)
+{
+    string line;
+    char *pch, *nch;
+
+    string rs, chr, minor, major;
+    double maf_i;
+    long int b_pos=0;
+
+    vector<bool> indicator_func_temp;
+    vector<double> weight_temp;
+
+    ns_test = 0;
+    mapID2num.clear();
+    beta.clear();
+    beta_sd.clear();
+    xtx_vec.clear();
+
+    igzstream infile_ss (file_VarSS.c_str(), igzstream::in);
+    if (!infile_ss) {cout<<"error opening annotation file: "<<file_VarSS<<endl; return false;}
+
+    while (!safeGetline(infile_ss, line).eof()) {
+        
+        if (line[0] == '#') 
+            { continue; }
+        else {
+            pch = (char *)line.c_str();
+            nch = strchr(pch, '\t');
+            rs.assign(pch, nch-pch);
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                chr.assign(pch, nch-pch);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                b_pos = strtol(pch, NULL, 0);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                major.assign(pch, nch-pch);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                minor.assign(pch, nch-pch);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                beta.push_back(strtod(pch, NULL));
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                beta_sd.push_back ( strtod(pch, NULL) );
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                maf_i = strtod(pch, NULL);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                xtx_vec.push_back ( strtod(pch, NULL) );
+            }
+
+            if( rs.empty() || (rs.compare(".") == 0) ){
+                rs = chr + ":" + to_string(b_pos) + ":" + minor + ":" + major;
+            }
+
+            SNPINFO sInfo = {chr, rs, -9, b_pos, minor, major, -9, -9, maf_i, indicator_func_temp, weight_temp, 0.0};
+            snpInfo.push_back( sInfo );
+            mapID2num[rs] = ns_test;
+            ns_test++;
+        }
+    }
+
+    infile_ss.close();
+    infile_ss.clear();
+
+    cout << "Loading vairant summary statistics file success ... \n";
+    return true;
+}
+
+
+//Read function annotation file with summary statistics
+bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, int> &mapID2num, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc)
+{
+    string line;
+    char *pch, *nch;
+
+    //load in unique function codes
+    string func_type;
+    int func_code, snp_nfunc;
+    
+    // Load function_code file first, create a hash map between func_type and code
+    // cout<<"Reading annotation code file: "<<file_func_code<<endl; 
+    igzstream infile_code (file_func_code.c_str(), igzstream::in);
+    if (!infile_code) {cout<<"error opening annotation file: "<<file_func_code<<endl; return false;}
+
+    while (!safeGetline(infile_code, line).eof()) {
+        
+        if (line[0] == '#') {
+            pch = (char *)line.c_str();
+            nch = strchr(pch, '\t');
+            n_type = strtol(nch, NULL, 0);
+            // cout << "Number of annotation categories" << n_type << endl;            
+            mFunc.assign(n_type, 0);
+            continue;
+        }
+        else {
+            pch = (char *)line.c_str();
+            nch = strchr(pch, '\t');
+            func_type.assign(pch, nch-pch);
+            func_code = strtol(nch, NULL, 0);
+            //cout << func_type << ":" << func_code << endl;
+            mapFunc2Code[func_type] = func_code;
+        }
+    }
+    infile_code.close();
+    infile_code.clear();
+    
+    // Load annotation file...
+    // cout<<"Reading annotation file: "<<file_anno<<endl; 
+    igzstream infile (file_anno.c_str(), igzstream::in);
+    if (!infile) {cout<<"error opening annotation file: "<<file_anno<<endl; return false;}
+    
+    // read function annotation file
+    string rs, chr;
+    long int b_pos=0;
+    size_t snp_i = 0;
+    double maf_temp;
+
+    while (!safeGetline(infile, line).eof()) {
+        if (line[0] == '#' || (line[0] == 'I' && line[1] == 'D')) {
+            continue;
+        }
+        else {
+            pch=(char *)line.c_str();
+            nch = strchr(pch, '\t');
+            rs.assign(pch, nch-pch);
+            if(mapID2num.count(rs) == 0) {continue;} //not in the VarSS file
+            else{ snp_i = mapID2num[rs] ; } // map to the variant position in VarSS
+            
+            pch = (nch == NULL) ? NULL : nch+1;
+            nch = strchr(pch, '\t');
+            chr.assign(pch, nch-pch); //chr
+
+            pch = (nch == NULL) ? NULL : nch+1;
+            nch = strchr(pch, '\t');
+            b_pos = strtol(pch, NULL, 0); //base pair position
+
+            pch = (nch == NULL) ? NULL : nch+1;
+            snp_nfunc = 0;
+            snpInfo[snp_i].indicator_func.assign(n_type, 0);
+            maf_temp = snpInfo[snp_i].maf;
+            if(maf_temp > 0.5) maf_temp = 1.0 - maf_temp;
+
+            //if (snp_i < 5)  cout << rs << ":chr" << chr << ":bp"<< b_pos <<endl;
+            if( isalpha(pch[0]) || isdigit(pch[0]) ){
+                //pch[0] is a letter or number
+                while (pch != NULL) {
+                    nch = strchr(pch, ',');
+                    if (nch == NULL) func_type.assign(pch);
+                    else func_type.assign(pch, nch-pch);
+
+                    func_code = mapFunc2Code[func_type];
+                    //if(snp_i < 10)  cout << func_type << " with code " << func_code << endl;
+                    if(!snpInfo[snp_i].indicator_func[func_code])
+                    {
+                        snpInfo[snp_i].indicator_func[func_code] = 1;
+                        snp_nfunc++;
+                    }
+                    pch = (nch == NULL) ? NULL : nch+1;
+                }
+            }
+            else{
+                func_type.assign("NA");
+                func_code = mapFunc2Code[func_type];
+                //if(snp_i < 10)  cout << "NA" << " with code " << func_code << endl;
+                if(!snpInfo[snp_i].indicator_func[func_code])
+                    {
+                        snpInfo[snp_i].indicator_func[func_code] = 1;
+                        snp_nfunc++;
+                    }
+            }
+            
+            //if ((snp_nfunc > 0) && (snp_nfunc <= n_type))
+            if (snp_nfunc == 1)
+              {
+                snpInfo[snp_i].weight_i = 1.0 ;// / (double)snp_nfunc;
+                mFunc[func_code]++;
+              }
+            else if (snp_nfunc == 0) {
+                snpInfo[snp_i].weight_i = 0.0;
+                cout << "function annotation is NULL \n ";
+            }
+            else {cerr << "ERROR: snp_nfunc = " <<snp_nfunc<< " ... \n"; exit(-1);}
+
+        }
+    }
+    cout << "Number of annotation categories: " << n_type << endl;
+    cout << "Number of variants per category: "; PrintVector(mFunc);
+    
+    infile.close();
+    infile.clear(); 
+    
+    return true;
+}
+
+
+//Empty Annotation
+bool Empty_anno (vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc)
+{
+    cout << "Empty annotation file, all variants are treated as of one category!" << endl;
+
+    n_type = 1; // all variants are of one annotation
+    mFunc.assign(1, 0);
+
+    for(size_t i = 0; i < snpInfo.size(); i++){
+        snpInfo[i].indicator_func.assign(n_type, 1);
+        snpInfo[i].weight_i = 1.0 ;
+        mFunc[0]++;
+    }
+
+    cout << "Number of annotation categories: " << n_type << endl;
+    cout << "Number of variants per category: "; PrintVector(mFunc);
+    
+    return true;
+}
+
+// Read LD coefficients 
+bool ReadFile_LD(const string &file_LD, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD)
+{
+    size_t n_snp = 0;
+
+    string line;
+    char *pch, *nch, *mch;
+
+    string rs, chr, minor, major;
+    long int b_pos;
+    double r;
+
+    LD.clear();
+
+    igzstream infile_LD (file_LD.c_str(), igzstream::in);
+    if (!infile_LD) {cout<<"error opening LD correlation file: "<<file_LD<<endl; return false;}
+
+    while (!safeGetline(infile_LD, line).eof()) {
+        
+        if (line[0] == '#') {
+            continue;
+        }
+        else {
+            LD.push_back(vector<double>());
+
+            pch = (char *)line.c_str();
+            nch = strchr(pch, '\t');
+            rs.assign(pch, nch-pch);
+
+            if(rs != snpInfo[n_snp].rs_number) {
+                perror("Error: Variants in LD coefficient file does not match with VarSS file!");
+                cout << "For row " << n_snp << ": " << endl;
+                cout << "Variant ID in LD file is " << rs << endl; 
+                cout << "Variant ID in VarSS file is " << snpInfo[n_snp].rs_number << endl;
+                exit(-1);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                chr.assign(pch, nch-pch);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                b_pos = strtol(pch, NULL, 0);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                major.assign(pch, nch-pch);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                minor.assign(pch, nch-pch);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t'); // Read POSvec
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary statistics file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                //nch = strchr(pch, '\t'); // Read LDvec
+                while(pch != NULL)
+                {
+                    mch = strchr(pch, ',');
+                    r = strtod(pch, NULL) ;
+                    // if(n_snp < 5) cout << r << ",";
+
+                    LD[n_snp].push_back(r);
+                    pch = (mch == NULL) ? NULL : mch+1;
+                }
+            }
+            // if(n_snp < 5) cout << "LD vec size : " << LD[n_snp].size() << endl;
+            n_snp++;
+        }
+    }
+
+    infile_LD.close();
+    infile_LD.clear();
+
+    if(n_snp != ns_test) {
+        perror("Error: the number of variants in LD coefficient file dose not match with the VarSS file! \n");
+        exit(-1);
+    }
+
+    cout << "Load LD coefficient file success ... \n";
+
+    return true;
+}
+
+
 //write gsl_vector X with filename = ***.txt
+
+
+
+
+
+
+
+
+
 
 

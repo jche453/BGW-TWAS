@@ -19,15 +19,37 @@
 #ifndef __IO_H__                
 #define __IO_H__
 
-
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <iomanip>
+#include <bitset>
 #include <vector>
 #include <map>
+#include <set>
+#include <cstring>
+#include <cmath>
+#include <stdio.h>
+#include <stdlib.h> 
+#include <ctype.h>
 #include <algorithm>
+
 #include "gsl/gsl_vector.h"
 #include "gsl/gsl_matrix.h"
+#include "gsl/gsl_linalg.h"
+#include "gsl/gsl_blas.h"
+#include "gsl/gsl_cdf.h"
 
+#include "compress.h"
+#include "lapack.h"
+#include "gzstream.h"
+#include "mathfunc.h"
+#include "ReadVCF.h"
 #include "param.h"
 
+// #include "calcSS.h"
+// #include "bvsrm.h"
 
 typedef unsigned char uchar;
 typedef unsigned short uint16;
@@ -90,6 +112,15 @@ void SetMAFCode (const double &maf, string &func_type);
 
 void WriteMatrix(const gsl_matrix * X, const string file_str);
 void WriteVector(const gsl_vector * X, const string file_str);
+
+// for loading summary statistics
+bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<string, int> &mapID2num, vector<double> &beta, vector<double> &beta_sd, vector<double> &xtx_vec, size_t &ns_test);
+
+bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, int> &mapID2num, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
+
+bool Empty_anno (vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
+
+bool ReadFile_LD(const string &file_LD, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> > &LD);
 
 #endif
 

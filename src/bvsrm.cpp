@@ -104,6 +104,7 @@ void BVSRM::CopyFromParam (PARAM &cPar)
 	indicator_idv=cPar.indicator_idv;
 	indicator_snp=cPar.indicator_snp;
 	snpInfo=cPar.snpInfo;
+    snp_pos = cPar.snp_pos;
 	
 	return;
 }
@@ -113,7 +114,6 @@ void BVSRM::CopyFromSS (CALCSS &SS) {
     UcharTable = SS.UcharTable;
     pheno_mean = SS.pheno_mean;
     pheno_var = SS.pheno_var;
-    Gvec = SS.Gvec;
     xtx_vec = SS.xtx_vec;
     return;
 }
@@ -565,7 +565,7 @@ void BVSRM::SetXgamma (uchar **X, const gsl_matrix *X_old, const gsl_matrix *XtX
             //#endif
             gsl_blas_dgemv(CblasTrans, 1.0, X_add, y, 0.0, Xty_add);
             
-            time_Omega+=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
+            time_Omega += (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
             
             //save to X_new, XtX_new and Xty_new
             i_old=0; i_new=0; i_add=0;
@@ -790,6 +790,7 @@ void BVSRM::setHyp(double theta_temp, double subvar_temp){
     // Default initial values   
     cout << "rv = phenotype variance  = " << rv << endl;
     tau = 1.0 / rv; logrv = log(2.0 * M_PI * rv);
+    //cout << "after set, tau = " << tau << "; log(2pi*rv) = " <<logrv << endl;
 
     theta.assign(n_type, theta_temp);
     subvar.assign(n_type, subvar_temp);
@@ -1821,9 +1822,8 @@ void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
 
     gsl_t=gsl_ran_discrete_preproc (ns_test, p_gamma); // set up proposal function for gamma
     
-     //cout<< "Residual Variance Proportion = " << rv << endl;
-    rv *= ztz / ((double)(ni_test-1)); 
-    // tau = 1.0 / rv; logrv = log(2.0 * M_PI * rv);
+    pheno_var *= ztz / ((double)(ni_test-1));
+    rv = pheno_var; 
     //cout<< "Fix Residual Variance = " << rv << endl;
     //cout << "tau = " << tau << "; log(2pi*rv) = " <<logrv << endl;
 
@@ -2761,6 +2761,21 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     yty = pheno_var * (double)(ni_test-1) ;
     rv = pheno_var;
     cout << "yty is " << yty << endl;
+
+    clock_t time_start;
+    time_Proposal = 0.0;
+    time_Omega = 0.0;
+
+    // Calculate Gvec
+    Gvec.assign(n_type, 0.0);
+    for(size_t i = 0; i < ns_test; i++){
+        for (size_t j=0; j<n_type; j++) {
+            if (snp_pos[i].indicator_func[j]) {
+                Gvec[j] += (xtx_vec[i] / (double)ni_test);
+                continue;
+            }
+        }
+    }
     
     //new model related
     gsl_vector *sigma_subvec_old = gsl_vector_alloc(s_max);
@@ -2850,8 +2865,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     //cout << "log_qtheta: "; PrintVector(log_qtheta);
     //cout << "cHyp_old.m_gamma: "; PrintVector(cHyp_old.m_gamma);
     //cout << "mFunc : "; PrintVector(mFunc);
-    //tau = 1.0 / rv; logrv = log(2.0 * M_PI * rv);
-    //cout << "after set, tau = " << tau << "; log(2pi*rv) = " <<logrv << endl;
+    
 
     
     inv_subvar.assign(n_type, 0.0), log_subvar.assign(n_type, 0.0);
@@ -2906,6 +2920,8 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     vector <string> snps_mcmc; // save locations of included snps per iteration
     string snps_mcmc_temp;
 
+    
+
     for (size_t t=0; t<total_step; ++t) {
         
        if (t%d_pace==0 || t==total_step-1) {ProgressBar ("\nRunning MCMC ", t, total_step-1, (double)n_accept/(double)(t*n_mh+1));
@@ -2922,7 +2938,9 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
             //repeat = 1;
             cHyp_new = cHyp_old;
             rank_new = rank_old;
+            time_start = clock();
             logMHratio = ProposeGamma_SS (rank_old, rank_new, cHyp_old, cHyp_new, repeat, LD, Xty, XtX_old, Xty_old, XtX_new, Xty_new); //JY
+            time_Proposal += (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
 
             //cout << "propose new rank: "; PrintVector(rank_new);
             //cout <<"XtX_new: "; PrintMatrix(XtX_new, rank_new.size(), rank_new.size());
@@ -2933,6 +2951,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
             //cout << "propose gamma logMHratio = "<<logMHratio << "; MHratio = " << exp(logMHratio) << endl;
             
             accept = 0;
+            time_start = clock_t(); //record time on calculating posterior
             if (flag_gamma > 0) {
 
                 if(flag_gamma==1) nadd++;
@@ -2971,6 +2990,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
                 }
             }
             else if (flag_gamma == 0) { nother++; }
+            time_Omega += (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
             
             //cout << "accept = " << accept << endl;
             

@@ -51,12 +51,11 @@ void CALCSS::CopyFromParam (PARAM &cPar)
     return;
 }
 
+
 //calculat LD correlation matrix
 void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_sd){
 
     cout << "\nStart calculating summary statistics ... \n";
-
-    Gvec.assign(n_type, 0.0); // set 
 
     // Center y is centered by cPar.CopyPheno()
     gsl_blas_ddot(y, y, &pheno_var); 
@@ -86,14 +85,6 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
         getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
         gsl_blas_ddot(xvec_i, xvec_i, &xtx_i);
         xtx_vec.push_back(xtx_i);
-
-        for (size_t j=0; j<n_type; j++) {
-            if (snp_pos[i].indicator_func[j]) {
-                Gvec[j] += (xtx_i / (double)ni_test);
-                //Gvec[j] += (xtx );
-                continue;
-            }
-        }
 
         //calculate effect-size
         gsl_blas_ddot(xvec_i, y, &xty);

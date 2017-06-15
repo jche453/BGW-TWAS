@@ -68,7 +68,6 @@ public:
     vector <size_t> CompBuffSizeVec;
     bool Compress_Flag;
     vector<pair<int, double> > UcharTable;
-    vector <double> Gvec;
     vector <double> xtx_vec;
 
     string file_out;

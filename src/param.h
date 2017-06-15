@@ -175,7 +175,7 @@ public:
     int iniType;
     bool FIXHYP;
     
-    bool calc_K, saveGeno, saveSS, zipSS;
+    bool calc_K, saveGeno, saveSS, zipSS, inputSS;
     long int LDwindow;
 
     string iniSNPfile;
@@ -194,6 +194,11 @@ public:
     vector<string> InputSampleID; //size = ni_total
     vector<pair<int, double> > UcharTable;
     vector<double> SNPmean;
+
+    // SS related parameters
+    string file_VarSS;
+    string file_LD;
+
     
 	bool mode_silence;
 	int a_mode;				//analysis mode, 1/2/3/4 for Frequentist tests
@@ -274,6 +279,7 @@ public:
 	map<string, double> mapRS2est;			//map rs# to parameters
 	
 	vector<SNPINFO> snpInfo;		//record SNP information
+	vector<SNPPOS> snp_pos;
 	set<string> setSnps;			//a set of snps for analysis
 	
 	//constructor
@@ -286,6 +292,9 @@ public:
 	void PrintSummary ();
 	void ReadGenotypes (uchar **X, gsl_matrix *K);
 	void WriteGenotypes(uchar **X);
+
+	// summary statistics;
+	void ReadSS (vector< vector<double> >  &LD, vector<double> & beta, vector<double> &beta_sd, vector<double> &xtx_vec);
     
 	//void CheckCvt ();
 	void ProcessPheno();
@@ -299,6 +308,8 @@ public:
 
 
 void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const size_t &ns_total, const vector<bool> &indicator_snp);
+
+void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const size_t &ns_total);
 
 bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs);
 
