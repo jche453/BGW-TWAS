@@ -2757,9 +2757,9 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     cout << "\nRunning MCMC with Summary Statistics ... \n";
     //cout << "# of unique function types = " << n_type << endl;
 
-    // obtain yty from pheno_var
-    yty = pheno_var * (double)(ni_test-1) ;
+    // obtain yty from pheno_var, set rv = pheno_var
     rv = pheno_var;
+    yty = pheno_var * (double)(ni_test-1) ;
     cout << "yty is " << yty << endl;
 
     clock_t time_start;

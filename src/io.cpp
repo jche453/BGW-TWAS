@@ -400,7 +400,7 @@ bool ReadFile_bim (const string &file_bim, vector<SNPINFO> &snpInfo)
 		major=ch_ptr;
 
         if(rs.compare(".") == 0 || rs.empty()){
-                rs = chr + ":" + to_string(b_pos) + ":" + minor + ":" + major;
+                rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
         }
 		
         SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, -9, -9, -9, indicator_func_temp, weight_temp, 0.0};
@@ -654,14 +654,14 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
                     case 2:
 			            rs = s; break;
                     case 3:
-                        minor = s; break;
-                    case 4:
                         major = s; break;
+                    case 4:
+                        minor = s; break;
                     default:
                         break;
                 }
                 if(rs.compare(".") == 0 || rs.empty()){
-                    rs = chr + ":" + to_string(b_pos) + ":" + minor + ":" + major;
+                    rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
                 }
                 if (setSnps.size()!=0 && setSnps.count(rs)==0) {
                     indicator_snp.push_back(0);
@@ -756,9 +756,6 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
 
                     if (p==NULL) {
                         geno = -9;//missing
-                        genotype_miss[ctest_idv]=1; n_miss++; c_idv++; ctest_idv++; 
-                        	pch = (nch == NULL) ? NULL : nch+1;
-                        	continue;
                     }
                     //start here
                     else if ( (p[1] == '/') || (p[1] == '|') ) {
@@ -781,7 +778,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
                                 if(geno != 1 && geno != 0 && geno != 2){ geno = -9; } // multi-allelic
                             }                   
                         }
-                        else {
+                        else if (GTfield != "GT"){
                             //read dosage data
                             if( (p[0]=='.') && ( (p[1] == '\t') || (p[1] == ':') ) ){
                                 geno = -9; // missing                           
@@ -792,6 +789,8 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
                                 cerr << "dosage data is not a digit ... " << endl;
                                 exit(-1);
                             }                        
+                        }else{
+                            geno = -9;
                         }
                                                 // Missing or multi-allelic
                         if(geno == -9){
@@ -985,16 +984,16 @@ bool ReadFile_geno (const string &file_geno, const set<string> &setSnps, vector<
                         case 2:
                             b_pos=atol(s.c_str()); break;
                         case 3:
-                            minor = s; break;
-                        case 4:
                             major = s; break;
+                        case 4:
+                            minor = s; break;
                         default:
                             break;
                     }
                     pch = (nch == NULL) ? NULL : nch+1;  
                 }
                 if(rs.compare(".") == 0 || rs.empty()){
-                    rs = chr + ":" + to_string(b_pos) + ":" + minor + ":" + major;
+                    rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
                 }
                 else if ( tab_count == SampleVcfPos[ctest_idv] )
                 {
@@ -1609,19 +1608,11 @@ bool VCFKin (const string &file_vcf, vector<bool> &indicator_idv, vector<bool> &
 
                         if (p==NULL) {
                             geno = -9;//missing
-                            gsl_vector_set (geno_vec, ctest_idv, geno);
-                            n_miss++; c_idv++; ctest_idv++; 
-                            pch = (nch == NULL) ? NULL : nch+1;
-                            continue;
                         }
                         else if ( (p[1] == '/') || (p[1] == '|') ) {
                         //read bi-allelic GT
                             if( (p[0]=='.') && (p[2]=='.')){
                                 geno = -9;//missing
-                                gsl_vector_set (geno_vec, ctest_idv, geno);
-                                n_miss++; c_idv++; ctest_idv++;
-                                pch = (nch == NULL) ? NULL : nch+1;
-                                continue;
                             }
                             else if ( (p[0]=='.') && (p[2]!='.')) {
                                 geno = (double)(p[2] -'0');
@@ -1631,24 +1622,35 @@ bool VCFKin (const string &file_vcf, vector<bool> &indicator_idv, vector<bool> &
                             }
                             else geno = (double)((p[0] - '0') + (p[2]- '0'));
                         }
-                        else {
+                        else if(GTfield != "GT"){
                             //read dosage data
                             if( (p[0]=='.') && ( (p[1] == '\t') || (p[1] == ':') ) ){
-                                geno = -9;
-                                gsl_vector_set (geno_vec, ctest_idv, geno);
-                                n_miss++; c_idv++; ctest_idv++;
-                                pch = (nch == NULL) ? NULL : nch+1;
-                                continue;                               
+                                geno = -9;                              
                             }else if (isdigit(p[0])){
                                 geno = strtod(p, NULL);
                             }else{
                                 cerr << "dosage data is not a digit ... " << endl;
                                 exit(-1);
                             }                        
+                        }else{
+                            geno = -9;
                         }
 
-                        gsl_vector_set (geno_vec, ctest_idv, geno);
-                        if( (geno >= 0.0) && (geno <= 2.0)) {geno_mean += geno;}
+                        if(geno == -9){
+                            gsl_vector_set (geno_vec, ctest_idv, geno);
+                            n_miss++; c_idv++; ctest_idv++; 
+                            pch = (nch == NULL) ? NULL : nch+1;
+                            continue;
+                        } else if( (geno >= 0.0) && (geno <= 2.0)) 
+                            { 
+                                gsl_vector_set (geno_vec, ctest_idv, geno);
+                                geno_mean += geno;
+                            }                       
+                        else {
+                            cout << "ERROR: geno falls outside [0, 2]! " << geno <<";" << pheno_id << endl;
+                            exit(-1); 
+                        }
+                          
                         ctest_idv++; // increase analyzed phenotype #
                         c_idv++;
                     }
@@ -1844,7 +1846,7 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
                                 if(geno != 1 && geno != 0 && geno != 2){ geno = -9; } // multi-allelic
                             }                   
                     	}
-                    	else {
+                    	else if ( GTfield != "GT" ){
                         	//read dosage data
                         	if( (p[0]=='.') && ( (p[1] == '\t') || (p[1] == ':') ) ){
                         		geno = -9; // missing                      		
@@ -1855,7 +1857,9 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
                         		cerr << "dosage data is not a digit ... " << endl;
                         		exit(-1);
                         	}                        
-                    	}
+                    	}else{
+                            geno = -9;
+                        }
 
                         // Missing or multi-allelic
                         if(geno == -9){
@@ -2425,7 +2429,7 @@ bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<stri
             }
 
             if( rs.empty() || (rs.compare(".") == 0) ){
-                rs = chr + ":" + to_string(b_pos) + ":" + minor + ":" + major;
+                rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
             }
 
             SNPINFO sInfo = {chr, rs, -9, b_pos, minor, major, -9, -9, maf_i, indicator_func_temp, weight_temp, 0.0};
