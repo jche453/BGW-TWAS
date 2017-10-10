@@ -2310,13 +2310,13 @@ void WriteVector(const gsl_vector * X, const string file_str){
 }
 
 // Read summary statistics (only for studied variants)
-bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<string, int> &mapID2num, vector<double> &beta, vector<double> &beta_sd, vector<double> &xtx_vec, size_t &ns_test)
+bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, int> &mapID2num, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test)
 {
     string line;
     char *pch, *nch;
 
     string rs, chr, minor, major;
-    double maf_i;
+    double maf_i, p_score;
     long int b_pos=0;
 
     vector<bool> indicator_func_temp;
@@ -2324,35 +2324,25 @@ bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<stri
 
     ns_test = 0;
     mapID2num.clear();
-    beta.clear();
-    beta_sd.clear();
-    xtx_vec.clear();
+    //beta.clear();
+    pval.clear();
+    pos_ChisqTest.clear();
+    U_STAT.clear();
 
-    igzstream infile_ss (file_VarSS.c_str(), igzstream::in);
-    if (!infile_ss) {cout<<"error opening annotation file: "<<file_VarSS<<endl; return false;}
+    igzstream infile_score (file_score.c_str(), igzstream::in);
+    if (!infile_score) {cout<<"error opening annotation file: "<<file_score<<endl; return false;}
 
-    while (!safeGetline(infile_ss, line).eof()) {
+    while (!safeGetline(infile_score, line).eof()) {
         
         if (line[0] == '#') 
             { continue; }
         else {
             pch = (char *)line.c_str();
             nch = strchr(pch, '\t');
-            rs.assign(pch, nch-pch);
+            chr.assign(pch, nch-pch);
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
-                exit(-1);
-            }
-            else
-            {
-                pch = nch+1;
-                nch = strchr(pch, '\t');
-                chr.assign(pch, nch-pch);
-            }
-
-            if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary score statistic file");
                 exit(-1);
             }
             else
@@ -2363,7 +2353,7 @@ bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<stri
             }
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary score statistic file");
                 exit(-1);
             }
             else
@@ -2374,7 +2364,7 @@ bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<stri
             }
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary score statistic file");
                 exit(-1);
             }
             else
@@ -2385,29 +2375,17 @@ bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<stri
             }
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary score statistic file");
                 exit(-1);
             }
             else
             {
                 pch = nch+1;
                 nch = strchr(pch, '\t');
-                beta.push_back(strtod(pch, NULL));
-            }
+            } //  N_INFO
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
-                exit(-1);
-            }
-            else
-            {
-                pch = nch+1;
-                nch = strchr(pch, '\t');
-                beta_sd.push_back ( strtod(pch, NULL) );
-            }
-
-            if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary score statistic file");
                 exit(-1);
             }
             else
@@ -2415,22 +2393,126 @@ bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<stri
                 pch = nch+1;
                 nch = strchr(pch, '\t');
                 maf_i = strtod(pch, NULL);
-            }
+            } //  Founder_AF
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary score statistic file");
                 exit(-1);
             }
             else
             {
                 pch = nch+1;
                 nch = strchr(pch, '\t');
-                xtx_vec.push_back ( strtod(pch, NULL) );
+            } //  ALL_AF
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+            } //  INFOR_ALT_AC
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+            } //  CALL_RATE
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+            } //  HWE_PVALUE
+
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+            } //  N_REF
+
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+            } //  N_HET
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+            } //  N_ALT
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                U_STAT.push_back(strtod(pch, NULL));
+            } //  U_STAT
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+            } //  SQRT_V_STAT
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                //beta.push_back(strtod(pch, NULL));
             }
 
-            if( rs.empty() || (rs.compare(".") == 0) ){
-                rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
             }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                p_score = strtod(pch, NULL);
+                pval.push_back (p_score);
+                pos_ChisqTest.push_back( make_pair(ns_test, gsl_cdf_chisq_Qinv(p_score, 1)) );
+            }
+
+            rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
 
             SNPINFO sInfo = {chr, rs, -9, b_pos, minor, major, -9, -9, maf_i, indicator_func_temp, weight_temp, 0.0};
             snpInfo.push_back( sInfo );
@@ -2439,8 +2521,8 @@ bool ReadFile_VarSS(const string &file_VarSS, vector<SNPINFO> &snpInfo, map<stri
         }
     }
 
-    infile_ss.close();
-    infile_ss.clear();
+    infile_score.close();
+    infile_score.clear();
 
     cout << "Loading vairant summary statistics file success ... \n";
     return true;
@@ -2593,24 +2675,25 @@ bool Empty_anno (vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc
     return true;
 }
 
+// REVISE 10/06/2017
 // Read LD coefficients 
-bool ReadFile_LD(const string &file_LD, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD)
+bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD)
 {
     size_t n_snp = 0;
 
     string line;
     char *pch, *nch, *mch;
 
-    string rs, chr, minor, major;
+    string rs, rs_score, chr, minor, major;
     long int b_pos;
     double r;
 
     LD.clear();
 
-    igzstream infile_LD (file_LD.c_str(), igzstream::in);
-    if (!infile_LD) {cout<<"error opening LD correlation file: "<<file_LD<<endl; return false;}
+    igzstream infile_cov (file_cov.c_str(), igzstream::in);
+    if (!infile_cov) {cout<<"error opening LD correlation file: "<<file_cov<<endl; return false;}
 
-    while (!safeGetline(infile_LD, line).eof()) {
+    while (!safeGetline(infile_cov, line).eof()) {
         
         if (line[0] == '#') {
             continue;
@@ -2620,29 +2703,10 @@ bool ReadFile_LD(const string &file_LD, const size_t &ns_test, const vector <SNP
 
             pch = (char *)line.c_str();
             nch = strchr(pch, '\t');
-            rs.assign(pch, nch-pch);
-
-            if(rs != snpInfo[n_snp].rs_number) {
-                perror("Error: Variants in LD coefficient file does not match with VarSS file!");
-                cout << "For row " << n_snp << ": " << endl;
-                cout << "Variant ID in LD file is " << rs << endl; 
-                cout << "Variant ID in VarSS file is " << snpInfo[n_snp].rs_number << endl;
-                exit(-1);
-            }
+            chr.assign(pch, nch-pch);
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
-                exit(-1);
-            }
-            else
-            {
-                pch = nch+1;
-                nch = strchr(pch, '\t');
-                chr.assign(pch, nch-pch);
-            }
-
-            if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary cov file");
                 exit(-1);
             }
             else
@@ -2652,30 +2716,18 @@ bool ReadFile_LD(const string &file_LD, const size_t &ns_test, const vector <SNP
                 b_pos = strtol(pch, NULL, 0);
             }
 
-            if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+            rs = chr + ":" + to_string(b_pos);
+            rs_score = snpInfo[n_snp].chr + ":" + to_string(snpInfo[n_snp].base_position);
+            if(rs != rs_score) {
+                perror("Error: Variant position in cov file does not match with the score file!");
+                cout << "For row " << n_snp << ": " << endl;
+                cout << "Variant position in cov file is " << rs << endl; 
+                cout << "Variant position in score file is " << rs_score << endl;
                 exit(-1);
-            }
-            else
-            {
-                pch = nch+1;
-                nch = strchr(pch, '\t');
-                major.assign(pch, nch-pch);
             }
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
-                exit(-1);
-            }
-            else
-            {
-                pch = nch+1;
-                nch = strchr(pch, '\t');
-                minor.assign(pch, nch-pch);
-            }
-
-            if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary cov file");
                 exit(-1);
             }
             else
@@ -2685,7 +2737,7 @@ bool ReadFile_LD(const string &file_LD, const size_t &ns_test, const vector <SNP
             }
 
             if(nch == NULL) {
-                perror("Wrong data format in summary statistics file");
+                perror("Wrong data format in summary cov file");
                 exit(-1);
             }
             else
@@ -2702,20 +2754,20 @@ bool ReadFile_LD(const string &file_LD, const size_t &ns_test, const vector <SNP
                     pch = (mch == NULL) ? NULL : mch+1;
                 }
             }
-            // if(n_snp < 5) cout << "LD vec size : " << LD[n_snp].size() << endl;
+            if(n_snp < 5) cout << "LD vec size : " << LD[n_snp].size() << endl;
             n_snp++;
         }
     }
 
-    infile_LD.close();
-    infile_LD.clear();
+    infile_cov.close();
+    infile_cov.clear();
 
     if(n_snp != ns_test) {
         perror("Error: the number of variants in LD coefficient file dose not match with the VarSS file! \n");
         exit(-1);
     }
 
-    cout << "Load LD coefficient file success ... \n";
+    cout << "Load " << file_cov << " success ... \n";
 
     return true;
 }

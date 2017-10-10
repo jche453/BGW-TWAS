@@ -256,7 +256,7 @@ void PARAM::CheckParam (void)
 	//check if files are compatible with analysis mode
 	if ((a_mode==43) && file_kin.empty())  {cout<<"error! missing relatedness file. -predict option requires -k option to provide a relatedness file."<<endl;  error=true;}
 
-	if( inputSS && file_LD.empty() && file_VarSS.empty() ) {
+	if( inputSS && file_cov.empty() && file_score.empty() ) {
 		cout << "Error! missing summary statistics file." << endl;
 		error = true;
 	}
@@ -382,11 +382,11 @@ void PARAM::ReadGenotypes (uchar **X, gsl_matrix *K) {
 }
 
 
-void PARAM::ReadSS (vector< vector<double> >  &LD, vector<double> &beta, vector<double> &beta_sd, vector<double> &xtx_vec){
+void PARAM::ReadSS (vector< vector<double> >  &LD, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT){
 
-	if(!file_VarSS.empty()){
-		cout << "Start loading summary statistics ... \n";
-		if (ReadFile_VarSS(file_VarSS, snpInfo, mapID2num, beta, beta_sd, xtx_vec, ns_test) == false) 
+	if(!file_score.empty()){
+		cout << "Start loading summary score statistics ... \n";
+		if (ReadFile_score(file_score, snpInfo, mapID2num, pval, pos_ChisqTest, U_STAT, ns_test) == false) 
 			error = true;
 	}
 	
@@ -400,9 +400,9 @@ void PARAM::ReadSS (vector< vector<double> >  &LD, vector<double> &beta, vector<
     } 
 
 	
-	if(!file_LD.empty()){
-		cout << "Start loading LD coefficients ... \n";
-		if (ReadFile_LD(file_LD, ns_test, snpInfo, LD) == false) 
+	if(!file_cov.empty()){
+		cout << "Start loading genotype covariance matrix ... \n";
+		if (ReadFile_cov(file_cov, ns_test, snpInfo, LD) == false) 
 			error = true;
 	}
 

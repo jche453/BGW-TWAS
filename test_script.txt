@@ -24,10 +24,14 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
 -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \
--o CFH_REGION_1KG_SS -initype 3 -LDwindow 500000 -saveSS > ${test_dir}/test_SS.output.txt &
+-o CFH_REGION_1KG_SS -initype 3 -LDwindow 500000 \
+-saveSS \
+> ${test_dir}/test_SS.output.txt &
+real    2m4.234s
+user    2m2.893s
+sys     0m1.345s
 
-
-################## Read VarSS and LD files 
+################## Read score.txt and cov.txt files 
 
 bfGWAS_SS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS"
 test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
@@ -35,30 +39,18 @@ test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
 cd $test_dir
 
 time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--VarSS ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_SS.VarSS \
--LD ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_SS.LD \
+-score ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_SS.score.txt \
+-cov ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_SS.cov.txt \
 -n 2504 -rv 0.250064 -inputSS \
 -a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
 -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \
--o Read_SS -initype 3 > ${test_dir}/ReadSS_test.output.txt &
+-o CFH_REGION_1KG_ReadSS -initype 3 > ${test_dir}/ReadSS_test.output.txt &
 
-
-
-
-######################
-
-bfGWAS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS"
-
-time ${bfGWAS_dir}/bin/Estep_mcmc \
--vcf ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz \
--p ${bfGWAS_SS_dir}/1KG_example/ExData/phenoAMD_1KG.txt \
--a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz \
--fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
--hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
--GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \
--o CFH_REGION_1KG -initype 3 -rv 1 > ${test_dir}/test.output.txt &
+#real	0m9.058s
+#user	0m8.882s 
+#sys    0m0.173s
 
 
 ######################### Test on AMD data 

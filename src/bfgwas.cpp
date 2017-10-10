@@ -159,8 +159,8 @@ void BFGWAS::PrintHelp(size_t option)
 		cout<<" -vcf        [filename]     "<<" Specify input VCF genotype file"<<endl<<endl;
 		cout<<" -GTfield        [keyword]     "<<" Specify whether to read for genotypes with keyword=GT, or read for doseage data keyword=EC from the VCF genotype file"<<endl<<endl;
 
-		cout << "-VarSS     [filename]   " <<"Specify input summary statistics file"<< endl <<endl;
-		cout << "-LD     [filename]   " <<"Specify input LD coefficient file"<< endl <<endl;
+		cout << "-score     [filename]   " <<"Specify input summary score statistics file"<< endl <<endl;
+		cout << "-cov     [filename]   " <<"Specify input summary genotype covariance file"<< endl <<endl;
 		cout << "-n     [sample size]   " <<"Specify sample size for using -inputSS "<< endl <<endl;
 		cout << "-rv     [phenotype variance]   " <<"Specify phenotype variance for using -inputSS"<< endl <<endl;
 
@@ -353,19 +353,19 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
 			str.assign(argv[i]);
 			cPar.file_func_code=str;
 		}
-		else if (strcmp(argv[i], "-LD")==0) {
+		else if (strcmp(argv[i], "-cov")==0) {
 			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
 			++i;
 			str.clear();
 			str.assign(argv[i]);
-			cPar.file_LD=str;
+			cPar.file_cov=str;
 		}
-		else if (strcmp(argv[i], "-VarSS")==0) {
+		else if (strcmp(argv[i], "-score")==0) {
 			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
 			++i;
 			str.clear();
 			str.assign(argv[i]);
-			cPar.file_VarSS=str;
+			cPar.file_score=str;
 		}
 		else if (strcmp(argv[i], "-k")==0) {
 			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
@@ -687,7 +687,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         //exit(EXIT_SUCCESS);
     }
 
-    //Save Summary Statistics (LD correlation matrix of genotypes, beta, beta_sd, maf) 
+    //Save Summary Statistics in Raremetalworker format (LD correlation matrix of genotypes, beta, score statistics, maf) 
     if( (cPar.a_mode!=11) && (cPar.saveSS) ){
 
 		cPar.CheckData();
@@ -719,14 +719,15 @@ void BFGWAS::BatchRun (PARAM &cPar)
 
         vector< vector<double> > LD;
         vector<double> beta;
-        vector<double> beta_sd;
+        vector<double> U_STAT, SQRT_V_STAT, pval;
+        vector<pair<size_t, double> > pos_ChisqTest;
 
         // calculate LD matrix and effect-sizes from SVT
-        SS.GetSS(X_Genotype, y, LD, beta, beta_sd);
+        SS.GetSS(X_Genotype, y, LD, beta, U_STAT, SQRT_V_STAT, pval, pos_ChisqTest);
 
         // save summary statistics
-        SS.WriteSS(LD, beta, beta_sd);
-        //SS.WriteBeta(beta);
+        SS.WriteSS(LD, beta, U_STAT, SQRT_V_STAT, pval);
+
 
         gsl_matrix_free(G);
         gsl_vector_free(y);
@@ -804,8 +805,8 @@ void BFGWAS::BatchRun (PARAM &cPar)
         
         vector< vector<double> > LD;
         vector<double> beta;
-        vector<double> beta_sd;
-        vector<double> Xty;
+        vector<double> U_STAT; // Xty
+        
 
         //perform BSVRM analysis
         BVSRM cBvsrm;
@@ -839,16 +840,18 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	        CALCSS SS; // initialize 
 	        SS.CopyFromParam(cPar);
 
-	        // calculate LD matrix, beta, beta_sd
-	        time_start=clock();
-	        SS.GetSS(X_Genotype, y, LD, beta, beta_sd); 
+	        // calculate LD matrix, beta, score statistics
+	        vector<double> SQRT_V_STAT; // sqrt(pheno_var * X'X)
+	        time_start=clock();	           
+        	SS.GetSS(X_Genotype, y, LD, beta, U_STAT, SQRT_V_STAT, cBvsrm.pval, cBvsrm.pos_ChisqTest);
+      
 	        // calculate pheno_var; generate snp_pos
 	        cout << "Get SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 
 	        // save summary statistics
 	        if(cPar.saveSS){
 	        	time_start=clock();
-	        	SS.WriteSS(LD, beta, beta_sd);
+	        	SS.WriteSS(LD, beta, U_STAT, SQRT_V_STAT, cBvsrm.pval);
 	        	cout << "Write SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
 	        }
 	        cBvsrm.CopyFromParam(cPar);
@@ -865,20 +868,18 @@ void BFGWAS::BatchRun (PARAM &cPar)
 			gsl_vector_free (y);
 
         }else{
-        	cPar.ReadSS(LD, beta, cBvsrm.SE_beta, cBvsrm.xtx_vec);
+        	cPar.ReadSS(LD, cBvsrm.pval, cBvsrm.pos_ChisqTest, U_STAT);
         	cPar.CheckData(); //
         	cBvsrm.CopyFromParam(cPar);
         }
 
-		// calculate Xty, pval, pos_ChisqTest
-        getXty(beta, cBvsrm.xtx_vec, Xty); // convert beta into Xty
-        getPval(beta, cBvsrm.SE_beta, cBvsrm.pval, cBvsrm.pos_ChisqTest);
-        // cout << "Xty: "; PrintVector(Xty, 10);
+        // Convert cov matrix to LD r2 and variance vector
+        Convert_LD(LD, cBvsrm.xtx_vec, cBvsrm.ns_test, cBvsrm.ni_test) ; 
      
        // Using summary statistics
         time_start=clock();
         cBvsrm.ns_neib = 2 * cBvsrm.win + 1;
-        cBvsrm.MCMC_SS(LD, Xty);
+        cBvsrm.MCMC_SS(LD, U_STAT);
         cPar.time_opt=(clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
         cout << "\nMCMC_SS costs " << cPar.time_opt << " minutes \n";
 

@@ -196,8 +196,8 @@ public:
     vector<double> SNPmean;
 
     // SS related parameters
-    string file_VarSS;
-    string file_LD;
+    string file_score;
+    string file_cov;
 
     
 	bool mode_silence;
@@ -294,7 +294,7 @@ public:
 	void WriteGenotypes(uchar **X);
 
 	// summary statistics;
-	void ReadSS (vector< vector<double> >  &LD, vector<double> & beta, vector<double> &beta_sd, vector<double> &xtx_vec);
+	void ReadSS (vector< vector<double> >  &LD, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT);
     
 	//void CheckCvt ();
 	void ProcessPheno();

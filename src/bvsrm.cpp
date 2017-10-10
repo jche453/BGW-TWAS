@@ -2507,17 +2507,32 @@ void BVSRM::SetSSgamma(const vector< vector<double> > &LD, const vector<double> 
     size_t r_size = rank.size();
     double xtx_ij;
 
-    for( size_t i=0; i < r_size; ++i){
-        pos_i = mapRank2pos[rank[i]];
-        gsl_vector_set(Xty_gamma, i, Xty[pos_i]);
-        gsl_matrix_set(XtX_gamma, i, i, xtx_vec[pos_i]);
+    //cout << "r_size = " << r_size << endl;
+    //cout << "Xty size = " << Xty.size() << endl;
+    //cout << "xtx_vec size = " << xtx_vec.size() << endl;
 
-        for(size_t j=(i+1); j < (r_size); ++j ){
-            pos_j = mapRank2pos[rank[j]];
-            xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
-            gsl_matrix_set(XtX_gamma, i, j, xtx_ij);
-            gsl_matrix_set(XtX_gamma, j, i, xtx_ij);
+    if(r_size > 1) {
+        for( size_t i=0; i < r_size; ++i){
+            pos_i = mapRank2pos[rank[i]];
+            //cout << "pos_i: " << pos_i ;
+            gsl_vector_set(Xty_gamma, i, Xty[pos_i]);
+            gsl_matrix_set(XtX_gamma, i, i, xtx_vec[pos_i]);
+
+            //cout << "; pos_j : " << endl;
+            for(size_t j=(i+1); j < (r_size); ++j ){
+                pos_j = mapRank2pos[rank[j]];
+                //cout << pos_j << "," ;
+                xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
+                gsl_matrix_set(XtX_gamma, i, j, xtx_ij);
+                gsl_matrix_set(XtX_gamma, j, i, xtx_ij);
+            }
+            // cout << endl;
         }
+    }else{
+        pos_i = mapRank2pos[rank[0]];
+        //cout << " and position : " << pos_i << endl;
+        gsl_vector_set(Xty_gamma, 0, Xty[pos_i]);
+        gsl_matrix_set(XtX_gamma, 0, 0, xtx_vec[pos_i]);
     }
     return;
 }
@@ -3188,25 +3203,33 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
         cout << "Genome-wide significant LRT is " << sig_lr << endl;
 
         size_t topMarkers = 500;
-        if(topMarkers > ni_test) topMarkers = ni_test;
+        //cout << "ns_test = " << ns_test << endl;
+        if(topMarkers > ns_test) topMarkers = ns_test;
+        //cout << "pos_ChisqTest size = " << pos_ChisqTest.size() << endl;
         for(size_t i=1; i < topMarkers; i++){
             rank_loglr.push_back( make_pair(i, pos_ChisqTest[i].second) );
         }
-        
+
+        //for(size_t i=0; i < 10; i++){
+        //    cout << "rank_loglr " << rank_loglr[i].first << ", " << rank_loglr[i].second << endl;
+        //}
+
         rank.clear();
         rank.push_back(0);
-        s_size = rank.size();
-        // cout << "rank added: " << 0 << ", ";
+        cout << "Initial rank size " << rank.size() << endl;
 
+        //cout << "s_max = " << s_max << endl; 
         gsl_matrix *XtX_cond=gsl_matrix_alloc (s_max, s_max);
         gsl_vector *Xty_cond=gsl_vector_alloc (s_max);
         gsl_vector *Xtx_cond=gsl_vector_alloc (s_max);
         gsl_vector *beta_cond = gsl_vector_alloc (s_max);
         
+
         for(size_t i = 1; i < s_max; i++)
         {
             s_size = rank.size();
             SetSSgamma(LD, Xty, rank, XtX_cond, Xty_cond);
+            //cout << "SetSSgamma with rank size " << rank.size() << endl; 
 
             gsl_matrix_const_view XtX_cond_temp = gsl_matrix_const_submatrix(XtX_cond, 0, 0, s_size, s_size);
             gsl_vector_const_view Xty_cond_temp = gsl_vector_const_subvector(Xty_cond, 0, s_size);
@@ -3225,7 +3248,7 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
                 rank_loglr[j].second = CalcLR_cond_SS(rtr, pos_j, LD, Xty, rank, &beta_cond_const.vector, &Xtx_cond_temp.vector);
             }
             stable_sort(rank_loglr.begin(), rank_loglr.end(), comp_lr); //sort conditional LRT statistics
-            cout << "Top conditioned LRT is " << rank_loglr[0].second << endl;
+            // cout << "Top conditioned LRT is " << rank_loglr[0].second << endl;
                 
             if(rank_loglr[0].second > sig_lr )
             {
