@@ -110,6 +110,17 @@ struct SNPPOS{
     void printMarker();
 };
 
+struct AnnoINFO {
+public:
+	string chr;
+	string rs_number;
+	long int base_position;
+    vector<bool> indicator_func;
+    vector<double> weight;
+    double weight_i;
+};
+
+
 //JY
 void printSNPInfo(vector<SNPPOS> &snp_pos, int numMarker);
 void CalcWeight(const vector<bool> &indicator_func, vector<double> &weight, const double weight_i);
@@ -272,7 +283,7 @@ public:
 	
 
     map<int, string> mapCode2Func; // map unique code to a unique function type
-	map<string, int> mapID2num;		//map small ID number to number, from 0 to n-1
+	map<string, int> mapID2num;		//map chr:pos:ref:alt to position, from 0 to n-1
 	map<string, string> mapRS2chr;		//map rs# to chromosome location
 	map<string, long int> mapRS2bp;		//map rs# to base position
 	map<string, double> mapRS2cM;		//map rs# to cM

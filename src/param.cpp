@@ -127,7 +127,7 @@ void PARAM::ReadFiles (void)
 		if (!file_bfile.empty()) {
 			cout << "Start reading plink bim/fam files ...\n";
 			file_str=file_bfile+".bim";
-			if (ReadFile_bim (file_str, snpInfo)==false) {error=true;}
+			if (ReadFile_bim (file_str, snpInfo, mapID2num)==false) {error=true;}
 	        
 			file_str=file_bfile+".fam";
 			if (ReadFile_fam (file_str, indicator_idv, pheno, InputSampleID, ni_total)==false) {error=true;}
@@ -162,19 +162,19 @@ void PARAM::ReadFiles (void)
 	        	cout << "Start reading vcf file first time ...\n";
 	        	indicator_snp.clear();
 	        	snpInfo.clear();
-	        	if (ReadFile_vcf(file_vcf, setSnps, indicator_idv, indicator_snp, maf_level, miss_level, hwe_level, snpInfo, ns_test, ns_total, ni_test, GTfield, PhenoID2Ind, VcfSampleID, SampleVcfPos) == false )
+	        	if (ReadFile_vcf(file_vcf, setSnps, indicator_idv, indicator_snp, maf_level, miss_level, hwe_level, snpInfo, ns_test, ns_total, ni_test, GTfield, PhenoID2Ind, VcfSampleID, SampleVcfPos, mapID2num) == false )
 	            	{error=true;}
 	      	}else if (!file_geno.empty()) {
 		  		//read genotype file 
 		  		cout << "Start reading genotype file first time ...\n";
-				if (ReadFile_geno (file_geno, setSnps, indicator_idv, indicator_snp, PhenoID2Ind, snpInfo, VcfSampleID, SampleVcfPos, maf_level, miss_level, hwe_level, ns_test, ns_total, ni_test, ni_total)==false) {error=true;}
+				if (ReadFile_geno (file_geno, setSnps, indicator_idv, indicator_snp, PhenoID2Ind, snpInfo, VcfSampleID, SampleVcfPos, maf_level, miss_level, hwe_level, ns_test, ns_total, ni_test, ni_total, mapID2num)==false) {error=true;}
 		  	}
 		}
 
 	    if ( (!file_anno.empty()) && (!file_func_code.empty()) ) {
 	    	cout << "Start reading annotation files ...\n";
 	    	//cout << file_anno << " \nwith code file " << file_func_code << "\n";
-	        if (ReadFile_anno (file_anno, file_func_code, mapFunc2Code, indicator_snp, snpInfo, n_type, mFunc)==false) {error=true;}
+	        if (ReadFile_anno (file_anno, file_func_code, mapFunc2Code, indicator_snp, snpInfo, n_type, mFunc, mapID2num)==false) {error=true;}
 	    }
 	    else{
 	    	cout << "Treating all variants as if they were of the same annotation.\n";

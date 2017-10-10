@@ -17,19 +17,29 @@ test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
 
 cd $test_dir
 
+## Save Annotation file in the format of chr/pos/ref/alt/func
+zcat ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz | awk '{print $1"\t"$2"\t"$4"\t"$5}' > Anno_CFH_REGION_1KG.temp
+
+zcat Anno_CFH_REGION_1KG.gz | cut -f4 > Anno_CFH_REGION_1KG.tempFunc
+
+paste Anno_CFH_REGION_1KG.temp Anno_CFH_REGION_1KG.tempFunc > Anno_CFH_REGION_1KG.txt
+
 time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -vcf ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz \
 -p ${bfGWAS_SS_dir}/1KG_example/ExData/phenoAMD_1KG.txt \
--a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz \
+-a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.txt.gz \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
 -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \
 -o CFH_REGION_1KG_SS -initype 3 -LDwindow 500000 \
 -saveSS \
 > ${test_dir}/test_SS.output.txt &
-real    2m4.234s
-user    2m2.893s
-sys     0m1.345s
+
+
+real    2m7.441s
+user    2m5.312s
+sys     0m0.441s
+
 
 ################## Read score.txt and cov.txt files 
 
@@ -42,7 +52,7 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -score ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_SS.score.txt \
 -cov ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_SS.cov.txt \
 -n 2504 -rv 0.250064 -inputSS \
--a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz \
+-a ${bfGWAS_SS_dir}/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.txt.gz \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
 -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \

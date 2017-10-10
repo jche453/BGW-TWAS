@@ -65,8 +65,9 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
     //cout << "create UcharTable ...\n";
     CreateUcharTable(UcharTable);
 
-    // Create a vector of "SNPPOS" structs snp_pos (snpInfo will be cleared)
-    CreateSnpPosVec(snp_pos, snpInfo, ns_total, indicator_snp); //ordered by position here
+    // Create a vector of "SNPPOS" structs snp_pos for analyzed SNPs (ns_test)
+    // (snpInfo will be cleared)
+    CreateSnpPosVec(snp_pos, snpInfo, ns_total, indicator_snp); // The same order (pos) as in genotype file
     stable_sort(snp_pos.begin(), snp_pos.end(), comp_snp); // order snp_pos by chr/bp
 
     // define used variables 
@@ -82,7 +83,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
     pos_ChisqTest.clear();
     //beta_sd.clear();
 
-    cout << "calculate xtx, beta, score statistics ... \n";
+    cout << "calculate xtx, beta, score statistics by the order of chr/bp ... \n";
     for (size_t i=0; i<ns_test; ++i) {
         //calculate xtx_i
         getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
@@ -97,10 +98,9 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
         U_STAT.push_back(xty); // score statistic 
         v2 = sqrt(pheno_var * xtx_i) ;
         SQRT_V_STAT.push_back( sqrt(v2) ); // score statistic standard deviation
-        chisq_i = xty * xty / v2;
+        chisq_i = xty * xty / v2; // chisq test statistic
         pval.push_back( gsl_cdf_chisq_Q (chisq_i, 1.0) ); // pvalue needed for BVSRM
         pos_ChisqTest.push_back( make_pair(i, chisq_i) ) ; // pos_ChisqTest needed for BVSRM
-
 
         /*
         gsl_vector_memcpy(xbeta_i, xvec_i);
@@ -116,7 +116,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 
         // saving X'X to LD
         LD.push_back(vector<double>()); // save r2
-        LD[i].push_back(xtx_i / ((double)ni_test));
+        LD[i].push_back(xtx_i / ((double)ni_test)); // varianct of x_i
 
         if(i < (ns_test-1) ){
             //calculate xtx_ij 
@@ -125,7 +125,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
                 {
                     getGTgslVec(X, xvec_j, snp_pos[j].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
                     gsl_blas_ddot(xvec_i, xvec_j, &xtx_ij);
-                    LD[i].push_back(xtx_ij / ((double)ni_test));
+                    LD[i].push_back(xtx_ij / ((double)ni_test)); // covariance between x_i and x_j
                 }
                 else{break;}
             }
