@@ -2833,7 +2833,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     // PrintVector(pval, 10);
     
     cout << "Generate maps ... \n";
-    size_t pos;
+    size_t pos; // rank based on chisq test statistic is more stable than based on pvalue
     for (size_t i=0; i<ns_test; ++i) {
         mapRank2pos[i]=pos_ChisqTest[i].first;
         mapPos2Rank[pos_ChisqTest[i].first] = i;

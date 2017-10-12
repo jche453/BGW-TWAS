@@ -179,21 +179,18 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
     if (!infile) {cout<<"error opening annotation file: "<<file_anno<<endl; return false;}
     
     // read function annotation file
-    string rs, chr, ref, alt, rs_info;
+    string chr, ref, alt, rs_info;
     long int b_pos=0;
     size_t snp_i = 0;
     double maf_temp;
+
+    cout << "mapID2num size = " << mapID2num.size() << endl; // map to genotype file by chr:pos:ref:alt
 
     while (!safeGetline(infile, line).eof()) {
         if (line[0] == '#') {
             continue;
         }
         else {
-          if (!indicator_snp[snp_i]) {
-              continue;
-          }
-          else{
-
             pch=(char *)line.c_str();
             nch = strchr(pch, '\t');
             chr.assign(pch, nch-pch);
@@ -211,69 +208,74 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
             alt.assign(pch, nch-pch); //chr
 
             rs_info = chr + ":" + to_string(b_pos) + ":" + ref + ":" + alt;
+            // if (snp_i < 10) cout << "rs_info " << rs_info ;
 
             // check if this SNP is in the genotype/score file
             if(mapID2num.count(rs_info) == 0) {continue; }
             else{
                 snp_i = mapID2num[rs_info];
-
-                pch = (nch == NULL) ? NULL : nch+1;
-                snp_nfunc = 0;
-                snpInfo[snp_i].indicator_func.assign(n_type, 0);
-                maf_temp = snpInfo[snp_i].maf;
-            	if(maf_temp > 0.5) maf_temp = 1.0 - maf_temp;
-
-                //if (snp_i < 5)  cout << rs << ":chr" << chr << ":bp"<< b_pos <<endl;
-                if( isalpha(pch[0]) || isdigit(pch[0]) ){
-                	//pch[0] is a letter or number
-                	while (pch != NULL) {
-    	                nch = strchr(pch, ',');
-    	                if (nch == NULL) func_type.assign(pch);
-    	                else func_type.assign(pch, nch-pch);
-
-    	                // consider MAF range
-    	                // if((func_type.compare("others") == 0) || (func_type.compare("nonsyn") == 0) ) SetMAFCode(maf_temp, func_type);
-
-    	                func_code = mapFunc2Code[func_type];
-    	                //if(snp_i < 10)  cout << func_type << " with code " << func_code << endl;
-    	                if(!snpInfo[snp_i].indicator_func[func_code])
-    	                {
-    	                    snpInfo[snp_i].indicator_func[func_code] = 1;
-    	                    snp_nfunc++;
-    	                }
-    	                pch = (nch == NULL) ? NULL : nch+1;
-                	}
-            	}
-            	else{
-            		func_type.assign("NA");
-            		// consider MAF range
-            		// SetMAFCode(maf_temp, func_type);
-
-            		func_code = mapFunc2Code[func_type];
-            		//if(snp_i < 10)  cout << "NA" << " with code " << func_code << endl;
-            		if(!snpInfo[snp_i].indicator_func[func_code])
-    	                {
-    	                    snpInfo[snp_i].indicator_func[func_code] = 1;
-    	                    snp_nfunc++;
-    	                }
-            	}
-                
-                //if ((snp_nfunc > 0) && (snp_nfunc <= n_type))
-                if (snp_nfunc == 1)
-                  {
-                      snpInfo[snp_i].weight_i = 1.0 ;// / (double)snp_nfunc;
-                      mFunc[func_code]++;
-                      // CalcWeight(snpInfo[snp_i].indicator_func, snpInfo[snp_i].weight, snpInfo[snp_i].weight_i);
-                  }
-                else if (snp_nfunc == 0) {
-                    snpInfo[snp_i].weight_i = 0.0;
-                    indicator_snp[snp_i] = 0;
-                    cout << "function annotation is NULL \n ";
+                if (!indicator_snp[snp_i]) {
+                      continue;
                 }
-                else {cerr << "ERROR: snp_nfunc = " <<snp_nfunc<< " ... \n"; exit(-1);}
+                else{
+                    //if (snp_i < 10) cout << "rs_info " << rs_info << "; position = " << snp_i;
+                    pch = (nch == NULL) ? NULL : nch+1;
+                    snp_nfunc = 0;
+                    snpInfo[snp_i].indicator_func.assign(n_type, 0);
+                    maf_temp = snpInfo[snp_i].maf;
+                	if(maf_temp > 0.5) maf_temp = 1.0 - maf_temp;
+
+                    //if (snp_i < 5)  cout << rs << ":chr" << chr << ":bp"<< b_pos <<endl;
+                    if( isalpha(pch[0]) || isdigit(pch[0]) ){
+                    	//pch[0] is a letter or number
+                    	while (pch != NULL) {
+        	                nch = strchr(pch, ',');
+        	                if (nch == NULL) func_type.assign(pch);
+        	                else func_type.assign(pch, nch-pch);
+
+        	                // consider MAF range
+        	                // if((func_type.compare("others") == 0) || (func_type.compare("nonsyn") == 0) ) SetMAFCode(maf_temp, func_type);
+
+        	                func_code = mapFunc2Code[func_type];
+        	                //if(snp_i < 10)  cout << func_type << " with code " << func_code << endl;
+        	                if(!snpInfo[snp_i].indicator_func[func_code])
+        	                {
+        	                    snpInfo[snp_i].indicator_func[func_code] = 1;
+        	                    snp_nfunc++;
+        	                }
+        	                pch = (nch == NULL) ? NULL : nch+1;
+                    	}
+                	}
+                	else{
+                		func_type.assign("NA");
+                		// consider MAF range
+                		// SetMAFCode(maf_temp, func_type);
+
+                		func_code = mapFunc2Code[func_type];
+                		//if(snp_i < 10)  cout << "NA" << " with code " << func_code << endl;
+                		if(!snpInfo[snp_i].indicator_func[func_code])
+        	                {
+        	                    snpInfo[snp_i].indicator_func[func_code] = 1;
+        	                    snp_nfunc++;
+        	                }
+                	}
+                    
+                    //if ((snp_nfunc > 0) && (snp_nfunc <= n_type))
+                    if (snp_nfunc == 1)
+                      {
+                          snpInfo[snp_i].weight_i = 1.0 ;// / (double)snp_nfunc;
+                          mFunc[func_code]++;
+                          // CalcWeight(snpInfo[snp_i].indicator_func, snpInfo[snp_i].weight, snpInfo[snp_i].weight_i);
+                      }
+                    else if (snp_nfunc == 0) {
+                        snpInfo[snp_i].weight_i = 0.0;
+                        indicator_snp[snp_i] = 0;
+                        cout << "function annotation is NULL \n ";
+                    }
+                    else {cerr << "ERROR: snp_nfunc = " <<snp_nfunc<< " ... \n"; exit(-1);}
+                }
             }
         }
-      }
     }
     cout << "Number of annotation categories: " << n_type << endl;
     cout << "Number of variants per category: "; PrintVector(mFunc);
@@ -2329,7 +2331,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
     char *pch, *nch;
 
     string rs, chr, minor, major;
-    double maf_i, p_score;
+    double maf_i, p_score, u_i, v_i, chisq_i;
     long int b_pos=0;
 
     vector<bool> indicator_func_temp;
@@ -2489,7 +2491,8 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
             {
                 pch = nch+1;
                 nch = strchr(pch, '\t');
-                U_STAT.push_back(strtod(pch, NULL));
+                u_i = strtod(pch, NULL);
+                U_STAT.push_back(u_i);
             } //  U_STAT
 
             if(nch == NULL) {
@@ -2500,6 +2503,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
             {
                 pch = nch+1;
                 nch = strchr(pch, '\t');
+                v_i = strtod(pch, NULL);
             } //  SQRT_V_STAT
 
             if(nch == NULL) {
@@ -2523,8 +2527,10 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
                 nch = strchr(pch, '\t');
                 p_score = strtod(pch, NULL);
                 pval.push_back (p_score);
-                pos_ChisqTest.push_back( make_pair(ns_test, gsl_cdf_chisq_Qinv(p_score, 1)) );
             }
+
+            chisq_i = u_i * u_i / (v_i * v_i);
+            pos_ChisqTest.push_back( make_pair(ns_test, chisq_i) ); // more stable than get chisq_i from pval
 
             rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
 

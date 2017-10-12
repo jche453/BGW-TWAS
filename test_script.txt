@@ -24,6 +24,7 @@ zcat Anno_CFH_REGION_1KG.gz | cut -f4 > Anno_CFH_REGION_1KG.tempFunc
 
 paste Anno_CFH_REGION_1KG.temp Anno_CFH_REGION_1KG.tempFunc > Anno_CFH_REGION_1KG.txt
 
+### Run bfGWAS_SS with individual level data
 time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -vcf ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz \
 -p ${bfGWAS_SS_dir}/1KG_example/ExData/phenoAMD_1KG.txt \
@@ -31,14 +32,13 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
 -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \
--o CFH_REGION_1KG_SS -initype 3 -LDwindow 500000 \
+-o CFH_REGION_1KG_SS -initype 3 -LDwindow 500000 -seed 2017 \
 -saveSS \
 > ${test_dir}/test_SS.output.txt &
 
-
-real    2m7.441s
-user    2m5.312s
-sys     0m0.441s
+real    2m1.698s
+user    2m0.211s
+sys     0m0.925s
 
 
 ################## Read score.txt and cov.txt files 
@@ -48,6 +48,8 @@ test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
 
 cd $test_dir
 
+### Run bfGWAS_SS with summary level data
+
 time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -score ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_SS.score.txt \
 -cov ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_SS.cov.txt \
@@ -56,11 +58,11 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -fcode ${bfGWAS_SS_dir}/1KG_example/ExData/AnnoCode6.txt \
 -hfile ${bfGWAS_SS_dir}/1KG_example/Test_Wkdir/hypval.current \
 -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 \
--o CFH_REGION_1KG_ReadSS -initype 3 > ${test_dir}/ReadSS_test.output.txt &
+-o CFH_REGION_1KG_ReadSS -initype 3 -seed 2017 > ${test_dir}/ReadSS_test.output.txt &
 
-#real	0m9.058s
-#user	0m8.882s 
-#sys    0m0.173s
+real    0m9.315s
+user    0m9.074s
+sys     0m0.217s
 
 
 ######################### Test on AMD data 
