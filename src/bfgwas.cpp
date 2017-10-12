@@ -921,14 +921,14 @@ void BFGWAS::WriteLog (int argc, char ** argv, PARAM &cPar)
 	
 	outfile<<"##"<<endl;
 	outfile<<"## Summary Statistics:"<<endl;
-	outfile<<"## number of total individuals = "<<cPar.ni_total<<endl;	
-	outfile<<"## number of analyzed individuals = "<<cPar.ni_test<<endl;
-	outfile<<"## number of total SNPs = "<<cPar.ns_total<<endl;	
-	outfile<<"## number of analyzed SNPs = "<<cPar.ns_test<<endl;
+	outfile<<"## number_of_total_individuals = "<<cPar.ni_total<<endl;	
+	outfile<<"## number_of_analyzed_individuals = "<<cPar.ni_test<<endl;
+	outfile<<"## number_of_total_SNPs = "<<cPar.ns_total<<endl;	
+	outfile<<"## number_of_analyzed_SNPs = "<<cPar.ns_test<<endl;
 	
 	if (cPar.a_mode==11) {
 		//outfile<<"## Phenotype mean = "<<cPar.pheno_mean<<endl;	
-		outfile<<"## Phenotype var = "<<cPar.pheno_var<<endl;
+		outfile<<"## Phenotype_var = "<<cPar.pheno_var<<endl;
 		outfile<<"##"<<endl;
 		outfile<<"## MCMC related:"<<endl;	
 		//outfile<<"## initial value of h = "<<cPar.cHyp_initial.h<<endl;
@@ -942,7 +942,7 @@ void BFGWAS::WriteLog (int argc, char ** argv, PARAM &cPar)
 
 	}else if (cPar.a_mode >= 51 && cPar.a_mode <= 54){
 		outfile<<"## Phenotype mean = "<<cPar.pheno_mean<<endl;	
-		outfile<<"## Phenotype var = "<<cPar.pheno_var<<endl;	
+		outfile<<"## Phenotype_var = "<<cPar.pheno_var<<endl;	
 	}
 	
 	outfile<<"##"<<endl;

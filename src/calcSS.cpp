@@ -239,7 +239,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
 void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t &ns_test, const size_t &ni_test){
 // convert cov matrix to LD r2 matrix, save n*diagonal to xtx vector
     xtx.clear();
-    double xtx_i;
+    double xtx_i, r2;
     for(size_t i=0; i<ns_test; ++i){
         xtx_i = (double)ni_test * LD[i][0] ;
         xtx.push_back(xtx_i); // variance of x_i, xtx/n
@@ -256,7 +256,9 @@ void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t 
 	        	if(xtx[i+j] == 0.0){
 	        		LD[i][j] = 0.0 ;
 	        	}else{
-	        		LD[i][j] = LD[i][j] / sqrt( xtx[i] * xtx[i+j] ) ;
+                    r2 = LD[i][j] / sqrt( xtx[i] * xtx[i+j] ) ;
+                    if(r2 < 1e-4) r2 = 0.0; // set r2 to 0 if r2 < 1e-4
+	        		LD[i][j] = r2 ;
 	        	}	            
 	        }
         }
