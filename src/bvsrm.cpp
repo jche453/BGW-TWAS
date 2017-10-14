@@ -3216,7 +3216,7 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
 
         rank.clear();
         rank.push_back(0);
-        cout << "Initial rank size " << rank.size() << endl;
+        //cout << "Initial rank size " << rank.size() << endl;
 
         //cout << "s_max = " << s_max << endl; 
         gsl_matrix *XtX_cond=gsl_matrix_alloc (s_max, s_max);

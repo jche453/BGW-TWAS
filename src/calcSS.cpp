@@ -96,7 +96,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
         else beta_i = 0.0;
         beta.push_back(beta_i); // effect size
         U_STAT.push_back(xty); // score statistic 
-        v2 = sqrt(pheno_var * xtx_i) ;
+        v2 = pheno_var * xtx_i ;
         SQRT_V_STAT.push_back( sqrt(v2) ); // score statistic standard deviation
         chisq_i = xty * xty / v2; // chisq test statistic
         pval.push_back( gsl_cdf_chisq_Q (chisq_i, 1.0) ); // pvalue needed for BVSRM
@@ -239,24 +239,27 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
 void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t &ns_test, const size_t &ni_test){
 // convert cov matrix to LD r2 matrix, save n*diagonal to xtx vector
     xtx.clear();
-    double xtx_i, r2;
+    double r2;
+    vector<double> xtx_var;
+    xtx_var.clear();
+
     for(size_t i=0; i<ns_test; ++i){
-        xtx_i = (double)ni_test * LD[i][0] ;
-        xtx.push_back(xtx_i); // variance of x_i, xtx/n
+        xtx_var.push_back(LD[i][0])  ;
+        xtx.push_back( (double)ni_test * LD[i][0] ); // 
     }
 
     for(size_t i=0; i<ns_test; ++i){
         LD[i][0] = 1.0;
-        if(xtx[i] == 0){
+        if(xtx_var[i] == 0){
         	for(size_t j=1; j< LD[i].size(); j++){
 	            LD[i][j] = 0.0 ;
 	        }
         }else{
         	for(size_t j=1; j< LD[i].size(); j++){
-	        	if(xtx[i+j] == 0.0){
+	        	if(xtx_var[i+j] == 0.0){
 	        		LD[i][j] = 0.0 ;
 	        	}else{
-                    r2 = LD[i][j] / sqrt( xtx[i] * xtx[i+j] ) ;
+                    r2 = LD[i][j] / sqrt( xtx_var[i] * xtx_var[i+j] ) ;
                     if(r2 < 1e-4) r2 = 0.0; // set r2 to 0 if r2 < 1e-4
 	        		LD[i][j] = r2 ;
 	        	}	            

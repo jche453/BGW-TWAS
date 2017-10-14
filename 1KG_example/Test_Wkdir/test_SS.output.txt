@@ -10,7 +10,7 @@ Start reading annotation files ...
 mapID2num size = 31330
 Number of annotation categories: 6
 Number of variants per category: 2792, 42, 0, 273, 0, 582, 
-Reading files first time cost 0.490146 mints 
+Reading files first time cost 0.496667 mints 
 ## number of total individuals = 2504
 ## number of individuals with full phenotypes = 2504
 ## number of total SNPs = 31330
@@ -24,292 +24,292 @@ first 10 phenotypes: 0.50599, 0.50599, -0.49401, 0.50599, -0.49401, 0.50599, 0.5
 
 Starting reading genotype files for the second time ...
 Done reading vcf file second time ... 
-Load genotype data cost 0.0802202 mints
+Load genotype data cost 0.0819852 mints
 
 Start calculating summary statistics ... 
 pheno_var = 0.250064
 calculate xtx, beta, score statistics by the order of chr/bp ... 
-Get SS costs 1.1868 minutes 
+Get SS costs 1.25105 minutes 
 
 Start writing summary statistics ... 
-Write SS costs 0.135137 minutes 
+Write SS costs 0.133908 minutes 
 
 Running MCMC with Summary Statistics ... 
 yty is 625.91
 Generate maps ... 
 Calculate proposal distribution for gamma 
-Number of variants with p-value < 5e-8 : 788
+Number of variants with p-value < 5e-8 : 57
 Start initializing MCMC ... 
 Start with Step-wise selected variants.
 Genome-wide significant LRT is 29.7168
 Initial rank size 1
 Initial model with ranks: 
-0, 21, 2, 3, 4, 
+0, 1, 2, 3, 4, 
 rv = phenotype variance  = 0.250064
 Initial causal probability per category = 1e-06, 1e-06, 1e-06, 1e-06, 1e-06, 1e-06, 
 Initial effect-size variance per category = 1, 1, 1, 1, 1, 1, 
 Initially selected number of variants in the model = 5
-Initial rank_old : 0, 21, 2, 3, 4, 
+Initial rank_old : 0, 1, 2, 3, 4, 
 Initial number of selected variants per category : 5, 0, 0, 0, 0, 0, 
 1, 1, 1, 1, 1, 
-Initial logPost_old = 260.551
+Initial logPost_old = 260.658
 
 Running MCMC                               0.00%  & acceptance ratio 0.00
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.240250
+acceptance percentage = 0.228035
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 275.148340
+loglike: 274.914754
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.239822
+acceptance percentage = 0.227784
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 275.163034
+loglike: 275.353703
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.239524
+acceptance percentage = 0.227260
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 275.143783
+loglike: 277.163540
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.240347
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 275.143783
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.240323
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.038398
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.239960
+acceptance percentage = 0.228070
 # of selected variants per category: 
 4, 0, 0, 0, 0, 1, 
-loglike: 273.042514
+loglike: 273.049617
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238715
+acceptance percentage = 0.228141
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.353703
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.227175
 # of selected variants per category: 
 4, 0, 0, 0, 0, 1, 
-loglike: 274.820232
+loglike: 273.148381
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238996
+acceptance percentage = 0.227171
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
+loglike: 277.149911
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238691
+acceptance percentage = 0.226910
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.038398
+loglike: 275.287561
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.239113
+acceptance percentage = 0.227250
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.042954
+loglike: 275.368191
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238980
+acceptance percentage = 0.227330
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 270.961519
+loglike: 277.163540
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238512
+acceptance percentage = 0.227800
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.042954
+loglike: 275.100027
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238631
+acceptance percentage = 0.227609
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 275.247021
+loglike: 277.149911
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238934
+acceptance percentage = 0.228028
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 275.247021
+loglike: 277.163540
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238858
+acceptance percentage = 0.228434
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 275.163034
+loglike: 277.149911
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238754
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 274.978921
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238370
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 273.201215
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238570
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.038398
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238721
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 274.993615
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238997
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238884
+acceptance percentage = 0.228381
 # of selected variants per category: 
 4, 0, 0, 0, 0, 1, 
-loglike: 270.897293
+loglike: 274.926624
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238316
+acceptance percentage = 0.228466
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
+loglike: 277.163540
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238819
+acceptance percentage = 0.228773
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 275.247021
+loglike: 275.386326
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.237943
+acceptance percentage = 0.229085
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 273.366036
+loglike: 277.163540
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.237570
+acceptance percentage = 0.229171
 # of selected variants per category: 
 4, 0, 0, 0, 0, 1, 
-loglike: 272.943832
+loglike: 274.957803
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.237102
+acceptance percentage = 0.229282
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.250426
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.229518
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 277.163540
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.229872
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 277.145398
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230298
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 273.138783
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230146
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 277.145398
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230157
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 273.223025
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230142
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 277.163540
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230516
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 277.145398
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230741
 # of selected variants per category: 
 4, 0, 0, 0, 0, 1, 
-loglike: 274.834206
+loglike: 274.957803
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.236841
+acceptance percentage = 0.230896
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
+loglike: 277.163540
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.236574
+acceptance percentage = 0.230972
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.100027
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.231318
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 277.163540
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230692
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.104541
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230636
 # of selected variants per category: 
 4, 0, 0, 0, 0, 1, 
-loglike: 272.943832
+loglike: 274.944904
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.236681
+acceptance percentage = 0.230819
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.368191
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230856
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.081026
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.231358
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 277.145398
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.231457
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.368191
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.231588
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 277.145398
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.231402
 # of selected variants per category: 
 4, 0, 0, 0, 0, 1, 
-loglike: 274.834206
+loglike: 274.944904
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.236822
+acceptance percentage = 0.231264
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
+loglike: 275.085540
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.237404
+acceptance percentage = 0.231030
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 274.974365
+loglike: 275.349188
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.237204
+acceptance percentage = 0.231182
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
+loglike: 275.081026
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.237744
+acceptance percentage = 0.231191
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
+loglike: 275.100027
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.238069
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.038398
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.237974
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 274.974365
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238288
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 274.978921
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238377
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238156
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.038398
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238312
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.038398
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238397
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.038398
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238261
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 274.978921
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238247
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 274.993615
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.237944
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.238125
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.042954
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.237745
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.056790
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.237800
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 274.993615
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.237461
-# of selected variants per category: 
-5, 0, 0, 0, 0, 0, 
-loglike: 277.042954
-cHyp_old.n_gamma= 5
-acceptance percentage = 0.237477
+acceptance percentage = 0.231221
 # of selected variants per category: 
 4, 0, 0, 0, 0, 1, 
-loglike: 274.838761
+loglike: 272.693021
 cHyp_old.n_gamma= 5
-acceptance percentage = 0.237664
+acceptance percentage = 0.230808
 # of selected variants per category: 
 5, 0, 0, 0, 0, 0, 
-loglike: 277.038398
+loglike: 275.100027
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230914
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.081026
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230503
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.273942
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230549
+# of selected variants per category: 
+4, 0, 0, 0, 0, 1, 
+loglike: 274.922110
+cHyp_old.n_gamma= 5
+acceptance percentage = 0.230745
+# of selected variants per category: 
+5, 0, 0, 0, 0, 0, 
+loglike: 275.254941
 
-Running MCMC ==============================100.00%  & acceptance ratio 0.24
+Running MCMC ==============================100.00%  & acceptance ratio 0.23
 MCMC completed ... 
 
 region_pip = 1
-gamma acceptance percentage = 0.24
+gamma acceptance percentage = 0.23
 # of selected variants per category: 5, 0, 0, 0, 0, 0, 
-beta_hat: -0.161812, 0.208240, -0.164908, -0.164908, -0.165410, 
-loglike: 275.247021
+beta_hat: -0.161582, -0.165441, 0.208396, -0.164940, -0.165440, 
+loglike: 275.100027
 k_save_sample = 50000
-logpost_max = 277.056790
+logpost_max = 277.163540
 
-MCMC_SS costs 0.124400 minutes 
+MCMC_SS costs 0.124184 minutes 
