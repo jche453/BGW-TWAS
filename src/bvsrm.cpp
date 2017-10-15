@@ -2774,7 +2774,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
 
     // obtain yty from pheno_var, set rv = pheno_var
     rv = pheno_var;
-    yty = pheno_var * (double)(ni_test-1) ;
+    yty = pheno_var * (double)(ni_test) ;
     cout << "yty is " << yty << endl;
 
     clock_t time_start;
@@ -3206,30 +3206,36 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
         //cout << "ns_test = " << ns_test << endl;
         if(topMarkers > ns_test) topMarkers = ns_test;
         //cout << "pos_ChisqTest size = " << pos_ChisqTest.size() << endl;
-        for(size_t i=1; i < topMarkers; i++){
-            rank_loglr.push_back( make_pair(i, pos_ChisqTest[i].second) );
-        }
-
-        //for(size_t i=0; i < 10; i++){
-        //    cout << "rank_loglr " << rank_loglr[i].first << ", " << rank_loglr[i].second << endl;
-        //}
 
         rank.clear();
         rank.push_back(0);
         //cout << "Initial rank size " << rank.size() << endl;
+
+        //excluded top SSNP
+        for(size_t i=1; i < topMarkers; i++){
+            rank_loglr.push_back( make_pair(i, pos_ChisqTest[i].second) );
+        } // rank_loglr: pair of rank and ChisqTest
 
         //cout << "s_max = " << s_max << endl; 
         gsl_matrix *XtX_cond=gsl_matrix_alloc (s_max, s_max);
         gsl_vector *Xty_cond=gsl_vector_alloc (s_max);
         gsl_vector *Xtx_cond=gsl_vector_alloc (s_max);
         gsl_vector *beta_cond = gsl_vector_alloc (s_max);
-        
 
         for(size_t i = 1; i < s_max; i++)
         {
             s_size = rank.size();
             SetSSgamma(LD, Xty, rank, XtX_cond, Xty_cond);
-            //cout << "SetSSgamma with rank size " << rank.size() << endl; 
+            cout << "SetSSgamma with rank  " << endl; 
+            PrintVector(rank);
+            for(size_t l = 0; l < rank.size(); l++){
+
+                cout << snp_pos[ mapRank2pos[rank[l]] ].bp << ";" ;
+            }
+            cout << "\n XtX_cond : \n" ;
+            PrintMatrix(XtX_cond, s_size, s_size);
+            cout << "\n Xty_cond : \n";
+            PrintVector(Xty_cond, s_size);
 
             gsl_matrix_const_view XtX_cond_temp = gsl_matrix_const_submatrix(XtX_cond, 0, 0, s_size, s_size);
             gsl_vector_const_view Xty_cond_temp = gsl_vector_const_subvector(Xty_cond, 0, s_size);
@@ -3243,18 +3249,18 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
             rtr = CalcResVar(&Xty_cond_temp.vector, &beta_cond_const.vector, yty);
 
             gsl_vector_view Xtx_cond_temp = gsl_vector_subvector(Xtx_cond, 0, s_size);
-            for(size_t j=0; j < topMarkers; j++){
+            for(size_t j=0; j < rank_loglr.size(); j++){
                 pos_j = mapRank2pos[ rank_loglr[j].first ];
                 rank_loglr[j].second = CalcLR_cond_SS(rtr, pos_j, LD, Xty, rank, &beta_cond_const.vector, &Xtx_cond_temp.vector);
             }
             stable_sort(rank_loglr.begin(), rank_loglr.end(), comp_lr); //sort conditional LRT statistics
-            // cout << "Top conditioned LRT is " << rank_loglr[0].second << endl;
+            cout << "Next top conditioned LRT is " << rank_loglr[0].second << endl;
                 
             if(rank_loglr[0].second > sig_lr )
             {
 
                 radd = rank_loglr[0].first;
-                pos_r = mapRank2Order[radd];
+                pos_r = mapRank2pos[radd];
                 xtx = xtx_vec[pos_r];
                 SetXtx(LD, rank, pos_r, &Xtx_cond_temp.vector);
 
@@ -3264,9 +3270,8 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
                     rank.push_back(radd); // include rank r into initial model
                     rank_loglr.erase(rank_loglr.begin());
                 }
-
             }
-            else  break;
+            else  {break;}
         }
         gsl_matrix_free(XtX_cond);
         gsl_vector_free(Xty_cond);

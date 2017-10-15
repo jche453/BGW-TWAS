@@ -2536,7 +2536,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
 
             SNPINFO sInfo = {chr, rs, -9, b_pos, minor, major, -9, -9, maf_i, indicator_func_temp, weight_temp, 0.0};
             snpInfo.push_back( sInfo );
-            mapID2num[rs] = snpInfo.size() - 1;
+            mapID2num[rs] = ns_test;
             ns_test++;
         }
     }
@@ -2781,7 +2781,7 @@ bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <S
                     pch = (mch == NULL) ? NULL : mch+1;
                 }
             }
-            //if(n_snp < 5) cout << "LD vec size : " << LD[n_snp].size() << endl;
+            if(n_snp < 5) cout << "LD vec size : " << LD[n_snp].size() << endl;
             n_snp++;
         }
     }

@@ -260,7 +260,7 @@ void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t 
 	        		LD[i][j] = 0.0 ;
 	        	}else{
                     r2 = LD[i][j] / sqrt( xtx_var[i] * xtx_var[i+j] ) ;
-                    if(r2 < 1e-4) r2 = 0.0; // set r2 to 0 if r2 < 1e-4
+                    //if(r2 < 1e-4) r2 = 0.0; // set r2 to 0 if r2 < 1e-4
 	        		LD[i][j] = r2 ;
 	        	}	            
 	        }

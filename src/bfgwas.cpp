@@ -840,7 +840,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
 	        CALCSS SS; // initialize 
 	        SS.CopyFromParam(cPar);
 
-	        // calculate LD matrix, beta, score statistics
+	        // calculate LD matrix (X'X/n), beta (x'y / x'x), score statistics (X'y)
 	        vector<double> SQRT_V_STAT; // sqrt(pheno_var * X'X)
 	        time_start=clock();	           
         	SS.GetSS(X_Genotype, y, LD, beta, U_STAT, SQRT_V_STAT, cBvsrm.pval, cBvsrm.pos_ChisqTest);
