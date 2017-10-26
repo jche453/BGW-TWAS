@@ -178,7 +178,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
     // write an extra column saving xtx with centered genotypes
     ifprintf(score_out, "#CHR\tPOS\tREF\tALT\t N_INFORMATIVE\tFOUNDER_AF\tALL_AF\tINFORMATIVE_ALT_AC\tCALL_RATE\tHWE_PVALUE\tN_REF\tN_HET\tN_ALT\tU_STAT\tSQRT_V_STAT\tALT_EFFSIZE\tPVALUE\n");
     // assuming variants have unique CHR:POS 
-    ifprintf(cov_out, "#CHR\tCURRENT_POS\tMARKERS_IN_WINDOW\tCOV_MATRICES\n");
+    ifprintf(cov_out, "#CHR\tCURRENT_POS\tCURRENT_REF\tCURRENT_ALT\tMARKERS_IN_WINDOW\tCOV_MATRICES\n");
     
     double alt_ac;
 
@@ -189,8 +189,8 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
         // write score statistics
         ifprintf(score_out, "%s\t%ld\t%s\t%s\t%u\t%g\t%s\t%g\t%s\t%s\t%s\t%s\t%s\t%g\t%g\t%g\t%g\n", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), ni_test, snp_pos[i].maf, "NA", alt_ac, "NA", "NA", "NA", "NA", "NA", U_STAT[i], SQRT_V_STAT[i], beta[i], pval[i]);
 
-        // write banded covariance matrix
-        ifprintf(cov_out, "%s\t%ld\t", snp_pos[i].chr.c_str(), snp_pos[i].bp);
+        // write banded covariance matrix: chr pos ref alt
+        ifprintf(cov_out, "%s\t%ld\t%s\t%s\t", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str());
 
         for(size_t j=0; j<LD[i].size(); j++){
             ifprintf(cov_out, "%ld,", snp_pos[i+j].bp);
@@ -236,35 +236,68 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
     return;
 }
 
-void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t &ns_test, const size_t &ni_test){
+void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t &ns_test, const size_t &ni_test, const vector<SNPPOS> &snp_pos, const bool &refLD){
 // convert cov matrix to LD r2 matrix, save n*diagonal to xtx vector
     xtx.clear();
-    double r2;
+    double r2, v2;
     vector<double> xtx_var;
     xtx_var.clear();
 
-    for(size_t i=0; i<ns_test; ++i){
-        xtx_var.push_back(LD[i][0])  ;
-        xtx.push_back( (double)ni_test * LD[i][0] ); // 
-    }
+    cout << "Convert_LD ns_test = " << ns_test << "; ni_test = " << ni_test << endl;
 
-    for(size_t i=0; i<ns_test; ++i){
-        LD[i][0] = 1.0;
-        if(xtx_var[i] == 0){
-        	for(size_t j=1; j< LD[i].size(); j++){
-	            LD[i][j] = 0.0 ;
-	        }
-        }else{
-        	for(size_t j=1; j< LD[i].size(); j++){
-	        	if(xtx_var[i+j] == 0.0){
-	        		LD[i][j] = 0.0 ;
-	        	}else{
-                    r2 = LD[i][j] / sqrt( xtx_var[i] * xtx_var[i+j] ) ;
-                    //if(r2 < 1e-4) r2 = 0.0; // set r2 to 0 if r2 < 1e-4
-	        		LD[i][j] = r2 ;
-	        	}	            
-	        }
+    if(refLD){
+        //use maf to calculate xtx
+        cout << "Using MAF from score.txt \n";
+        cout << "Print out LD from cov.txt:\n";
+        for(size_t i=0; i<snp_pos.size(); ++i){
+            //if(i < 10)
+                //cout << snp_pos[i].key  << " maf = " << snp_pos[i].maf << "; " ;
+            v2 = 2.0 * snp_pos[i].maf * (1.0 - snp_pos[i].maf);
+            xtx_var.push_back(v2)  ;
+            xtx.push_back( (double)ni_test * v2 ); // 
+
+            for(size_t j = 0; j < LD[i].size(); j++){
+                cout << LD[i][j] << ",";
+            }
+            cout << endl;
         }
+    }
+    else{
+        //use xtx from cov matrix
+        cout << "Using xtx/n from cov.txt \n";
+        for(size_t i=0; i<ns_test; ++i){
+            xtx_var.push_back(LD[i][0])  ;
+            xtx.push_back( (double)ni_test * LD[i][0] ); // 
+        }
+    }
+    cout << "set xtx vector success ! "<< endl;
+
+    //cout << "LD size is " << LD.size() << endl;
+    //cout << "LD[0] size is " << LD[0].size() << endl;
+
+    for(size_t i=0; i<snp_pos.size(); i++){
+        LD[i][0] = 1.0;
+        cout << xtx_var[i] << ",";
+
+        if(i < (snp_pos.size() - 1)){
+            if(xtx_var[i] == 0){
+                for(size_t j=1; j< (LD[i].size()-1) ; j++)
+                { LD[i][j] = 0.0 ; }
+            }
+            else{
+                for(size_t j=1; j< (LD[i].size()-1) ; j++){
+                    if(xtx_var[i+j] == 0.0)
+                    { LD[i][j] = 0.0 ; }
+                    else{
+                        r2 = LD[i][j] / sqrt( xtx_var[i] * xtx_var[i+j] ) ;
+                        //if(r2 < 1e-4) r2 = 0.0; // set r2 to 0 if r2 < 1e-4
+                        LD[i][j] = r2 ;
+                    }
+                    cout << LD[i][j] << "," ;             
+                }
+            }
+        }
+        cout << endl;
     }
 
     return;

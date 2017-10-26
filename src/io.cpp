@@ -404,7 +404,7 @@ bool ReadFile_bim (const string &file_bim, vector<SNPINFO> &snpInfo, map<string,
                 rs = rs_info;
         }
 		
-        SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, -9, -9, -9, indicator_func_temp, weight_temp, 0.0};
+        SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, -9, -9, -9, indicator_func_temp, weight_temp, 0.0, rs_info};
 		snpInfo.push_back(sInfo);
         mapID2num[rs_info]=snpInfo.size() - 1;
 	}
@@ -679,7 +679,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
             }
             
             else if ((tab_count == 6) && (pch[0] == 'F')){
-                SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0};
+                SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0, rs_info};
                 snpInfo.push_back(sInfo); //save marker information
                 mapID2num[rs_info] = snpInfo.size() - 1 ;
                 indicator_snp.push_back(0);
@@ -853,7 +853,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
         //cout << "maf = " << maf << "; ni_test = " <<ni_test << "; n_miss = " << n_miss << "\n";
         // exit(-1);
         
-        SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0};
+        SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0, rs_info};
         snpInfo.push_back(sInfo); //save marker information
         mapID2num[rs_info]= snpInfo.size() - 1;
         
@@ -1067,7 +1067,7 @@ bool ReadFile_geno (const string &file_geno, const set<string> &setSnps, vector<
 
 		maf/=2.0*(double)(ni_test-n_miss);	
 		
-		SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0};
+		SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0, rs_info};
 		snpInfo.push_back(sInfo);
         mapID2num[rs_info] = snpInfo.size() - 1;
 		
@@ -2308,6 +2308,26 @@ void WriteMatrix(const gsl_matrix * X, const string file_str){
     return;
 } //write gsl_matrix X with filename = ***.txt
 
+void WriteMatrix(const vector< vector<double> > &LD, const string file_str){
+    ofstream outfile (file_str.c_str(), ofstream::out);
+    if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
+    size_t n_snp =  LD.size() ;
+    for(size_t i=0; i<n_snp; i++){
+        for(size_t j = 0; j < n_snp; ++j){
+            if( j >= i && j < LD[i].size() ){
+                outfile << scientific << setprecision(6) << LD[i][j-i] << " " ;
+            }else{
+                outfile << 0 << " " ;
+            }
+        }
+        outfile << endl;
+    }
+    
+    outfile.clear();
+    outfile.close();
+    return;
+} //write LD matrix with filename = ***.txt
+
 void WriteVector(const gsl_vector * X, const string file_str){
     // string file_str = "./output/"+file_out;
     // file_str += filename;
@@ -2325,12 +2345,12 @@ void WriteVector(const gsl_vector * X, const string file_str){
 }
 
 // Read summary statistics (only for studied variants)
-bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, int> &mapID2num, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test)
+bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos,vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test)
 {
     string line;
     char *pch, *nch;
 
-    string rs, chr, minor, major;
+    string rs, chr, minor, major, key;
     double maf_i, p_score, u_i, v_i, chisq_i;
     long int b_pos=0;
 
@@ -2338,7 +2358,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
     vector<double> weight_temp;
 
     ns_test = 0;
-    mapID2num.clear();
+    mapScoreKey2Pos.clear();
     snpInfo.clear();
     //beta.clear();
     pval.clear();
@@ -2346,7 +2366,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
     U_STAT.clear();
 
     igzstream infile_score (file_score.c_str(), igzstream::in);
-    if (!infile_score) {cout<<"error opening annotation file: "<<file_score<<endl; return false;}
+    if (!infile_score) {cout<<"error opening score statistic file : "<<file_score<<endl; return false;}
 
     while (!safeGetline(infile_score, line).eof()) {
         
@@ -2534,9 +2554,9 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
 
             rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
 
-            SNPINFO sInfo = {chr, rs, -9, b_pos, minor, major, -9, -9, maf_i, indicator_func_temp, weight_temp, 0.0};
+            SNPINFO sInfo = {chr, rs, -9, b_pos, minor, major, -9, -9, maf_i, indicator_func_temp, weight_temp, 0.0, rs};
             snpInfo.push_back( sInfo );
-            mapID2num[rs] = ns_test;
+            mapScoreKey2Pos[rs] = ns_test;
             ns_test++;
         }
     }
@@ -2544,13 +2564,13 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
     infile_score.close();
     infile_score.clear();
 
-    cout << "Loading vairant summary statistics file success ... \n";
+    cout << "Loading score statistics file" <<  file_score << "Success ! "<<endl; 
     return true;
 }
 
 
 //Read function annotation file when reading summary statistics
-bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, int> &mapID2num, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc)
+bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, size_t> &mapScoreKey2Pos, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc)
 {
     string line;
     char *pch, *nch;
@@ -2619,8 +2639,8 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
             alt.assign(pch, nch-pch); //chr
 
             rs = chr + ":" + to_string(b_pos) + ":" + ref + ":" + alt;
-            if(mapID2num.count(rs) == 0) {continue;} //not in the Summary Score Statistic file
-            else{ snp_i = mapID2num[rs] ; } // map to the variant position in Summary Score Statistic 
+            if(mapScoreKey2Pos.count(rs) == 0) {continue;} //not in the Summary Score Statistic file
+            else{ snp_i = mapScoreKey2Pos[rs] ; } // map to the variant position in score.txt 
 
 
             pch = (nch == NULL) ? NULL : nch+1;
@@ -2677,7 +2697,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
     
     infile.close();
     infile.clear(); 
-    
+
     return true;
 }
 
@@ -2704,18 +2724,18 @@ bool Empty_anno (vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc
 
 // REVISE 10/06/2017
 // Read LD coefficients 
-bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD)
+bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD, const bool &refLD, map<string, size_t> &mapScoreKey2Pos, map<string, size_t> &mapCovKey2Pos, const long int &LDwindow)
 {
-    size_t n_snp = 0;
+    size_t n_snp = 0; // record position in cov file
+    vector < vector<double> > LD_cov; // LD matrix from the cov.txt file
+    mapCovKey2Pos.clear();
+    map<size_t, string> mapCovPos2Key; // map position in cov.txt to SNP key
 
     string line;
     char *pch, *nch, *mch;
-
-    string rs, rs_score, chr, minor, major;
+    string key, chr, minor, major;
     long int b_pos;
     double r;
-
-    LD.clear();
 
     igzstream infile_cov (file_cov.c_str(), igzstream::in);
     if (!infile_cov) {cout<<"error opening LD correlation file: "<<file_cov<<endl; return false;}
@@ -2726,7 +2746,7 @@ bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <S
             continue;
         }
         else {
-            LD.push_back(vector<double>());
+            LD_cov.push_back(vector<double>());
 
             pch = (char *)line.c_str();
             nch = strchr(pch, '\t');
@@ -2743,15 +2763,31 @@ bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <S
                 b_pos = strtol(pch, NULL, 0);
             }
 
-            rs = chr + ":" + to_string(b_pos);
-            rs_score = snpInfo[n_snp].chr + ":" + to_string(snpInfo[n_snp].base_position);
-            if(rs != rs_score) {
-                perror("Error: Variant position in cov file does not match with the score file!");
-                cout << "For row " << n_snp << ": " << endl;
-                cout << "Variant position in cov file is " << rs << endl; 
-                cout << "Variant position in score file is " << rs_score << endl;
+            if(nch == NULL) {
+                perror("Wrong data format in summary cov file");
                 exit(-1);
             }
+            else
+            {
+                pch = (nch == NULL) ? NULL : nch+1;
+                nch = strchr(pch, '\t');
+                major.assign(pch, nch-pch); // Reference allel
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary cov file");
+                exit(-1);
+            }
+            else
+            {
+                pch = (nch == NULL) ? NULL : nch+1;
+                nch = strchr(pch, '\t');
+                minor.assign(pch, nch-pch); // Minor allel
+            }
+
+            key = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
+            mapCovKey2Pos[key] = n_snp; // record SNPs in Cov file positions
+            mapCovPos2Key[n_snp] = key; // record Keys for pos in cov.txt
 
             if(nch == NULL) {
                 perror("Wrong data format in summary cov file");
@@ -2775,28 +2811,173 @@ bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <S
                 {
                     mch = strchr(pch, ',');
                     r = strtod(pch, NULL) ;
-                    // if(n_snp < 5) cout << r << ",";
-
-                    LD[n_snp].push_back(r);
+                    //if(n_snp < 5) { cout << r << ","; }
+                    LD_cov[n_snp].push_back(r);
                     pch = (mch == NULL) ? NULL : mch+1;
                 }
             }
-            if(n_snp < 5) cout << "LD vec size : " << LD[n_snp].size() << endl;
+            //if(n_snp < 5) cout << "\n LD_cov vec size : " << LD_cov[n_snp].size() << endl;
             n_snp++;
         }
     }
 
+    cout << "Total variants in cov.txt file is " << n_snp << endl;
+    cout << "Load " << file_cov << " Success ... \n";
     infile_cov.close();
     infile_cov.clear();
 
-    if(n_snp != ns_test) {
-        perror("Error: the number of variants in LD coefficient file dose not match with the VarSS file! \n");
-        exit(-1);
+    // Grep LD for SNPs in the Score.txt file
+    if(refLD){
+        // create key vectors 
+        cout << "Generate Key Matrix ... \n";
+        vector< vector<string> >LD_key;
+        for(size_t i=0; i < snpInfo.size(); i++){
+            LD_key.push_back(vector<string>());
+            LD_key[i].push_back(snpInfo[i].key);
+            //if(i<5) cout << LD_key[i][0] <<",";
+
+            if( i < (snpInfo.size() - 1) )
+            {
+                for(size_t j = (i+1) ; j < snpInfo.size(); j++){
+                    if( (snpInfo[j].chr == snpInfo[i].chr) && (snpInfo[j].base_position <= snpInfo[i].base_position + LDwindow) )
+                    {
+                        LD_key[i].push_back(snpInfo[j].key);
+                        //if(i<5) cout << LD_key[i][j-i] <<",";
+                    }
+                    else{
+                        break;
+                    }
+                }               
+            }
+            //if(i<5) cout << endl;
+        }
+
+ ///////// revise here
+        LD.clear();
+        size_t pos_i, pos_j, n_Match = 0, n_misMatch=0, n_swapMatch=0;
+        string key_i, key_j;
+        double sign_i, sign_j;
+
+        for(size_t i=0; i < snpInfo.size(); i++){
+            key_i = LD_key[i][0];
+            sign_i = 1.0; 
+            LD.push_back(vector<double>());
+
+            if(mapCovKey2Pos.count(key_i) == 0){
+                SwapKey(key_i); // swap ref/alt for key_i
+
+                if(mapCovKey2Pos.count(key_i) != 0){
+                    sign_i = -1.0;
+                    pos_i = mapCovKey2Pos[key_i];
+                    r = getCov(LD_cov, pos_i, pos_i); // get covariance of key_i
+                    //if(i<10) cout << "swap pos_i = " << pos_i << "," << r << ";";
+                    LD[i].push_back(r);
+                    n_swapMatch++;
+
+                    if(i < (snpInfo.size()-1) ){
+                        for(size_t j=1; j < LD_key[i].size(); j++){
+                            key_j = LD_key[i][j];
+                            sign_j = 1.0;
+                            if(mapCovKey2Pos.count(key_j) == 0){
+                                SwapKey(key_j);
+                                if(mapCovKey2Pos.count(key_j) != 0){
+                                    sign_j = -1.0;
+                                    pos_j = mapCovKey2Pos[key_j];
+                                    r = getCov(LD_cov, pos_i, pos_j);
+                                    LD[i].push_back(r * sign_i * sign_j);
+                                    //if(i<10 && j<100) cout << "pos_j = " << pos_j << "," << (r*sign_i* sign_j) <<";";
+                                }else{
+                                    LD[i].push_back(0.0);
+                                }
+                            }else{
+                                pos_j = mapCovKey2Pos[key_j];
+                                r = getCov(LD_cov, pos_i, pos_j);
+                                //if(i<10 && j<100) cout << "pos_j = " << pos_j << "," << (r*sign_i) <<";";
+                                LD[i].push_back(r * sign_i);
+                            }
+                        }
+                    }
+                }
+                else{
+                    LD[i].push_back(0.0);
+                    n_misMatch++;
+                    for(size_t j=1; j < LD_key[i].size(); j++){
+                        LD[i].push_back(0.0);
+                    }
+                    continue;
+                }
+            }
+            else{
+                pos_i = mapCovKey2Pos[key_i];
+                r = getCov(LD_cov, pos_i, pos_i);
+                LD[i].push_back(r);
+                //if(i<10) cout << "match pos_i = " << pos_i << "," << r << ";";
+                n_Match++;
+
+                if(i < (snpInfo.size()-1) ){
+                    for(size_t j=1; j < LD_key[i].size(); j++){
+                        key_j = LD_key[i][j];
+                        sign_j = 1.0;
+                        if(mapCovKey2Pos.count(key_j) == 0){
+                            SwapKey(key_j);
+                            if(mapCovKey2Pos.count(key_j) != 0){
+                                sign_j = -1.0;
+                                pos_j = mapCovKey2Pos[key_j];
+                                r = getCov(LD_cov, pos_i, pos_j);
+                                LD[i].push_back(r * sign_i * sign_j);
+                                //if(i<10 && j<100) cout << "swap pos_j = " << pos_j << "," << (r*sign_i * sign_j) <<";";
+                            }else{
+                                LD[i].push_back(0.0);
+                            }
+                        }
+                        else{
+                            pos_j = mapCovKey2Pos[key_j];
+                            r = getCov(LD_cov, pos_i, pos_j);
+                            LD[i].push_back(r * sign_i);
+                            //if(i<10 && j<100) cout << "match pos_j = " << pos_j << "," << (r*sign_i) <<";";
+                        }
+                    }
+                }
+            }
+        }
+        cout << "n_Match = " << n_Match << "; n_swapMatch = " << n_swapMatch ;
+        cout << "; n_misMatch = " << n_misMatch << endl;
+    }
+    else{
+        LD = LD_cov;
     }
 
-    cout << "Load " << file_cov << " success ... \n";
+    /*cout << "Print out LD for score.txt from cov.txt: \n";
+    for(size_t i = 0; i < LD.size(); i++){
+        for(size_t j = 0; j < LD[i].size(); j++){
+            cout << LD[i][j] << ",";
+        }
+        cout << endl;
+    }*/
 
     return true;
+}
+
+
+double getCov(const vector< vector<double> > &LD_cov, const size_t &pos_i, const size_t &pos_j ){
+
+    double r_ij = 0.0;
+
+    if(pos_i == pos_j) {
+        r_ij = LD_cov[pos_i][0];
+    }else{
+        if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD_cov[pos_i].size()  ) 
+            {
+                r_ij = LD_cov[pos_i][pos_j - pos_i] ;   
+            }     
+        else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD_cov[pos_j].size() ) 
+                {
+                    r_ij = LD_cov[pos_j][pos_i - pos_j]  ;
+                }
+    }
+
+    // if(r_ij < 1e-4) r_ij = 0.0;
+    return r_ij;
 }
 
 

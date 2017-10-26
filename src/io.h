@@ -111,16 +111,19 @@ bool Empty_anno (vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, size_t &
 void SetMAFCode (const double &maf, string &func_type);
 
 void WriteMatrix(const gsl_matrix * X, const string file_str);
+void WriteMatrix(const vector< vector<double> > &LD, const string file_str);
 void WriteVector(const gsl_vector * X, const string file_str);
 
 // for loading summary statistics
-bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, int> &mapID2num, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test);
+bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test);
 
-bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, int> &mapID2num, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
+bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, size_t> &mapScoreKey2Pos, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
 
 bool Empty_anno (vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
 
-bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> > &LD);
+bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD, const bool &refLD, map<string, size_t> &mapScoreKey2Pos, map<string, size_t> &mapCovKey2Pos, const long int &LDwindow);
+
+double getCov(const vector< vector<double> > &LD_cov, const size_t &pos_i, const size_t &pos_j );
 
 #endif
 

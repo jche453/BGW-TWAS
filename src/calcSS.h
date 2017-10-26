@@ -94,7 +94,7 @@ public:
 
 };
 
-void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t &ns_test, const size_t &ni_test);
+void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t &ns_test, const size_t &ni_test, const vector<SNPPOS> &snp_pos, const bool &refLD);
 
 void getXty(const vector<double> &beta, const vector<double> &xtx, vector <double> &Xty);
 

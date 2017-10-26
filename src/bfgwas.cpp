@@ -227,6 +227,8 @@ void BFGWAS::PrintHelp(size_t option)
 		cout<<" -bvsrm	   "<<" apply BVSR model "<<endl;
 
 		cout<<" -inputSS  "<<" specify whether to use summary statistics (LD coefficients, effect-sizes) as inputs " << endl;
+
+		cout<<" -refLD  "<<" specify whether input reference LD (SNPs in cov.txt do not necessarily match the ones in score.txt) " << endl;
 		
 		//cout<<"   MCMC OPTIONS" << endl;
 		//cout<<"   Prior" << endl;
@@ -469,7 +471,7 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
 			++i;
 			str.clear();
 			str.assign(argv[i]);
-			cPar.LDwindow=atoi(str.c_str()); // read LDwindow
+			cPar.LDwindow=atoi(str.c_str()); // read LDwindow (default 1M)
 		} 
 		else if (strcmp(argv[i], "-w")==0) {
 			if(argv[i+1] == NULL || argv[i+1][0] == '-') {continue;}
@@ -616,6 +618,12 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
         }
         else if (strcmp(argv[i], "-inputSS")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.inputSS=1; }
+        }
+        else if (strcmp(argv[i], "-refLD")==0) {
+            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.refLD=1; }
+        }
+        else if (strcmp(argv[i], "-printLD")==0) {
+            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.printLD=1; }
         }
         else if (strcmp(argv[i], "-zipSS")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.zipSS=1; }
@@ -869,13 +877,21 @@ void BFGWAS::BatchRun (PARAM &cPar)
 
         }else{
         	cPar.ReadSS(LD, cBvsrm.pval, cBvsrm.pos_ChisqTest, U_STAT);
-        	cPar.CheckData(); //
+        	cPar.CheckData(); // generate snp_pos
         	cBvsrm.CopyFromParam(cPar);
         }
 
         // Convert cov matrix to LD r2 and variance vector
-        Convert_LD(LD, cBvsrm.xtx_vec, cBvsrm.ns_test, cBvsrm.ni_test) ; 
-     
+        Convert_LD(LD, cBvsrm.xtx_vec, cBvsrm.ns_test, cBvsrm.ni_test, cBvsrm.snp_pos, cPar.refLD) ; 
+        cout << "Convert LD matrix Success" << endl; 
+
+        if(cPar.printLD){
+        	string file_LD;
+        	file_LD = "./output" + cPar.file_out + ".LD.mat";
+        	cout << "Save LD in matrix format as *.LD.mat to " << file_LD << endl;
+        	WriteMatrix(LD, file_LD);
+        }
+      
        // Using summary statistics
         time_start=clock();
         cBvsrm.ns_neib = 2 * cBvsrm.win + 1;

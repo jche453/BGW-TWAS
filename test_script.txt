@@ -224,19 +224,38 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -LDwindow 2000000 -seed 2017 \
 -saveSS -zipSS > ${test_dir}/amd_${file}_2M_SS.output.txt &
 
+######### Save cov.txt file into: chr pos ref alt ...
+temp="CHR19.005000001.007500000_FinalRelease_SS_2M"
+temp="CHR19.005000001.007500000_FinalRelease_SS"
+zcat ${temp}.score.txt.gz | cut -f1-4 > temp.cov1 &
+zcat ${temp}.cov.txt.gz | cut -f3-4 | less -S > temp.cov2
+paste temp.cov1 temp.cov2 | gzip > ${temp}.cov2.txt.gz
 
-## Read SS 
+rm temp.cov*
+
+
+## Read SS with new format of cov.txt: chr pos ref alt ...
 time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 -score ${test_dir}/output/${file}_SS.score.txt.gz \
--cov ${test_dir}/output/${file}_SS.cov.txt.gz \
--n 33976 -rv 1 -inputSS \
+-cov ${test_dir}/output/${file}_SS.cov2.txt.gz \
+-n 33976 -rv 1 -inputSS -printLD \
 -a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.txt.gz \
 -fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
 -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 \
--o ${file}_ReadSS -w 50000 -s 100000 -initype 3 -seed 2017 \
-> ${test_dir}/amd_${file}_ReadSS.output.txt &
+-o ${file}_ReadSS2 -w 50000 -s 100000 -initype 3 -seed 2017 \
+> ${test_dir}/amd_${file}_ReadSS2.output.txt &
 
+time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
+-score ${test_dir}/output/${file}_SS_2M.score.txt.gz \
+-cov ${test_dir}/output/${file}_SS_2M.cov2.txt.gz \
+-n 33976 -rv 1 -inputSS -printLD \
+-a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.txt.gz \
+-fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
+-hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
+-bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 \
+-o ${file}_ReadSS2_2M -w 50000 -s 100000 -initype 3 -seed 2017 \
+> ${test_dir}/amd_${file}_ReadSS2.output.txt &
 
 
 
@@ -253,6 +272,60 @@ do
 	~/Scripts/Shell_Script/ConvertAnnoFile.sh /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/${file}.vcf.gz /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation ${file} 
 done
 
+
+############ Subset 1KG data for AMD Locus CHR19.005000001.007500000
+# LocusZoom: select_chr=19; bp_start=6218146; bp_end=7218146
+
+zcat /net/fantasia/home/yjingj/METAL/1KG/1KG_phase3_20130502/ALL.chr19.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz | head -n 300 | grep "#" > /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/1KG_CHR19.005000001.007500000.vcf
+
+tabix /net/fantasia/home/yjingj/METAL/1KG/1KG_phase3_20130502/ALL.chr19.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz 19:5000001-7500000  >> /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/1KG_CHR19.005000001.007500000.vcf
+
+bgzip 1KG_CHR19.005000001.007500000.vcf
+
+# filter rare variants
+bcftools view -i 'EUR_AF[0]>0.01 & EUR_AF[0]<0.99' 1KG_CHR19.005000001.007500000.vcf.gz | bgzip > 1KG_CHR19.005000001.007500000.sub.vcf.gz
+
+grep EUR ~/METAL/1KG/1KG_phase3_20130502/integrated_call_samples_v3.20130502.ALL.panel | awk '{print $1}' > ~/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/1KG_EUR_SampleID.txt
+
+############# Generate SS data
+time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
+-vcf ~/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/1KG_CHR19.005000001.007500000.vcf.gz \
+-p ~/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/1KG_EUR.NullPheno.txt \
+-GTfield GT -maf 0.01 -o 1KG_CHR19.005000001.007500000_1M -rv 1 \
+-LDwindow 1000000 -saveSS -zipSS > ${test_dir}/1KG_CHR19.005000001.007500000_1M.output.txt &
+
+
+time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
+-vcf ~/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/1KG_CHR19.005000001.007500000.vcf.gz \
+-p ~/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/1KG_EUR.NullPheno.txt \
+-GTfield GT -maf 0.01 -o 1KG_CHR19.005000001.007500000_2M -rv 1 \
+-LDwindow 2000000 -saveSS -zipSS > ${test_dir}/1KG_CHR19.005000001.007500000_2M.output.txt &
+
+############ Use 1KG reference data
+# file=CHR19.005000001.007500000_FinalRelease
+
+time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
+-score ${test_dir}/output/${file}_SS.score.txt.gz \
+-cov ${test_dir}/output/1KG_CHR19.005000001.007500000_1M.cov.txt.gz \
+-n 33976 -rv 1 -inputSS -refLD -printLD \
+-a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.txt.gz \
+-fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
+-hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
+-bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 \
+-o ${file}_RefLD_1M -w 50000 -s 100000 -initype 3 -seed 2017 \
+> ${test_dir}/amd_${file}_RefLD_1M.output.txt &
+
+
+time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
+-score ${test_dir}/output/${file}_SS.score.txt.gz \
+-cov ${test_dir}/output/1KG_CHR19.005000001.007500000_2M.cov.txt.gz \
+-n 33976 -rv 1 -inputSS -refLD -printLD \
+-a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.txt.gz \
+-fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
+-hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
+-bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 \
+-o ${file}_RefLD_2M -w 50000 -s 100000 -initype 3 -seed 2017 \
+> ${test_dir}/amd_${file}_RefLD_2M.output.txt &
 
 
 ################## Save Genotype

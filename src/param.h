@@ -35,6 +35,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <iostream>
 #include <cstring>
 #include <sys/stat.h>
 #include <cmath>
@@ -77,6 +78,8 @@ public:
     vector<bool> indicator_func;
     vector<double> weight;
     double weight_i;
+
+    string key;
     
     void printMarker();
 };
@@ -104,6 +107,7 @@ struct SNPPOS{
 	string a_major;
 	double maf;
     vector<bool> indicator_func;
+    string key;
     //vector<double> weight;
     //double weight_i;
     
@@ -186,7 +190,7 @@ public:
     int iniType;
     bool FIXHYP;
     
-    bool calc_K, saveGeno, saveSS, zipSS, inputSS;
+    bool calc_K, saveGeno, saveSS, zipSS, inputSS, refLD, printLD;
     long int LDwindow;
 
     string iniSNPfile;
@@ -281,8 +285,11 @@ public:
 
 	vector<bool> indicator_snp;				//sequence indicator for SNPs: 0 ignored because of (a) maf, (b) miss, (c) non-poly; 1 available for analysis
 	
-
+		
+	map<string, size_t> mapScoreKey2Pos; //map snpkey to the position in score.txt
+	map<string, size_t> mapCovKey2Pos; // map snpkey to the position in cov.txt
     map<int, string> mapCode2Func; // map unique code to a unique function type
+
 	map<string, int> mapID2num;		//map chr:pos:ref:alt to position, from 0 to n-1
 	map<string, string> mapRS2chr;		//map rs# to chromosome location
 	map<string, long int> mapRS2bp;		//map rs# to base position
@@ -323,6 +330,10 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const si
 void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const size_t &ns_total);
 
 bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs);
+
+vector<string> split(const string& str, const string& delim);
+
+void SwapKey(string &key);
 
 #endif
 

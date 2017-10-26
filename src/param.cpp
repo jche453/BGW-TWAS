@@ -21,6 +21,16 @@
 #include "bvsrm.h"
 #include "io.h"
 
+// define to_string function : convert to string
+template <class T>
+inline std::string to_string (const T& t)
+{
+    std::stringstream ss;
+    ss << t;
+    return ss.str();
+}
+
+
 void genMarker::iniRecord(VcfRecord& record){
     
     rs = record.getIDStr();
@@ -84,7 +94,7 @@ void CalcWeight(const vector<bool> &indicator_func, vector<double> &weight, cons
 
 PARAM::PARAM(void):
 vscale(0.0), iniType(3), calc_K(0), saveGeno(0), saveSS(0), zipSS(0), 
-inputSS(0), LDwindow(500000), rv(0.0), Compress_Flag(0), 
+inputSS(0), refLD(0), printLD(0), LDwindow(1000000), rv(0.0), Compress_Flag(0), 
 mode_silence (false), a_mode (0), k_mode(1), d_pace (100000),
 GTfield("GT"), file_out("result"), 
 miss_level(0.05), maf_level(0.005), hwe_level(0.001), 
@@ -384,25 +394,27 @@ void PARAM::ReadGenotypes (uchar **X, gsl_matrix *K) {
 
 void PARAM::ReadSS (vector< vector<double> >  &LD, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT){
 
+	// read score.txt file
 	if(!file_score.empty()){
 		cout << "Start loading summary score statistics ... \n";
-		if (ReadFile_score(file_score, snpInfo, mapID2num, pval, pos_ChisqTest, U_STAT, ns_test) == false) 
+		if (ReadFile_score(file_score, snpInfo, mapScoreKey2Pos, pval, pos_ChisqTest, U_STAT, ns_test) == false) 
 			error = true;
 	}
 	
+	// read functional/annotation fule
 	if ( (!file_anno.empty()) && (!file_func_code.empty()) ) {
     	cout << "Start loading annotation files ... \n";
     	//cout << file_anno << " \nwith code file " << file_func_code << "\n";
-        if (ReadFile_anno (file_anno, file_func_code, mapID2num, mapFunc2Code, snpInfo, n_type, mFunc)==false) {error=true;}
+        if (ReadFile_anno (file_anno, file_func_code, mapScoreKey2Pos, mapFunc2Code, snpInfo, n_type, mFunc)==false) {error=true;}
     }
     else {
     	if (Empty_anno (snpInfo, n_type, mFunc)==false) {error=true;}
     } 
 
-	
+	// read covaraince matrix file
 	if(!file_cov.empty()){
 		cout << "Start loading genotype covariance matrix ... \n";
-		if (ReadFile_cov(file_cov, ns_test, snpInfo, LD) == false) 
+		if (ReadFile_cov(file_cov, ns_test, snpInfo, LD, refLD, mapScoreKey2Pos, mapCovKey2Pos, LDwindow) == false) 
 			error = true;
 	}
 
@@ -661,6 +673,7 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const si
     double maf;
     string a_minor;
     string a_major;
+    string key;
 
     snp_pos.clear();
     
@@ -678,10 +691,11 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const si
         maf = snpInfo[i].maf;
         a_minor = snpInfo[i].a_minor;
         a_major = snpInfo[i].a_major;
+        key = snpInfo[i].key;
 
         indicator_func = snpInfo[i].indicator_func;
 
-        SNPPOS snp_temp={pos, rs, chr, bp, a_minor, a_major, maf, indicator_func};
+        SNPPOS snp_temp={pos, rs, chr, bp, a_minor, a_major, maf, indicator_func, key};
         snp_pos.push_back(snp_temp);
                 
         tt++;
@@ -701,6 +715,7 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const si
     double maf;
     string a_minor;
     string a_major;
+    string key;
 
     snp_pos.clear();
     
@@ -715,15 +730,46 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const si
         maf = snpInfo[i].maf;
         a_minor = snpInfo[i].a_minor;
         a_major = snpInfo[i].a_major;
+        key = snpInfo[i].key;
+
 
         indicator_func = snpInfo[i].indicator_func;
 
-        SNPPOS snp_temp={pos, rs, chr, bp, a_minor, a_major, maf, indicator_func};
+        SNPPOS snp_temp={pos, rs, chr, bp, a_minor, a_major, maf, indicator_func, key};
         snp_pos.push_back(snp_temp);
                 
     }
     snpInfo.clear();
     
+}
+
+vector<string> split(const string& str, const string& delim)
+{
+    vector<string> tokens;
+    size_t prev = 0, pos = 0;
+    do
+    {
+        pos = str.find(delim, prev);
+        if (pos == string::npos) pos = str.length();
+        string token = str.substr(prev, pos-prev);
+        if (!token.empty()) tokens.push_back(token);
+        prev = pos + delim.length();
+    }
+    while (pos < str.length() && prev < str.length());
+    return tokens;
+}
+
+
+void SwapKey(string &key){
+	vector<string> temp;
+	temp = split(key, ":");
+	if(temp.size() != 4) {
+		cout << "Key is in wrong format: " << key << endl;
+		exit(-1);
+	}else{
+		key = temp[0] + ":" + temp[1] + ":" + temp[3] + ":" + temp[2] ;
+	}
+	return; 
 }
 
 
