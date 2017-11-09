@@ -221,7 +221,7 @@ public:
 	size_t d_pace;		
 	
     string file_func_code; //coded all unique variant function types
-    string file_sample;
+    string file_sample; // file containing analyzed sample IDs
     string file_vcf;
     string GTfield;
     

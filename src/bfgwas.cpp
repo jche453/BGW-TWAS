@@ -177,6 +177,7 @@ void BFGWAS::PrintHelp(size_t option)
 		//cout<<" -k        [filename]     "<<" Specify input kinship/relatedness matrix file name"<<endl<<endl;	
 
 		cout<<" -snps     [filename]     "<<" Specify the variant ids that are to be analyzed"<<endl;
+		cout << "-fsample  [filename]    "<<"Specify a list of sample IDs that are to be analyzed\n";
 		cout<<"          format: rs#1"<<endl;	
 		cout<<"                  rs#2"<<endl;	
 		cout<<"                  ..."<<endl<<endl;
@@ -657,14 +658,15 @@ void BFGWAS::BatchRun (PARAM &cPar)
     if(cPar.saveGeno){
 
 		//Save all genotypes
-		cPar.indicator_snp.assign(cPar.ns_total, 1);
-		cPar.indicator_idv.assign(cPar.ni_total, 1);
-		cPar.ni_test = cPar.ni_total;
-		cPar.ns_test = cPar.ns_total;
+		//cPar.indicator_snp.assign(cPar.ns_total, 1);
+		//cPar.indicator_idv.assign(cPar.ni_total, 1);
+		//cPar.ni_test = cPar.ni_total;
+		//cPar.ns_test = cPar.ns_total;
 
 		cPar.CheckData();
 		if (cPar.error==true) {cout<<"error! fail to check data. "<<endl; return;}
     	cout << "Pass data check." << endl;
+    	cout << "ni_test = " << cPar.ni_test << "; ns_test = " << cPar.ns_test << endl;
 
 		gsl_matrix *G=gsl_matrix_alloc (cPar.ni_test, cPar.ni_test);
 		gsl_vector *y=gsl_vector_alloc (cPar.ni_test); // phenotype
@@ -673,11 +675,11 @@ void BFGWAS::BatchRun (PARAM &cPar)
 		cout << "copy phenotype success ... "<< endl;
 		cPar.CopyPheno (y);
 
-		if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
+		//if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
         	// reorder y for reading vcf/genotype files
-        	cout << "Reorder phenotype for vcf/geno inputs ... "<< endl;
-        	cPar.ReorderPheno(y);
-    	} // reorder y for reading vcf files
+        cout << "Reorder phenotype if needed ... "<< endl;
+        cPar.ReorderPheno(y); // setup VcfSampleID_test
+    	//} // reorder y for reading vcf files
 
         //read genotypes X 
         clock_t time_readfile = clock();
@@ -709,10 +711,10 @@ void BFGWAS::BatchRun (PARAM &cPar)
 		cout << "Copy phenotype success ... "<< endl;
 		cPar.CopyPheno (y);
 
-		if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
+		//if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
         	// reorder y for reading vcf/genotype files
         	cPar.ReorderPheno(y);
-    	} 
+    	//} 
 
         //read genotypes X 
         clock_t time_readfile = clock();
@@ -779,11 +781,11 @@ void BFGWAS::BatchRun (PARAM &cPar)
 		gsl_matrix_set_all(W, 1);
 
 		cPar.CopyPheno (Y);
-		if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
+		//if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
         	// reorder y for reading vcf/genotype files
         	cout << "Reorder y for reading vcf or geno files ... "<< endl;
         	cPar.ReorderPheno(Y);
-    	}
+    	//}
 
 		//Fit LM 
 			LM cLm;
@@ -831,10 +833,10 @@ void BFGWAS::BatchRun (PARAM &cPar)
 			cPar.CopyPheno (y); // pheno_mean is calculated here, and y is centered here
 			cout << "\npheno_mean = " << cPar.pheno_mean << "\n";
 	        
-	        if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
+	        //if ( (!cPar.file_vcf.empty()) || (!cPar.file_geno.empty()) ) {
 	        	// reorder y for reading vcf/genotype files
 	        	cPar.ReorderPheno(y);
-	    	}
+	    	//}
 	        cout << "first 10 phenotypes: "; PrintVector(y, 10);
 	        
 	        //read genotypes X 

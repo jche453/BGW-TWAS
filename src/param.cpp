@@ -141,6 +141,18 @@ void PARAM::ReadFiles (void)
 	        
 			file_str=file_bfile+".fam";
 			if (ReadFile_fam (file_str, indicator_idv, pheno, InputSampleID, ni_total)==false) {error=true;}
+			if(!file_sample.empty()){
+				// revise indicator_idv based on analyzed samples
+				readFile_sample (file_sample, InputSampleID, indicator_idv);
+			}
+			// set up VcfSampleID for fam file
+			cout << "set up VcfSampleID as analyzed sample IDs\n";
+			VcfSampleID.clear();
+			for(size_t i=0; i < indicator_idv.size(); i++){
+				if(indicator_idv[i]){
+					VcfSampleID.push_back(InputSampleID[i]);
+				}
+			}
 			
 			// obtain ni_test, ni_total, PhenoID2Ind before reading genotypes
 			ProcessPheno();
@@ -148,11 +160,16 @@ void PARAM::ReadFiles (void)
 			file_str=file_bfile+".bed";
 			cout << "First time reading Plink bed file: \n";
 			if (ReadFile_bed (file_str, setSnps, indicator_idv, indicator_snp, snpInfo, PhenoID2Ind, ni_test, ni_total, maf_level, miss_level, hwe_level, ns_test, ns_total)==false) {error=true;}
+			//cout << "First time reading Plink bed file success! \n";
 	    }else{
 	    	if (!file_pheno.empty()){
 	    		cout << "Start reading pheno file ...\n";
 	        	if (ReadFile_pheno (file_pheno, indicator_idv, pheno, InputSampleID, ni_total)==false)
 	            	{error=true;}
+	            if(!file_sample.empty()){
+					// revise indicator_idv based on analyzed samples
+					readFile_sample (file_sample, InputSampleID, indicator_idv);
+				}
 	        	ProcessPheno(); 
 	        	// obtain ni_test, ni_total, PhenoID2Ind before reading genotypes
 	    	}else{
@@ -440,8 +457,9 @@ void PARAM::WriteGenotypes(uchar **X){
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
 
     //write header with VcfSampleID_test 
-    //cout << "write header row."<< endl;
-    //cout << "ni_test = "<< ni_test << endl;
+    cout << "Write header row for genotype file."<< endl;
+    cout << "ni_test = "<< ni_test << endl;
+    //cout << "VcfSampleID_test length = " << VcfSampleID_test.size() << endl;
 
     outfile<<"ID"<<"\t"<<"CHROM"<<"\t" <<"POS"<<"\t" << "REF"<< "\t" << "ALT"  << "\t";
 
@@ -570,9 +588,9 @@ void PARAM::CheckCvt ()
 //reorder phenotypes
 void PARAM::ReorderPheno(gsl_vector *y)
 {
-	cout << "Reorder phenotype for reading vcf/geno files ... "<< endl;
+	cout << "Reorder phenotype for reading vcf/geno files and setup sample IDs ... "<< endl;
     if (VcfSampleID.size() < ni_test) {
-        cerr << "Sample size in genotype file" <<  VcfSampleID.size() << "< ni_test: " << ni_test << endl;
+        cerr << "Sample size to be analyzed in genotype file VcfSampleID size = " <<  VcfSampleID.size() << "< ni_test: " << ni_test << endl;
         exit(-1);
     }
     
@@ -582,8 +600,8 @@ void PARAM::ReorderPheno(gsl_vector *y)
     gsl_vector *ytemp=gsl_vector_alloc (ni_test);
     VcfSampleID_test.clear(); // set VCFSampleID_test
     
-    //cout << "Number of samples in the genotype file: " << VcfSampleID.size() << endl;
-	//cout << "PhenoID2Ind.size() = " << PhenoID2Ind.size() << " within ReorderPheno() function ... " << endl;
+    cout << "Number of samples to be analyzed in the genotype file: VcfSampleID size = " << VcfSampleID.size() << endl;
+	cout << "PhenoID2Ind.size() = " << PhenoID2Ind.size() << " within ReorderPheno() function ... " << endl;
 
 	// indicator_idv is of the same order as in the phenotype file
     for (size_t i=0; i < VcfSampleID.size(); i++) {
@@ -591,26 +609,23 @@ void PARAM::ReorderPheno(gsl_vector *y)
 
         if(PhenoID2Ind.count(id) > 0){
         	//if (i < 10) cout << id << ", count ="<< PhenoID2Ind.count(id) << ";    "; 
-        	pheno_idx = PhenoID2Ind.at(id);
+        	pheno_idx = PhenoID2Ind[id];
 
-        	if (indicator_idv[pheno_idx] ) {
-            	pheno_i = gsl_vector_get(y, pheno_idx);
-            	gsl_vector_set(ytemp, c_ind, pheno_i);
-            	VcfSampleID_test.push_back(id);
-            	c_ind++;
-        	}else{
-        		indicator_idv[pheno_idx] = 0;
-        	}
+        	pheno_i = gsl_vector_get(y, pheno_idx);
+            gsl_vector_set(ytemp, c_ind, pheno_i);
+            VcfSampleID_test.push_back(id);
+            c_ind++;
+        	
         }
     }
+    cout << "Finished reordering phenotypes. \nAnalyzed sample size is " << c_ind << endl;
     ni_test = c_ind;
-    cout << "Finished reordering phenotypes. \nAnalyzed sample size ni_test = " << ni_test << endl;
     gsl_vector_memcpy(y, ytemp);
     gsl_vector_free(ytemp);
 }
 
 
-//post-process phentoypes, obtain ni_total, ni_test, PhenoIDInd
+// Post-process phentoypes, obtain ni_total, ni_test, PhenoID2Ind
 void PARAM::ProcessPheno()
 {	
 	//obtain ni_test
@@ -624,10 +639,10 @@ void PARAM::ProcessPheno()
             PhenoID2Ind[InputSampleID[i]]= ni_test;
             ni_test++;
         }
-        else PhenoID2Ind[InputSampleID[i]] = ULONG_MAX;
+      //  else PhenoID2Ind[InputSampleID[i]] = ULONG_MAX;
     }
-    //cout << "Create PhenoID2Ind map; total number of analyzed individual ni_test = " << ni_test << "\n";
-    //cout << "PhenoID2Ind map length = " << PhenoID2Ind.size() << "\n";
+    cout << "Create PhenoID2Ind map; total number of analyzed individual ni_test = " << ni_test << "\n";
+    cout << "PhenoID2Ind map length = " << PhenoID2Ind.size() << "\n";
 	
 	if (ni_test==0) {
 		error=true;
@@ -643,7 +658,7 @@ void PARAM::ProcessPheno()
 //else, indicator_idv to load phenotype
 void PARAM::CopyPheno (gsl_vector *y) 
 {
-	size_t ci_test=0;
+	size_t ci_test=0; 
 	pheno_mean = 0.0;
 	
 	for (size_t i=0; i<indicator_idv.size(); ++i) {

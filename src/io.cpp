@@ -485,7 +485,6 @@ bool getIDVvcf(const string &file_vcf, vector<bool> &indicator_idv, size_t & ni_
     return true;
 }
 
-
 //Read .fam file
 bool ReadFile_fam (const string &file_fam, vector<bool> &indicator_idv, vector<double> &pheno, vector<string> & InputSampleID, size_t &ni_total)
 {
@@ -507,25 +506,25 @@ bool ReadFile_fam (const string &file_fam, vector<bool> &indicator_idv, vector<d
 		id=ch_ptr;
         InputSampleID.push_back(id);
 
-		ch_ptr=strtok (NULL, " \t"); // paternal id
-		ch_ptr=strtok (NULL, " \t"); // maternal id
-		ch_ptr=strtok (NULL, " \t"); // sex
-		ch_ptr=strtok (NULL, " \t"); // phenotype
-		
-		if (strcmp(ch_ptr, "NA")==0) {
-			indicator_idv.push_back(0); 
-			pheno.push_back(-9);
-		} else {
-			p=atof(ch_ptr);
-			if (p==-9) {
-				indicator_idv.push_back(0); 
-				pheno.push_back(-9);
-			}
-			else {
-				indicator_idv.push_back(1); 
-				pheno.push_back(p);
-			}
-		}
+        ch_ptr=strtok (NULL, " \t"); // paternal id
+        ch_ptr=strtok (NULL, " \t"); // maternal id
+        ch_ptr=strtok (NULL, " \t"); // sex
+        ch_ptr=strtok (NULL, " \t"); // phenotype
+        
+        if (strcmp(ch_ptr, "NA")==0) {
+            indicator_idv.push_back(0); 
+            pheno.push_back(-9);
+        } else {
+            p=atof(ch_ptr);
+            if (p==-9) {
+                indicator_idv.push_back(0); 
+                pheno.push_back(-9);
+            }
+            else {
+                indicator_idv.push_back(1); 
+                pheno.push_back(p);
+            }
+        }
 	}
  
     ni_total = indicator_idv.size();
@@ -535,6 +534,35 @@ bool ReadFile_fam (const string &file_fam, vector<bool> &indicator_idv, vector<d
 	infile.clear();
     cout << "Success reading fam file.\n";
 	return true;
+}
+
+
+bool readFile_sample (const string &file_sample, const vector<string> &InputSampleID, vector<bool> &indicator_idv)
+{
+    // revise indicator_idv based on included samples
+
+    map<string, bool>  PhenoID_Test;
+    string line;
+
+    cout << "Start reading analyzed sample IDs: " << file_sample <<"\n";
+    igzstream infile (file_sample.c_str(), igzstream::in);
+    if (!infile) {cout<<"error opening .fam file: "<<file_sample<<endl; return false;}
+
+    while (!safeGetline(infile, line).eof()) {
+        PhenoID_Test[line] = 1;
+    }
+
+    size_t ni_select=0;
+    for(size_t i=0; i < indicator_idv.size(); i++){
+        if(indicator_idv[i] && PhenoID_Test.count(InputSampleID[i]) <= 0){
+            indicator_idv[i] = 0;
+        }else{
+            ni_select++;
+        }
+    }
+    cout << "Analyzed sample number is " << ni_select << endl;
+
+    return true;
 }
 
 bool CreatVcfHash(const string &file_vcf, StringIntHash &sampleID2vcfInd, const string &file_sample){
@@ -1524,7 +1552,7 @@ bool PlinkKin (const string &file_bed, vector<bool> &indicator_idv, vector<bool>
 bool VCFKin (const string &file_vcf, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const int k_mode, const int display_pace, gsl_matrix *matrix_kin, string &GTfield, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Ind, const vector<string> &VcfSampleID)
 {
     if (GTfield.empty()) {
-        GTfield = "GT"; //defalt load GT Data
+        GTfield = "GT"; //defalt T Data
     }
     int lkey = GTfield.size(); //length of the field-key string
 
@@ -2212,7 +2240,7 @@ bool ReadFile_bed (const string &file_bed, vector<bool> &indicator_idv, vector<b
 				c_idv++;
 			}
 		}
-        if (n_miss > 0) cout << "n_miss = " << n_miss << endl;
+        //if (n_miss > 0) cout << "n_miss = " << n_miss << endl;
 		if(c_idv != (size_t)ni_test) cout << "# of readed individuals not equal to ni_test \n";
         
 		geno_mean/=(double)(ni_test-n_miss);

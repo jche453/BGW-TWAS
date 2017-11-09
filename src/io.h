@@ -65,6 +65,8 @@ std::istream& safeGetline(std::istream& is, std::string& t);
 
 bool ReadFile_snps (const string &file_snps, set<string> &setSnps);
 
+bool readFile_sample (const string &file_sample, const vector<string> &InputSampleID, vector<bool> &indicator_idv);
+
 bool ReadFile_bim (const string &file_bim, vector<SNPINFO> &snpInfo, map<string, int> &mapID2num);
 
 bool ReadFile_fam (const string &file_fam, vector<bool> &indicator_pheno, vector<double> &pheno, vector<string> & InputSampleID, size_t &ni_total);
