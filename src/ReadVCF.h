@@ -16,11 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-    
-
-//#include "VcfFileReader.h"
-#include "StringBasics.h"
-#include "StringHash.h"
 #include "MemoryAllocators.h"
 
 #include <stdio.h>
