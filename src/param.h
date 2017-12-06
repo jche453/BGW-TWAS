@@ -28,8 +28,6 @@
 
 
 #include "VcfFileReader.h"
-#include "StringBasics.h"
-#include "StringHash.h"
 #include "MemoryAllocators.h"
 
 #include <fstream>
@@ -201,7 +199,6 @@ public:
     size_t UnCompBufferSize;
     vector <size_t> CompBuffSizeVec;
     bool Compress_Flag;
-    StringIntHash sampleID2vcfInd;
     map<string, size_t>  PhenoID2Ind;
     vector<size_t> SampleVcfPos;
     vector<string> VcfSampleID; // size=total sample #
