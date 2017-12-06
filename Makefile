@@ -9,6 +9,7 @@
 
 # Set this variable to either LNX or MAC
 SYS = LNX
+
 # Leave blank after "=" to disable; put "= 1" to enable
 # Disable WITH_LAPACK option can slow computation speed significantly and is not recommended
 # Disable WITH_ARPACK option only disable -apprx option in the software
@@ -27,8 +28,9 @@ SRC_DIR  = ./src
 
 CPP = g++
 
-CPPFLAGS = -ggdb -Wall -O3 -I./libStatGen/include/ -I./zlib/ -D__ZLIB_AVAILABLE__ -D_FILE_OFFSET_BITS=64 -D__STDC_LIMIT_MACROS #-pg
+CPPFLAGS = -ggdb -Wall -O3 -I/home/jyang/local/lib/gsl/include/ -I./libStatGen/include/ -I/home/jyang/local/lib/zlib/ -I/home/jyang/local/lib/ -I/usr/lib64 -D__ZLIB_AVAILABLE__ -D_FILE_OFFSET_BITS=64 -D__STDC_LIMIT_MACROS #-pg
 
+# Need to install libraries: gsl, 
 LIBS = -lgsl -lgslcblas -pthread -lz -lm ./libStatGen/libStatGen.a
 
 OUTPUT = $(BIN_DIR)/Estep_mcmc
@@ -41,13 +43,15 @@ HDR =
 
 LIBS_LNX_D_LAPACK = -llapack
 LIBS_MAC_D_LAPACK = -framework Veclib
-LIBS_LNX_S_LAPACK = /usr/lib/lapack/liblapack.a -lgfortran  /usr/lib/atlas-base/libatlas.a /usr/lib/libblas/libblas.a -Wl,--allow-multiple-definition 
+LIBS_LNX_S_LAPACK = /usr/lib64/liblapacke.so -lgfortran /usr/lib64/atlas/libsatlas.so.3 /usr/lib64/libblas.so -Wl,--allow-multiple-definition 
+
+#LIBS_LNX_S_LAPACK = /usr/lib/lapack/liblapack.a -lgfortran  /usr/lib/atlas-base/libatlas.a /usr/lib/libblas/libblas.a -Wl,--allow-multiple-definition 
 
 # Options
 
 
-  SOURCES += $(SRC_DIR)/param.cpp $(SRC_DIR)/bfgwas.cpp $(SRC_DIR)/io.cpp $(SRC_DIR)/lm.cpp  $(SRC_DIR)/bvsrm.cpp $(SRC_DIR)/mathfunc.cpp $(SRC_DIR)/gzstream.cpp $(SRC_DIR)/ReadVCF.cpp $(SRC_DIR)/compress.cpp $(SRC_DIR)/calcSS.cpp
-  HDR += $(SRC_DIR)/param.h $(SRC_DIR)/bfgwas.h $(SRC_DIR)/io.h $(SRC_DIR)/lm.h $(SRC_DIR)/bvsrm.h $(SRC_DIR)/mathfunc.h $(SRC_DIR)/gzstream.h $(SRC_DIR)/ReadVCF.h $(SRC_DIR)/compress.h $(SRC_DIR)/calcSS.h
+SOURCES += $(SRC_DIR)/param.cpp $(SRC_DIR)/bfgwas.cpp $(SRC_DIR)/io.cpp $(SRC_DIR)/lm.cpp  $(SRC_DIR)/bvsrm.cpp $(SRC_DIR)/mathfunc.cpp $(SRC_DIR)/gzstream.cpp $(SRC_DIR)/ReadVCF.cpp $(SRC_DIR)/compress.cpp $(SRC_DIR)/calcSS.cpp
+HDR += $(SRC_DIR)/param.h $(SRC_DIR)/bfgwas.h $(SRC_DIR)/io.h $(SRC_DIR)/lm.h $(SRC_DIR)/bvsrm.h $(SRC_DIR)/mathfunc.h $(SRC_DIR)/gzstream.h $(SRC_DIR)/ReadVCF.h $(SRC_DIR)/compress.h $(SRC_DIR)/calcSS.h
 
 
 ifdef WITH_LAPACK

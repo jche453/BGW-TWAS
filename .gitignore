@@ -1,4 +1,6 @@
 # Compiled source #
+Makefile
+Changes.txt
 ###################
 *.com
 *.class

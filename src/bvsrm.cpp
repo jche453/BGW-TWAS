@@ -222,7 +222,7 @@ void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPO
     ofstream outfile (file_str.c_str(), ofstream::out);
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
     
-    //outfile<<"markerID"<<"\t"<<"chr"<<"\t" <<"bp"<<"\t" <<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"beta"<<"\t"<<"gamma" << "\t" <<"Zscore" << "\t" << "SE_beta" << "\t" << "LRT" << "\t" << "pval_lrt"  << "\t" << "rank" << endl;
+    //outfile<<"markerID"<<"\t"<<"chr"<<"\t" <<"bp"<<"\t" <<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta"<<"\t"<< "SE_beta" << "\t" << "LRT" << "\t" << "pval_lrt"  << "\t" << "rank" << endl;
     
     size_t pos, r;
     vector< pair<string , double> > pi_vec;
@@ -234,7 +234,7 @@ void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPO
         // save the data along the order of all variants, snp_pos is sorted by order
         rs = snp_pos[i].rs;
         outfile<<rs<<"\t"<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
-        outfile << scientific << setprecision(6)  << snp_pos[i].maf << "\t";
+        outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
         
         for (size_t j=0; j < n_type; j++) {
             if (snp_pos[i].indicator_func[j]) {
@@ -248,11 +248,11 @@ void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPO
         //beta_g is saved by position
         if (beta_g[pos].second!=0) {
             pi_temp = beta_g[pos].second/(double)s_step;
-            outfile << beta_g[pos].first/beta_g[pos].second<< "\t" << pi_temp <<"\t";
+            outfile << pi_temp <<"\t" << beta_g[pos].first/beta_g[pos].second<< "\t" << SE_beta[pos] << "\t" ;
         }
         else {
             pi_temp = 0.0;
-            outfile << 0.0 << "\t" << 0.0 << "\t";
+            outfile << 0.0 << "\t" << 0.0 << "\t" << 0.0 << "\t";
         }
         pi_vec.push_back(make_pair(rs, pi_temp));
         
@@ -261,7 +261,7 @@ void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPO
             exit(-1);
         }
         r = mapOrder2Rank[i]; //map to rank
-        outfile << scientific << setprecision(6) << Z_scores[pos] << "\t" << SE_beta[pos] << "\t" << pos_loglr[r].second << "\t"<< pval_lrt[pos] << "\t" ;
+        outfile << scientific << setprecision(3) << pos_loglr[r].second << "\t"<< pval_lrt[pos] << "\t" ;
         outfile << r << endl;
     }
     outfile.clear();	
@@ -280,7 +280,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
     ofstream outfile (file_str.c_str(), ofstream::out);
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
     
-    //outfile<<"markerID"<<"\t"<<"chr"<<"\t" <<"bp"<<"\t" <<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"beta"<<"\t"<<"gamma" << "\t" << "ChisqTest" << "\t" << "pval_svt"  << "\t" << "rank" << endl;
+    //outfile<<"markerID"<<"\t"<<"chr"<<"\t" <<"bp"<<"\t" <<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta"<<"\t"<<"SE_beta" << "\t" << "ChisqTest" << "\t" << "pval_svt"  << "\t" << "rank" << endl;
     
     size_t r;
     double pi_temp;
@@ -289,7 +289,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
         
         // save the data along the order of all variants, snp_pos is sorted by order
         outfile<<snp_pos[i].rs<<"\t"<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
-        outfile << scientific << setprecision(6)  << snp_pos[i].maf << "\t";
+        outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
         
         for (size_t j=0; j < n_type; j++) {
             if (snp_pos[i].indicator_func[j]) {
@@ -302,15 +302,15 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
         //beta_g is saved by position
         if (beta_g[i].second!=0) {
             pi_temp = beta_g[i].second/(double)s_step;
-            outfile << beta_g[i].first/beta_g[i].second<< "\t" << pi_temp <<"\t";
+            outfile << pi_temp << "\t" << beta_g[i].first/beta_g[i].second<< "\t" << "NA" << "\t" ;
         }
         else {
             pi_temp = 0.0;
-            outfile << 0.0 << "\t" << 0.0 << "\t";
+            outfile << 0.0 << "\t" << 0.0 << "\t" << 0.0 << "\t";
         }
         
         r = mapPos2Rank[i]; //map to rank
-        outfile << scientific << setprecision(6) << pos_ChisqTest[r].second << "\t"<< pval[r] << "\t" ;
+        outfile << scientific << setprecision(3) << pos_ChisqTest[r].second << "\t"<< pval[r] << "\t" ;
         outfile << r << endl;
     }
     outfile.clear();    
