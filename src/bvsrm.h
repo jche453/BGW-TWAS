@@ -88,7 +88,7 @@ public:
     vector< pair<size_t, size_t> > SNPorder_vec; //<pos, rank>
     vector< pair<size_t, size_t> > SNPrank_vec; //<pos, order>
     double GV, rv, tau, logrv;
-    vector<double> SE_beta, xtx_vec;
+    vector<double> beta_marginal, beta_SE, xtx_vec;
     vector<double> SNPmean;
     
     
@@ -193,7 +193,7 @@ public:
 
     void WriteHyptemp_SS(gsl_vector *LnPost, vector<double> &em_gamma);
 
-    void WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_loglr, const vector<double> &Z_scores, const vector<double> &SE_beta, const vector<double> pval_lrt);
+    void WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_loglr, const vector<double> &Z_scores, const vector<double> pval_lrt);
 
     // Initialize the model
     void SetPgamma (size_t p_gamma_top);
@@ -242,7 +242,7 @@ public:
     
     void WriteGenotypeFile(uchar **X, const vector<SNPPOS> &snp_pos);
 
-    void WriteFGWAS_InputFile(const vector<SNPPOS> &snp_pos, const vector<double> &Z_scores, const vector<double> &SE_beta);
+    void WriteFGWAS_InputFile(const vector<SNPPOS> &snp_pos, const vector<double> &Z_scores);
 
 
     double CalcPveLM (const gsl_matrix *UtXgamma, const gsl_vector *Uty, const double sigma_a2);

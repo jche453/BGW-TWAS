@@ -174,17 +174,17 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
     infile_code.clear();
     
     // Load annotation file...
-    // cout<<"Reading annotation file: "<<file_anno<<endl; 
+    cout<<"Reading annotation file: "<<file_anno<<endl; 
     igzstream infile (file_anno.c_str(), igzstream::in);
     if (!infile) {cout<<"error opening annotation file: "<<file_anno<<endl; return false;}
     
     // read function annotation file
-    string chr, ref, alt, rs_info;
+    string chr, ref, alt, rs;
     long int b_pos=0;
     size_t snp_i = 0;
     double maf_temp;
 
-    cout << "mapID2num size = " << mapID2num.size() << endl; // map to genotype file by chr:pos:ref:alt
+    cout << "mapID2num size = " << mapID2num.size() << endl; // map to genotype file by rs
 
     while (!safeGetline(infile, line).eof()) {
         if (line[0] == '#') {
@@ -193,7 +193,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
         else {
             pch=(char *)line.c_str();
             nch = strchr(pch, '\t');
-            chr.assign(pch, nch-pch);
+            chr.assign(pch, nch-pch); // chr
 
             pch = (nch == NULL) ? NULL : nch+1;
             nch = strchr(pch, '\t');
@@ -201,24 +201,29 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
 
             pch = (nch == NULL) ? NULL : nch+1;
             nch = strchr(pch, '\t');
-            ref.assign(pch, nch-pch); //chr
+            rs.assign(pch, nch-pch); //rsID
 
             pch = (nch == NULL) ? NULL : nch+1;
             nch = strchr(pch, '\t');
-            alt.assign(pch, nch-pch); //chr
+            ref.assign(pch, nch-pch); //ref
 
-            rs_info = chr + ":" + to_string(b_pos) + ":" + ref + ":" + alt;
-            // if (snp_i < 10) cout << "rs_info " << rs_info ;
+            pch = (nch == NULL) ? NULL : nch+1;
+            nch = strchr(pch, '\t');
+            alt.assign(pch, nch-pch); //alt
+
+            if(rs.compare(".") == 0 || rs.empty()){
+                rs = chr + ":" + to_string(b_pos) + ":" + ref + ":" + alt;
+            }
 
             // check if this SNP is in the genotype/score file
-            if(mapID2num.count(rs_info) == 0) {continue; }
+            if(mapID2num.count(rs) == 0) {continue; }
             else{
-                snp_i = mapID2num[rs_info];
+                snp_i = mapID2num[rs];
                 if (!indicator_snp[snp_i]) {
                       continue;
                 }
                 else{
-                    //if (snp_i < 10) cout << "rs_info " << rs_info << "; position = " << snp_i;
+                    // if (snp_i < 10) cout << rs << "; position = " << snp_i;
                     pch = (nch == NULL) ? NULL : nch+1;
                     snp_nfunc = 0;
                     snpInfo[snp_i].indicator_func.assign(n_type, 0);
@@ -406,7 +411,7 @@ bool ReadFile_bim (const string &file_bim, vector<SNPINFO> &snpInfo, map<string,
 		
         SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, -9, -9, -9, indicator_func_temp, weight_temp, 0.0, rs_info};
 		snpInfo.push_back(sInfo);
-        mapID2num[rs_info]=snpInfo.size() - 1;
+        mapID2num[rs]=snpInfo.size() - 1;
 	}
 	
 	infile.close();
@@ -672,7 +677,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
             else if ((tab_count == 6) && (pch[0] == 'F')){
                 SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0, rs_info};
                 snpInfo.push_back(sInfo); //save marker information
-                mapID2num[rs_info] = snpInfo.size() - 1 ;
+                mapID2num[rs] = snpInfo.size() - 1 ;
                 indicator_snp.push_back(0);
                 pch = (nch == NULL) ? NULL : nch+1;
                 continue;
@@ -846,7 +851,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
         
         SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0, rs_info};
         snpInfo.push_back(sInfo); //save marker information
-        mapID2num[rs_info]= snpInfo.size() - 1;
+        mapID2num[rs]= snpInfo.size() - 1;
         
         // filter by missing rate
         if ( (double)n_miss/(double)ni_test > miss_level) {indicator_snp.push_back(0); continue;}
@@ -1060,7 +1065,7 @@ bool ReadFile_geno (const string &file_geno, const set<string> &setSnps, vector<
 		
 		SNPINFO sInfo={chr, rs, cM, b_pos, minor, major, (int)n_miss, (double)n_miss/(double)ni_test, maf, indicator_func_temp, weight_temp, 0.0, rs_info};
 		snpInfo.push_back(sInfo);
-        mapID2num[rs_info] = snpInfo.size() - 1;
+        mapID2num[rs] = snpInfo.size() - 1;
 		
 		if ( (double)n_miss/(double)ni_test > miss_level) {indicator_snp.push_back(0); continue;}
 		
@@ -2336,13 +2341,17 @@ void WriteVector(const gsl_vector * X, const string file_str){
 }
 
 // Read summary statistics (only for studied variants)
-bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos,vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test)
+bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos,vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test, vector<double> &beta_marginal, vector<double> &beta_SE)
 {
+    // , const double &pheno_var, const size_t ni_test
+    // if(pheno_var<=0) {cerr << "phenotype variance is 0 !"; return 0;}
+    // double xtx ;
+
     string line;
     char *pch, *nch;
 
     string rs, chr, minor, major, key;
-    double maf_i, p_score, u_i, v_i, chisq_i;
+    double maf_i, p_score, u_i, v_i, chisq_i, beta_i, beta_se_i;
     long int b_pos=0;
 
     vector<bool> indicator_func_temp;
@@ -2351,7 +2360,8 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
     ns_test = 0;
     mapScoreKey2Pos.clear();
     snpInfo.clear();
-    //beta.clear();
+    beta_marginal.clear();
+    beta_SE.clear();
     pval.clear();
     pos_ChisqTest.clear();
     U_STAT.clear();
@@ -2377,6 +2387,17 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
                 pch = nch+1;
                 nch = strchr(pch, '\t');
                 b_pos = strtol(pch, NULL, 0);
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
+            }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                rs.assign(pch, nch-pch);
             }
 
             if(nch == NULL) {
@@ -2525,8 +2546,19 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
             {
                 pch = nch+1;
                 nch = strchr(pch, '\t');
-                //beta.push_back(strtod(pch, NULL));
+                beta_i = strtod(pch, NULL);
+            } //  BETA
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary score statistic file");
+                exit(-1);
             }
+            else
+            {
+                pch = nch+1;
+                nch = strchr(pch, '\t');
+                beta_se_i = strtod(pch, NULL);
+            } //  BETA_SE
 
             if(nch == NULL) {
                 perror("Wrong data format in summary score statistic file");
@@ -2543,7 +2575,22 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
             chisq_i = u_i * u_i / (v_i * v_i);
             pos_ChisqTest.push_back( make_pair(ns_test, chisq_i) ); // more stable than get chisq_i from pval
 
-            rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
+            // calculate beta_marginal, and beta_SE
+            /*
+            xtx = (v_i * v_i) / pheno_var;
+            beta_i = xtx * u_i;
+            if(xtx>0){
+                beta_se_i = ( pheno_var - (u_i * beta_i / (double)ni_test) ) / xtx;
+            }else{
+                beta_se_i = 0.0;
+            }
+            */           
+            beta_marginal.push_back(beta_i);
+            beta_SE.push_back(beta_se_i);
+
+            if(rs.compare(".") == 0 || rs.empty()){
+                rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
+            }
 
             SNPINFO sInfo = {chr, rs, -9, b_pos, minor, major, -9, -9, maf_i, indicator_func_temp, weight_temp, 0.0, rs};
             snpInfo.push_back( sInfo );
@@ -2615,7 +2662,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
         else {
             pch=(char *)line.c_str();
             nch = strchr(pch, '\t');
-            chr.assign(pch, nch-pch);
+            chr.assign(pch, nch-pch); // chr
 
             pch = (nch == NULL) ? NULL : nch+1;
             nch = strchr(pch, '\t');
@@ -2623,13 +2670,19 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
 
             pch = (nch == NULL) ? NULL : nch+1;
             nch = strchr(pch, '\t');
-            ref.assign(pch, nch-pch); //chr
+            rs.assign(pch, nch-pch); // rsID
 
             pch = (nch == NULL) ? NULL : nch+1;
             nch = strchr(pch, '\t');
-            alt.assign(pch, nch-pch); //chr
+            ref.assign(pch, nch-pch); //ref
 
-            rs = chr + ":" + to_string(b_pos) + ":" + ref + ":" + alt;
+            pch = (nch == NULL) ? NULL : nch+1;
+            nch = strchr(pch, '\t');
+            alt.assign(pch, nch-pch); //alt
+            
+            if(rs.compare(".") == 0 || rs.empty()){
+                rs = chr + ":" + to_string(b_pos) + ":" + ref + ":" + alt;
+            }
             if(mapScoreKey2Pos.count(rs) == 0) {continue;} //not in the Summary Score Statistic file
             else{ snp_i = mapScoreKey2Pos[rs] ; } // map to the variant position in score.txt 
 
@@ -2724,7 +2777,7 @@ bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <S
 
     string line;
     char *pch, *nch, *mch;
-    string key, chr, minor, major;
+    string chr, minor, major, rs;
     long int b_pos;
     double r;
 
@@ -2741,7 +2794,7 @@ bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <S
 
             pch = (char *)line.c_str();
             nch = strchr(pch, '\t');
-            chr.assign(pch, nch-pch);
+            chr.assign(pch, nch-pch); //chr
 
             if(nch == NULL) {
                 perror("Wrong data format in summary cov file");
@@ -2751,7 +2804,18 @@ bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <S
             {
                 pch = nch+1;
                 nch = strchr(pch, '\t');
-                b_pos = strtol(pch, NULL, 0);
+                b_pos = strtol(pch, NULL, 0); // base position
+            }
+
+            if(nch == NULL) {
+                perror("Wrong data format in summary cov file");
+                exit(-1);
+            }
+            else
+            {
+                pch = (nch == NULL) ? NULL : nch+1;
+                nch = strchr(pch, '\t');
+                rs.assign(pch, nch-pch); // Reference allel
             }
 
             if(nch == NULL) {
@@ -2776,9 +2840,11 @@ bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <S
                 minor.assign(pch, nch-pch); // Minor allel
             }
 
-            key = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
-            mapCovKey2Pos[key] = n_snp; // record SNPs in Cov file positions
-            mapCovPos2Key[n_snp] = key; // record Keys for pos in cov.txt
+            if(rs.compare(".") == 0 || rs.empty()){
+                rs = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
+            }
+            mapCovKey2Pos[rs] = n_snp; // record SNPs in Cov file positions
+            mapCovPos2Key[n_snp] = rs; // record Keys for pos in cov.txt
 
             if(nch == NULL) {
                 perror("Wrong data format in summary cov file");

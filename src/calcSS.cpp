@@ -53,7 +53,7 @@ void CALCSS::CopyFromParam (PARAM &cPar)
 
 
 //calculat summary statistics of score statistics and LD matrix
-void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest){
+void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest){
 
     cout << "\nStart calculating summary statistics ... \n";
 
@@ -73,15 +73,15 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
     // define used variables 
     gsl_vector *xvec_i = gsl_vector_alloc(ni_test);
     gsl_vector *xvec_j = gsl_vector_alloc(ni_test);
-    // gsl_vector *xbeta_i = gsl_vector_alloc(ni_test);
+    gsl_vector *xbeta_i = gsl_vector_alloc(ni_test);
 
-    double xtx_ij, xty, xtx_i, beta_i, v2, chisq_i; // beta_sd_i, 
+    double xtx_ij, xty, xtx_i, beta_i, v2, chisq_i, beta_SE_i;
     beta.clear();
     xtx_vec.clear();
     LD.clear(); 
     pval.clear();
     pos_ChisqTest.clear();
-    //beta_sd.clear();
+    beta_SE.clear();
 
     cout << "calculate xtx, beta, score statistics by the order of chr/bp ... \n";
     for (size_t i=0; i<ns_test; ++i) {
@@ -102,18 +102,14 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
         pval.push_back( gsl_cdf_chisq_Q (chisq_i, 1.0) ); // pvalue needed for BVSRM
         pos_ChisqTest.push_back( make_pair(i, chisq_i) ) ; // pos_ChisqTest needed for BVSRM
 
-        /*
         gsl_vector_memcpy(xbeta_i, xvec_i);
         gsl_vector_scale(xbeta_i, -beta_i);
         gsl_vector_add(xbeta_i, y);
-        gsl_blas_ddot(xbeta_i, xbeta_i, &beta_sd_i); // effect-size deviation
-
-        if(xtx_i > 0) beta_sd_i = sqrt( beta_sd_i / ((double)ni_test * xtx_i) );
-        else beta_sd_i = 0.0; 
-
-        beta_sd.push_back(beta_sd_i);
-        */
-
+        gsl_blas_ddot(xbeta_i, xbeta_i, &beta_SE_i); // effect-size deviation
+        if(xtx_i > 0) beta_SE_i = sqrt( beta_SE_i / ((double)ni_test * xtx_i) );
+        else beta_SE_i = 0.0; 
+        beta_SE.push_back(beta_SE_i);
+        
         // saving X'X to LD
         LD.push_back(vector<double>()); // save r2
         LD[i].push_back(xtx_i / ((double)ni_test)); // varianct of x_i
@@ -135,13 +131,13 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 
     gsl_vector_free(xvec_i);
     gsl_vector_free(xvec_j);
-    //gsl_vector_free(xbeta_i);
+    gsl_vector_free(xbeta_i);
 
     return;
 }
 
 
-void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &U_STAT, const vector<double> &SQRT_V_STAT, const vector<double> &pval)
+void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &beta_SE, const vector<double> &U_STAT, const vector<double> &SQRT_V_STAT, const vector<double> &pval)
 {
     cout << "\nStart writing summary statistics ... \n";
     String fout = file_out.c_str();
@@ -176,9 +172,9 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
     }
 
     // write an extra column saving xtx with centered genotypes
-    ifprintf(score_out, "#CHR\tPOS\tREF\tALT\t N_INFORMATIVE\tFOUNDER_AF\tALL_AF\tINFORMATIVE_ALT_AC\tCALL_RATE\tHWE_PVALUE\tN_REF\tN_HET\tN_ALT\tU_STAT\tSQRT_V_STAT\tALT_EFFSIZE\tPVALUE\n");
+    ifprintf(score_out, "#CHR\tPOS\tID\tREF\tALT\t N_INFORMATIVE\tFOUNDER_AF\tALL_AF\tINFORMATIVE_ALT_AC\tCALL_RATE\tHWE_PVALUE\tN_REF\tN_HET\tN_ALT\tU_STAT\tSQRT_V_STAT\tALT_EFFSIZE\tBETA_SE\tPVALUE\n");
     // assuming variants have unique CHR:POS 
-    ifprintf(cov_out, "#CHR\tCURRENT_POS\tCURRENT_REF\tCURRENT_ALT\tMARKERS_IN_WINDOW\tCOV_MATRICES\n");
+    ifprintf(cov_out, "#CHR\tCURRENT_POS\tCURRENT_ID\tCURRENT_REF\tCURRENT_ALT\tMARKERS_IN_WINDOW\tCOV_MATRICES\n");
     
     double alt_ac;
 
@@ -187,10 +183,10 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
 
         alt_ac = 2 * (double)ni_test * snp_pos[i].maf;
         // write score statistics
-        ifprintf(score_out, "%s\t%ld\t%s\t%s\t%u\t%g\t%s\t%g\t%s\t%s\t%s\t%s\t%s\t%g\t%g\t%g\t%g\n", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), ni_test, snp_pos[i].maf, "NA", alt_ac, "NA", "NA", "NA", "NA", "NA", U_STAT[i], SQRT_V_STAT[i], beta[i], pval[i]);
+        ifprintf(score_out, "%s\t%ld\t%s\t%s\t%s\t%u\t%g\t%s\t%g\t%s\t%s\t%s\t%s\t%s\t%g\t%g\t%g\t%g\t%g\n", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].rs.c_str(), snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), ni_test, snp_pos[i].maf, "NA", alt_ac, "NA", "NA", "NA", "NA", "NA", U_STAT[i], SQRT_V_STAT[i], beta[i], beta_SE[i], pval[i]);
 
         // write banded covariance matrix: chr pos ref alt
-        ifprintf(cov_out, "%s\t%ld\t%s\t%s\t", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str());
+        ifprintf(cov_out, "%s\t%ld\t%s\t%s\t%s\t", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].rs.c_str(), snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str());
 
         for(size_t j=0; j<LD[i].size(); j++){
             ifprintf(cov_out, "%ld,", snp_pos[i+j].bp);
@@ -277,7 +273,7 @@ void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t 
 
     for(size_t i=0; i<snp_pos.size(); i++){
         LD[i][0] = 1.0;
-        cout << xtx_var[i] << ",";
+        //cout << xtx_var[i] << ",";
 
         if(i < (snp_pos.size() - 1)){
             if(xtx_var[i] == 0){
@@ -293,11 +289,11 @@ void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t 
                         //if(r2 < 1e-4) r2 = 0.0; // set r2 to 0 if r2 < 1e-4
                         LD[i][j] = r2 ;
                     }
-                    cout << LD[i][j] << "," ;             
+                    //cout << LD[i][j] << "," ;             
                 }
             }
         }
-        cout << endl;
+        //cout << endl;
     }
 
     return;

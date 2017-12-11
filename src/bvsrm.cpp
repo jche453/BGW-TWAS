@@ -45,7 +45,6 @@ void BVSRM::CopyFromParam (PARAM &cPar)
     hypfile = cPar.hypfile;
     SNPmean = cPar.SNPmean;
 
-    
     UnCompBufferSize = cPar.UnCompBufferSize;
     CompBuffSizeVec = cPar.CompBuffSizeVec;
     Compress_Flag = cPar.Compress_Flag;
@@ -105,6 +104,9 @@ void BVSRM::CopyFromParam (PARAM &cPar)
 	indicator_snp=cPar.indicator_snp;
 	snpInfo=cPar.snpInfo;
     snp_pos = cPar.snp_pos;
+
+    //beta_marginal = cPar.beta_marginal;
+    //beta_SE = cPar.beta_SE;
 	
 	return;
 }
@@ -213,7 +215,7 @@ void BVSRM::WriteMCMC(const vector<string> &snps_mcmc){
 }
 
 
-void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_loglr, const vector<double> &Z_scores, const vector<double> &SE_beta, const vector<double> pval_lrt)
+void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_loglr, const vector<double> &Z_scores, const vector<double> pval_lrt)
 {
     string file_str;
     file_str="./output/"+file_out;
@@ -222,7 +224,7 @@ void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPO
     ofstream outfile (file_str.c_str(), ofstream::out);
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
     
-    //outfile<<"markerID"<<"\t"<<"chr"<<"\t" <<"bp"<<"\t" <<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta"<<"\t"<< "SE_beta" << "\t" << "LRT" << "\t" << "pval_lrt"  << "\t" << "rank" << endl;
+    //outfile<<"chr"<<"\t" <<"bp"<<"\t" << "markerID"<<"\t"<<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta_bfgwas"<<"\t"<< "beta_SE" << "\t" << "LRT" << "\t" << "pval_lrt"  << "\t" << "rank" << endl;
     
     size_t pos, r;
     vector< pair<string , double> > pi_vec;
@@ -233,7 +235,7 @@ void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPO
         
         // save the data along the order of all variants, snp_pos is sorted by order
         rs = snp_pos[i].rs;
-        outfile<<rs<<"\t"<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
+        outfile<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<<rs<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
         outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
         
         for (size_t j=0; j < n_type; j++) {
@@ -248,7 +250,7 @@ void BVSRM::WriteParam(vector<pair<double, double> > &beta_g, const vector<SNPPO
         //beta_g is saved by position
         if (beta_g[pos].second!=0) {
             pi_temp = beta_g[pos].second/(double)s_step;
-            outfile << pi_temp <<"\t" << beta_g[pos].first/beta_g[pos].second<< "\t" << SE_beta[pos] << "\t" ;
+            outfile << pi_temp <<"\t" << beta_g[pos].first/beta_g[pos].second<< "\t" << beta_SE[pos] << "\t" ;
         }
         else {
             pi_temp = 0.0;
@@ -280,7 +282,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
     ofstream outfile (file_str.c_str(), ofstream::out);
     if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
     
-    //outfile<<"markerID"<<"\t"<<"chr"<<"\t" <<"bp"<<"\t" <<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta"<<"\t"<<"SE_beta" << "\t" << "ChisqTest" << "\t" << "pval_svt"  << "\t" << "rank" << endl;
+    //outfile"<<"chr"<<"\t" <<"bp"<<"\t" <<"markerID"<<"\t<<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta_bfgwas"<<"\t"<<"beta_SE" << "\t" << "ChisqTest" << "\t" << "pval_svt"  << "\t" << "rank" << endl;
     
     size_t r;
     double pi_temp;
@@ -288,7 +290,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
     for (size_t i=0; i<ns_test; ++i) {
         
         // save the data along the order of all variants, snp_pos is sorted by order
-        outfile<<snp_pos[i].rs<<"\t"<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
+        outfile<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<<snp_pos[i].rs<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
         outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
         
         for (size_t j=0; j < n_type; j++) {
@@ -302,7 +304,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
         //beta_g is saved by position
         if (beta_g[i].second!=0) {
             pi_temp = beta_g[i].second/(double)s_step;
-            outfile << pi_temp << "\t" << beta_g[i].first/beta_g[i].second<< "\t" << "NA" << "\t" ;
+            outfile << pi_temp << "\t" << beta_g[i].first/beta_g[i].second<< "\t" << beta_SE[i]  << "\t" ;
         }
         else {
             pi_temp = 0.0;
@@ -321,7 +323,7 @@ void BVSRM::WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SN
 
 
 
-void BVSRM::WriteFGWAS_InputFile(const vector<SNPPOS> &snp_pos, const vector<double> &Z_scores, const vector<double> &SE_beta)
+void BVSRM::WriteFGWAS_InputFile(const vector<SNPPOS> &snp_pos, const vector<double> &Z_scores)
 {
     string file_str;
     file_str="./output/"+file_out;
@@ -341,7 +343,7 @@ void BVSRM::WriteFGWAS_InputFile(const vector<SNPPOS> &snp_pos, const vector<dou
 
         outfile<< snp_pos[i].rs <<" "<< snp_pos[i].chr<<" " <<snp_pos[i].bp << " ";
         
-        outfile << scientific << setprecision(6)  << snp_pos[i].maf << " " << Z_scores[pos] << " " << SE_beta[pos] << " ";
+        outfile << scientific << setprecision(6)  << snp_pos[i].maf << " " << Z_scores[pos] << " " << beta_SE[pos] << " ";
 
         outfile << ni_test << " ";
 
@@ -1145,7 +1147,7 @@ void BVSRM::set_mgamma(class HYPBSLMM &cHyp, const vector<size_t> &rank, const v
         for (size_t j=0; j<n_type; j++) {
             if (snp_pos[order_i].indicator_func[j]) {
                 cHyp.m_gamma[j]++;
-                continue;
+                break;
             }
         }
     }
@@ -1754,7 +1756,7 @@ void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
     vector<double> Z_scores;
 
     cout << "Calculating Z_scores, standard errors of effect-sizes, LRT statistics, pvals ... \n";
-    MatrixCalcLmLR (X, z, pos_loglr, ns_test, ni_test, SNPmean, Gvec, xtx_vec, Z_scores, SE_beta, pval_lrt, snp_pos, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable); //calculate trace_G or Gvec, Z_scores, SE_beta
+    MatrixCalcLmLR (X, z, pos_loglr, ns_test, ni_test, SNPmean, Gvec, xtx_vec, Z_scores, beta_marginal, beta_SE, pval_lrt, snp_pos, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable); //calculate trace_G or Gvec, Z_scores, beta_SE
  //calculate trace_G or Gvec
     trace_G = VectorSum(Gvec) / double(ns_test);
     cout << "Trace of Genotype Matrix = " << trace_G << endl;
@@ -2131,13 +2133,13 @@ void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
     //save all marker information
     // WriteGenotypeFile(X, snp_pos);
     //WriteIniSNP(rank_old, snp_pos);
-    //WriteParam(beta_g, snp_pos, pos_loglr, Z_scores, SE_beta, pval_lrt);
-    //WriteFGWAS_InputFile(snp_pos, Z_scores, SE_beta);
+    //WriteParam(beta_g, snp_pos, pos_loglr, Z_scores, pval_lrt);
+    //WriteFGWAS_InputFile(snp_pos, Z_scores);
 
 
     //Save temp EM results
     WriteHyptemp(LnPost, em_gamma);
-    WriteParam(beta_g, snp_pos, pos_loglr, Z_scores, SE_beta, pval_lrt);
+    WriteParam(beta_g, snp_pos, pos_loglr, Z_scores, pval_lrt);
     WriteMCMC(snps_mcmc); // save all active SNPs from MCMC
     
    // gsl_matrix_free(Result_hyp);
@@ -2878,10 +2880,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
 
     //cout << "log_theta: "; PrintVector(log_theta);
     //cout << "log_qtheta: "; PrintVector(log_qtheta);
-    //cout << "cHyp_old.m_gamma: "; PrintVector(cHyp_old.m_gamma);
     //cout << "mFunc : "; PrintVector(mFunc);
-    
-
     
     inv_subvar.assign(n_type, 0.0), log_subvar.assign(n_type, 0.0);
     for(size_t i=0; i < n_type; i++){
@@ -2899,7 +2898,6 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     PrintVector(cHyp_old.m_gamma); 
     //cout << "Set sigma_subvec... \n";
     getSubVec(sigma_subvec_old, rank_old, snp_pos);
-    PrintVector(sigma_subvec_old, rank_old.size());
     
     cHyp_initial=cHyp_old;
     gsl_vector_memcpy(sigma_subvec_new, sigma_subvec_old);
@@ -2934,8 +2932,6 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     
     vector <string> snps_mcmc; // save locations of included snps per iteration
     string snps_mcmc_temp;
-
-    
 
     for (size_t t=0; t<total_step; ++t) {
         
@@ -3115,6 +3111,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     //cout << "write paramtemp ... \n";
     WriteParam_SS(beta_g, snp_pos, pos_ChisqTest, pval);
     //cout << "write snps_mcmc ... \n";
+    cout << "snps_mcmc length: " << snps_mcmc.size() << endl;
     WriteMCMC(snps_mcmc); // save all active SNPs from MCMC
     
     gsl_vector_free(sigma_subvec_old);

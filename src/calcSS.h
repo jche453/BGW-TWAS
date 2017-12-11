@@ -88,9 +88,9 @@ public:
     //functions
     void CopyFromParam (PARAM &cPar);
 
-    void GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest);
+    void GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest);
 
-    void WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &U_STAT, const vector<double> &SQRT_V_STAT, const vector<double> &pval);
+    void WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &beta_SE, const vector<double> &U_STAT, const vector<double> &SQRT_V_STAT, const vector<double> &pval);
 
 };
 

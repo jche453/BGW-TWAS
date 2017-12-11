@@ -1,6 +1,6 @@
 ######################### Test on 1KG Example Data
-bfGWAS_SS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS"
-test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
+bfGWAS_SS_dir="/home/jyang/GIT/bfGWAS_SS"
+test_dir="/home/jyang/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
 cd $test_dir
 
 ## Using Old bfGWAS 
@@ -17,8 +17,8 @@ real    8m36.933s
 user    8m33.808s
 sys     0m2.610s
 
-## Save Annotation file in the format of chr/pos/ref/alt/func
-~/Scripts/Shell_Script/ConvertAnnoFile.sh ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz Anno_CFH_REGION_1KG.gz CFH_REGION_1KG 
+## Save Annotation file in the format of chr/pos/id/ref/alt/func
+~/Scripts/Shell_Scripts/ConvertAnnoFile.sh ${bfGWAS_SS_dir}/1KG_example/ExData/vcfs ${bfGWAS_SS_dir}/1KG_example/ExData/annos CFH_REGION_1KG 
 
 ### Run bfGWAS_SS with individual level data and new ANNO file
 time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
@@ -53,7 +53,8 @@ user    0m7.956s
 sys     0m0.277s
 
 
-######################### Test on AMD data 
+######################### Test on Irwin's data 
+
 bfGWAS_SS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS"
 test_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir"
 
@@ -62,38 +63,6 @@ zcat ${test_dir}/amd_chr1_test.vcf.gz | awk 'NF>10{print $1"\t"$2"\t"$4"\t"$5}' 
 zcat Anno_amd_chr1_test.gz | cut -f4 > Anno_amd_chr1_test.tempFunc
 paste Anno_amd_chr1_test.temp Anno_amd_chr1_test.tempFunc > Anno_amd_chr1_test.txt
 
-###### Test on a sub amd dataset
-
-## Using Old bfGWAS 
-time ~/GIT/bfGWAS/bin/Estep_mcmc \
--vcf ${test_dir}/amd_chr1_test.vcf.gz \
--p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz \
--a ${test_dir}/Anno_amd_chr1_test.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 \
--smin 0 -smax 10 -win 100 -o amd_test_old -w 50000 -s 100000 \
--initype 3 -rv 1 -seed 2017 \
-> ${test_dir}/AMDtest_old.output.txt &
-
-real    5m44.080s
-user    5m42.065s
-sys     0m1.990s
-
-## Using individual level data
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--vcf ${test_dir}/amd_chr1_test.vcf.gz \
--p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz \
--a ${test_dir}/Anno_amd_chr1_test.txt \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
--hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 \
--smax 10 -win 100 -o amd_test_SS -w 50000 -s 100000 \
--initype 3 -rv 1 -LDwindow 1000000 -seed 2017 \
--saveSS -zipSS > ${test_dir}/AMDtest_SS.output.txt &
-
-> ${test_dir}/AMDtest_SS.output.txt
-
-real    12m3.4s
-user    12m2.3s
-sys     0m1.326s
 
 ## Read SS 
 time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
@@ -110,153 +79,6 @@ time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
 real    0m1.789s
 user    0m1.203s
 sys     0m0.092s 
-
-############ Memory usage : 527MB ; computation time :
-
-bfGWAS_SS_dir="/net/fantasia/home/yjingj/GIT/bfGWAS_SS"
-test_dir="/net/wonderland/home/yjingj/AMD/Test_bfGWAS_SS"
-
-~/Scripts/Shell_Script/ConvertAnnoFile.sh /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/chr1_Loci_1_sub1.vcf.gz /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation chr1_Loci_1_sub1 
-
-### Test on block C3...
-
-## Using Old bfGWAS 
-time ~/GIT/bfGWAS/bin/Estep_mcmc \
--vcf /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/chr1_Loci_1_sub1.vcf.gz \
--p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_chr1_Loci_1_sub1.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 \
--smin 0 -smax 15 -win 100 -o amd_chr1_Loci_1_sub1_old \
--w 50000 -s 100000 -initype 3 -rv 1 -seed 2017 \
-> ${test_dir}/amd_chr1_Loci_1_sub1_old.output.txt &
-
-real    101m34.207s 
-user 	101m31.774s
-sys     0m5.532s 
-
-
-## Using individual level data, generate summary statistics
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--vcf /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/chr1_Loci_1_sub1.vcf.gz \
--p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_chr1_Loci_1_sub1.txt.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
--hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
--GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 15 -win 100 \
--o amd_chr1_Loci_1_sub1_SS_2M -w 50000 -s 100000 -initype 3 -rv 1 \
--LDwindow 2000000 -seed 2017 \
--saveSS -zipSS > ${test_dir}/amd_chr1_Loci_1_sub1_SS.output.txt &
-
-> ${test_dir}/AMDtest_SS.output.txt &
-
-real    182m56.449s
-user    182m34.882s
-sys     0m27.783s
-
-# bfGWAS Memory usage : MB ; computation time : 
-# 77 m
-
-## Read SS 
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--score ${test_dir}/output/amd_chr1_Loci_1_sub1_SS.score.txt.gz \
--cov ${test_dir}/output/amd_chr1_Loci_1_sub1_SS.cov.txt.gz \
--n 33976 -rv 1 -inputSS \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_chr1_Loci_1_sub1.txt.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
--hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
--bvsrm -rmin 1 -rmax 1 -smin 0 -smax 15 -win 100 \
--o amd_chr1_Loci_1_sub1_ReadSS -w 50000 -s 100000 -initype 3 -seed 2017 \
-> ${test_dir}/amd_chr1_Loci_1_sub1_ReadSS.output.txt &
-
-## Read SS_2M
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--score ${test_dir}/output/amd_chr1_Loci_1_sub1_SS_2M.score.txt.gz \
--cov ${test_dir}/output/amd_chr1_Loci_1_sub1_SS_2M.cov.txt.gz \
--n 33976 -rv 1 -inputSS \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_chr1_Loci_1_sub1.txt.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
--hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
--bvsrm -rmin 1 -rmax 1 -smin 0 -smax 15 -win 100 \
--o amd_chr1_Loci_1_sub1_ReadSS_max15 -w 50000 -s 100000 \
--initype 3 -seed 2017 \
-> ${test_dir}/amd_chr1_Loci_1_sub1_ReadSS.output.txt &
-
-## bfGWAS Memory usage : MB ; computation time : 
-real    0m45.155s 
-user    0m44.412s 
-sys     0m0.689s
-
-############ AMD Locus CHR19
-# select_chr=19; bp_start=6218146; bp_end=7218146
-# file=CHR19.005000001.007500000_FinalRelease
-
-## Using Old bfGWAS 
-time ~/GIT/bfGWAS/bin/Estep_mcmc \
--vcf /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/${file}.vcf.gz \
--p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt -hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current -GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 \
--smin 0 -smax 10 -win 100 -o ${file}_old \
--w 50000 -s 100000 -initype 3 -rv 1 -seed 2017 \
-> ${test_dir}/amd_${file}_old.output.txt &
-
-
-## Using individual level data, generate summary statistics
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--vcf /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/${file}.vcf.gz \
--p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.txt.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
--hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
--GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 \
--o ${file}_SS -w 50000 -s 100000 -initype 3 -rv 1 \
--LDwindow 1000000 -seed 2017 \
--saveSS -zipSS > ${test_dir}/amd_${file}_SS.output.txt &
-
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--vcf /net/wonderland/home/yjingj/Data/AMD_Imputed_Filtered/${file}.vcf.gz \
--p /net/wonderland/home/yjingj/AMD/amd_pheno_scaled.txt.gz \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.txt.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
--hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
--GTfield EC -maf 0.005 -bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 \
--o ${file}_SS_2M -w 50000 -s 100000 -initype 3 -rv 1 \
--LDwindow 2000000 -seed 2017 \
--saveSS -zipSS > ${test_dir}/amd_${file}_2M_SS.output.txt &
-
-######### Save cov.txt file into: chr pos ref alt ...
-temp="CHR19.005000001.007500000_FinalRelease_SS_2M"
-temp="CHR19.005000001.007500000_FinalRelease_SS"
-zcat ${temp}.score.txt.gz | cut -f1-4 > temp.cov1 &
-zcat ${temp}.cov.txt.gz | cut -f3-4 | less -S > temp.cov2
-paste temp.cov1 temp.cov2 | gzip > ${temp}.cov2.txt.gz
-
-rm temp.cov*
-
-
-## Read SS with new format of cov.txt: chr pos ref alt ...
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--score ${test_dir}/output/${file}_SS.score.txt.gz \
--cov ${test_dir}/output/${file}_SS.cov2.txt.gz \
--n 33976 -rv 1 -inputSS -printLD \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.txt.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
--hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
--bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 \
--o ${file}_ReadSS2 -w 50000 -s 100000 -initype 3 -seed 2017 \
-> ${test_dir}/amd_${file}_ReadSS2.output.txt &
-
-time ${bfGWAS_SS_dir}/bin/Estep_mcmc \
--score ${test_dir}/output/${file}_SS_2M.score.txt.gz \
--cov ${test_dir}/output/${file}_SS_2M.cov2.txt.gz \
--n 33976 -rv 1 -inputSS -printLD \
--a /net/wonderland/home/yjingj/Data/AMD/GVS_Annotation/Anno_${file}.txt.gz \
--fcode /net/wonderland/home/yjingj/AMD/AnnoPartition/FuncAnno5.txt \
--hfile /net/wonderland/home/yjingj/AMD/AMD_Results/GVS_anno5/hypval.current \
--bvsrm -rmin 1 -rmax 1 -smin 0 -smax 10 -win 100 \
--o ${file}_ReadSS2_2M -w 50000 -s 100000 -initype 3 -seed 2017 \
-> ${test_dir}/amd_${file}_ReadSS2.output.txt &
-
 
 
 ###### profiling new model for AMD all genotype data

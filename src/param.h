@@ -210,6 +210,7 @@ public:
     // SS related parameters
     string file_score;
     string file_cov;
+    //vector<double> beta_marginal, beta_SE;
 
     
 	bool mode_silence;
@@ -309,7 +310,7 @@ public:
 	void WriteGenotypes(uchar **X);
 
 	// summary statistics;
-	void ReadSS (vector< vector<double> >  &LD, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT);
+	void ReadSS (vector< vector<double> >  &LD, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, vector<double> &beta_marginal, vector<double> &beta_SE);
     
 	//void CheckCvt ();
 	void ProcessPheno();

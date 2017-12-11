@@ -73,6 +73,6 @@ void MatrixCalcLmLR (uchar **X, const gsl_vector *y, vector<pair<size_t, double>
 
 void MatrixCalcLmLR (uchar **X, const gsl_vector *y, vector<pair<size_t, double> > &pos_loglr, const size_t &ns_test, const size_t &ni_test, const vector<double> &SNPmean, vector<double> &Gvec, vector<double>&XtX_diagvec, const vector<SNPPOS> &snp_pos, std::vector <size_t> &CompBuffSizeVec, size_t UnCompBufferSize, bool Compress_Flag, const vector<pair<int, double> > &UcharTable);
 
-void MatrixCalcLmLR (uchar **X, const gsl_vector *y, vector<pair<size_t, double> > &pos_loglr, const size_t &ns_test, const size_t &ni_test, const vector<double> &SNPmean, vector<double> &Gvec, vector<double> &XtX_diagvec, vector<double> &Z_scores, vector<double> &SE_beta, vector<double> &pval_lrt, const vector<SNPPOS> &snp_pos, std::vector <size_t> &CompBuffSizeVec, size_t UnCompBufferSize, bool Compress_Flag, const vector<pair<int, double> > &UcharTable);
+void MatrixCalcLmLR (uchar **X, const gsl_vector *y, vector<pair<size_t, double> > &pos_loglr, const size_t &ns_test, const size_t &ni_test, const vector<double> &SNPmean, vector<double> &Gvec, vector<double> &XtX_diagvec, vector<double> &Z_scores, vector<double> &beta_marginal,vector<double> &SE_beta, vector<double> &pval_lrt, const vector<SNPPOS> &snp_pos, std::vector <size_t> &CompBuffSizeVec, size_t UnCompBufferSize, bool Compress_Flag, const vector<pair<int, double> > &UcharTable);
 
 #endif

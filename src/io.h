@@ -115,7 +115,7 @@ void WriteMatrix(const vector< vector<double> > &LD, const string file_str);
 void WriteVector(const gsl_vector * X, const string file_str);
 
 // for loading summary statistics
-bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test);
+bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test, vector<double> &beta_marginal, vector<double> &beta_SE);
 
 bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, size_t> &mapScoreKey2Pos, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
 

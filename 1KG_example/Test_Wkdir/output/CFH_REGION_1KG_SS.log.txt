@@ -1,9 +1,9 @@
 ##
 ## Software Version = bfGWAS_SS_MCMC
 ##
-## Command Line Input = -vcf /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.txt.gz -fcode /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -hfile /net/fantasia/home/yjingj/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 50000 -o CFH_REGION_1KG_SS -initype 3 -LDwindow 500000 -seed 2017 -saveSS 
+## Command Line Input = -vcf /home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.txt.gz -fcode /home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -hfile /home/jyang/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -bvsrm -maf 0.005 -win 100 -smin 0 -smax 5 -w 50000 -s 100000 -o CFH_REGION_1KG_SS -initype 3 -LDwindow 500000 -seed 2017 -saveSS 
 ##
-## Date = Fri Oct 13 21:40:29 2017
+## Date = Mon Dec 11 00:02:30 2017
 
 ##
 ## Summary Statistics:
@@ -14,18 +14,18 @@
 ## Phenotype_var = 0.250064
 ##
 ## MCMC related:
-## initial value of |gamma| = 5
+## initial value of |gamma| = 2
 ## random seed = 2017
-## acceptance ratio = 0.23071
+## acceptance ratio = 0.143527
 ## Region_PIP = 1
 ##
 ## Computation Time:
-## total computation time = 2.08994 min 
+## total computation time = 2.0145 min 
 ## computation time break down: 
-##      time on MCMC = 0.124184 min 
-##      time on Proposal = 0.0956281 min 
-##      time on Posterior = 202309 min 
-Accept #add=0, total add step = 0
-Accept #delete=0, total delete step = 33792
-Accept #switch=23071, total switch step = 33026
+##      time on MCMC = 0.1245 min 
+##      time on Proposal = 0.0923333 min 
+##      time on Posterior = 292386 min 
+Accept #add=39, total add step = 49863
+Accept #delete=39, total delete step = 50837
+Accept #switch=21451, total switch step = 49300
 ##

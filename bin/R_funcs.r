@@ -5,7 +5,7 @@ library(ggplot2)
 
 LoadEMdata <- function(filename, header = FALSE){
     paramdata = fread(filename, sep = "\t", header = header)
-    setnames(paramdata, c("ID", "chr", "bp", "ref", "alt", "maf", "func", "beta", "pi", "Zscore", "SE_beta", "LRT", "pval_LRT", "rank"))
+    setnames(paramdata, c("chr", "bp", "ID", "ref", "alt", "maf", "func", "pi", "beta", "SE_beta", "Chisq", "pval_chisq", "rank"))
     setkey(paramdata, "ID")
     return(paramdata)
 }
@@ -142,8 +142,7 @@ PlotRatio <- function(comp_dat, tit ="", pdfname = "", size = 28, ymode = 1, wid
 ### Load Annotation file
 LoadAnnodata <- function(filename, header = FALSE){
     Annodata = fread(filename, sep = "\t", header = header)
-    n_anno = dim(Annodata)[2] - 3
-    setnames(Annodata, c("ID", "chr", "bp", paste("anno", 1:n_anno, sep="_")))
+    setnames(Annodata, c("ID", "chr", "bp", "ref", "alt", "Annotation"))
     return(Annodata)
 }
 

@@ -409,12 +409,12 @@ void PARAM::ReadGenotypes (uchar **X, gsl_matrix *K) {
 }
 
 
-void PARAM::ReadSS (vector< vector<double> >  &LD, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT){
+void PARAM::ReadSS (vector< vector<double> >  &LD, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, vector<double> &beta_marginal, vector<double> &beta_SE){
 
 	// read score.txt file
 	if(!file_score.empty()){
 		cout << "Start loading summary score statistics ... \n";
-		if (ReadFile_score(file_score, snpInfo, mapScoreKey2Pos, pval, pos_ChisqTest, U_STAT, ns_test) == false) 
+		if (ReadFile_score(file_score, snpInfo, mapScoreKey2Pos, pval, pos_ChisqTest, U_STAT, ns_test, beta_marginal, beta_SE) == false) 
 			error = true;
 	}
 	

@@ -19,7 +19,7 @@ print(paste("a_gamma=b_gamma = ", abgamma))
 
 ptm <- proc.time()
 
-########### Load data ....
+########### Load hypfile ....
 
 # hypfile="/net/fantasia/home/yjingj/GIT/bfGWAS/1KG_example/Test_Wkdir/hypval.current 
 
