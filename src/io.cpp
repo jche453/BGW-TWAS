@@ -785,12 +785,13 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
                         }
                         else if (GTfield != "GT"){
                             //read dosage data
-                            if( (p[0]=='.') && ( (p[1] == '\t') || (p[1] == ':') ) ){
+                            if( (p[0]=='.') && ( !isdigit(p[1]) ) ){
                                 geno = -9; // missing                           
                             }else if (isdigit(p[0])){
                                 geno = strtod(p, NULL);
                                 if(geno < 0 || geno > 2) {geno = -9;} // invalid dosage
                             }else{
+                                //cout << rs_info << "; ns_test = " << ns_test << "; " << pheno_id << endl;
                                 cerr << "dosage data is not a digit ... " << endl;
                                 exit(-1);
                             }                        
@@ -1635,7 +1636,7 @@ bool VCFKin (const string &file_vcf, vector<bool> &indicator_idv, vector<bool> &
                         }
                         else if(GTfield != "GT"){
                             //read dosage data
-                            if( (p[0]=='.') && ( (p[1] == '\t') || (p[1] == ':') ) ){
+                            if( (p[0]=='.') && (!isdigit(p[1]) ) ){
                                 geno = -9;                              
                             }else if (isdigit(p[0])){
                                 geno = strtod(p, NULL);
@@ -1859,7 +1860,7 @@ bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<b
                     	}
                     	else if ( GTfield != "GT" ){
                         	//read dosage data
-                        	if( (p[0]=='.') && ( (p[1] == '\t') || (p[1] == ':') ) ){
+                        	if( (p[0]=='.') && ( !isdigit(p[1]) ) ){
                         		geno = -9; // missing                      		
                         	}else if (isdigit(p[0])){
                         		geno = strtod(p, NULL);
