@@ -47,8 +47,8 @@
 #include "mathfunc.h"
 #include "ReadVCF.h"
 #include "param.h"
+#include "calcSS.h"
 
-// #include "calcSS.h"
 // #include "bvsrm.h"
 
 typedef unsigned char uchar;
@@ -73,24 +73,24 @@ bool ReadFile_fam (const string &file_fam, vector<bool> &indicator_pheno, vector
 
 bool ReadFile_pheno (const string &file_pheno, vector<bool> &indicator_pheno, vector<double > &pheno, vector<string> &InputSampleID, size_t & ni_total);
 
-bool ReadFile_geno (const string &file_geno, const set<string> &setSnps, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const map<string, size_t> &PhenoID2Ind, vector<SNPINFO> &snpInfo, vector<string> &VcfSampleID, vector<size_t> &SampleVcfPos, const double &maf_level, const double &miss_level, const double &hwe_level, size_t &ns_test, size_t &ns_total, const size_t &ni_test, const size_t &ni_total, map<string, int> &mapID2num) ; // first time
+bool ReadFile_geno (const string &file_geno, const set<string> &setSnps, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const map<string, size_t> &PhenoID2Pos, vector<SNPINFO> &snpInfo, vector<string> &VcfSampleID, vector<size_t> &SampleVcfPos, const double &maf_level, const double &miss_level, const double &hwe_level, size_t &ns_test, size_t &ns_total, const size_t &ni_test, const size_t &ni_total, map<string, int> &mapID2num, map<string, size_t> &GenoSampleID2Ind) ; // first time
 
 // first time
-bool ReadFile_bed (const string &file_bed, const set<string> &setSnps, vector<bool> &indicator_idv, vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, const map<string, size_t> &PhenoID2Ind, const size_t &ni_test, const size_t &ni_total, const double &maf_level, const double &miss_level, const double &hwe_level, size_t &ns_test, size_t &ns_total);
+bool ReadFile_bed (const string &file_bed, const set<string> &setSnps, vector<bool> &indicator_idv, vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, const map<string, size_t> &PhenoID2Pos, const size_t &ni_test, const size_t &ni_total, const double &maf_level, const double &miss_level, const double &hwe_level, size_t &ns_test, size_t &ns_total);
 
 void ReadFile_kin (const string &file_kin, vector<bool> &indicator_idv, map<string, int> &mapID2num, const size_t k_mode, bool &error, gsl_matrix *G);
 
 bool getIDVvcf(const string &file_vcf, vector<bool> &indicator_idv, size_t & ni_total, string &GTfield);
 
-bool VCFKin (const string &file_vcf, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const int k_mode, const int display_pace, gsl_matrix *matrix_kin, string &GTfield, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Ind, const vector<string> &VcfSampleID); 
+bool VCFKin (const string &file_vcf, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const int k_mode, const int display_pace, gsl_matrix *matrix_kin, string &GTfield, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Pos, const vector<string> &VcfSampleID); 
 
 bool getIDVgeno(const string &file_geno, vector<bool> &indicator_idv, size_t & ni_total);
-bool GenoKin (const string &file_geno, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const int k_mode, const int display_pace, gsl_matrix *matrix_kin, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Ind, const vector<string> &VcfSampleID);
+bool GenoKin (const string &file_geno, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const int k_mode, const int display_pace, gsl_matrix *matrix_kin, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Pos, const vector<string> &VcfSampleID);
 
 
 bool PlinkKin (const string &file_bed, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const int k_mode, const int display_pace, gsl_matrix *matrix_kin);
 
-bool ReadFile_geno (const string &file_geno, const vector<bool> &indicator_idv, const vector<bool> &indicator_snp, uchar **X, gsl_matrix *K, const bool calc_K, const size_t ni_test, vector<double> &SNPmean, vector <size_t> &CompBuffSizeVec, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Ind, const vector<string> &VcfSampleID, bool Compress_Flag); // second time
+bool ReadFile_geno (const string &file_geno, const vector<bool> &indicator_idv, const vector<bool> &indicator_snp, uchar **X, gsl_matrix *K, const bool calc_K, const size_t ni_test, vector<double> &SNPmean, vector <size_t> &CompBuffSizeVec, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Pos, const vector<string> &VcfSampleID, bool Compress_Flag); // second time
 
 // second time
 bool ReadFile_bed (const string &file_bed, vector<bool> &indicator_idv, vector<bool> &indicator_snp, uchar **X, gsl_matrix *K, const bool calc_K, const size_t ni_test, const size_t ns_test, const size_t ni_total, const size_t ns_total, vector<double> &SNPmean, vector <size_t> &CompBuffSizeVec, bool Compress_Flag);
@@ -98,10 +98,9 @@ bool ReadFile_bed (const string &file_bed, vector<bool> &indicator_idv, vector<b
 
 bool CountFileLines (const string &file_input, size_t &n_lines);
 
-bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const double &maf_level, const double &miss_level, const double &hwe_level, vector<SNPINFO> &snpInfo, size_t &ns_test, size_t &ns_total, size_t &ni_test, string &GTfield, const map<string, size_t> &PhenoID2Ind, vector<string> &VcfSampleID, vector<size_t> &SampleVcfPos, map<string, int> &mapID2num); // first time
+bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bool> &indicator_idv, vector<bool> &indicator_snp, const double &maf_level, const double &miss_level, const double &hwe_level, vector<SNPINFO> &snpInfo, size_t &ns_test, size_t &ns_total, size_t &ni_test, string &GTfield, const map<string, size_t> &PhenoID2Pos, vector<string> &VcfSampleID, vector<size_t> &SampleVcfPos, map<string, int> &mapID2num, map<string, size_t> &GenoSampleID2Ind); // first time
 
-bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<bool> &indicator_snp, uchar ** X, const uint ni_test, const uint ns_test, gsl_matrix *K, const bool calc_K, string &GTfield, vector<double> &SNPmean, vector <size_t> &CompBuffSizeVec, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Ind, const vector<string> &VcfSampleID, bool Compress_Flag); // second time
-
+bool ReadFile_vcf (const string &file_vcf, vector<bool> &indicator_idv, vector<bool> &indicator_snp, uchar ** X, const uint ni_test, const uint ns_test, gsl_matrix *K, const bool calc_K, string &GTfield, vector<double> &SNPmean, vector <size_t> &CompBuffSizeVec, const vector <size_t> &SampleVcfPos, const map<string, size_t> &PhenoID2Pos, const vector<string> &VcfSampleID, bool Compress_Flag); // second time
 
 //for new model
 bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, int> &mapFunc2Code, vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc, map<string, int> &mapID2num);
@@ -114,16 +113,17 @@ void WriteMatrix(const gsl_matrix * X, const string file_str);
 void WriteMatrix(const vector< vector<double> > &LD, const string file_str);
 void WriteVector(const gsl_vector * X, const string file_str);
 
-// for loading summary statistics
-bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, size_t &ns_test, vector<double> &beta_marginal, vector<double> &beta_SE);
 
+// With summary stat input
+// for loading summary statistics first time
+bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector<double> &pval_vec, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &xtx_vec, vector<double> &snp_var_vec, size_t &ns_test, size_t &ns_total, vector<double> &mbeta, vector<double> &mbeta_SE, vector <bool> &indicator_snp, const size_t &ni_test, const double &maf_level, const double &hwe_level, const double &pheno_var);
+
+// Read ref LDcorr.txt.gz file
+bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector< vector<double> >  &LD_ref, map<string, size_t> &mapLDKey2Pos);
+
+// Read annotation file
 bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, size_t> &mapScoreKey2Pos, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
 
-bool Empty_anno (vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
-
-bool ReadFile_cov(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD, const bool &refLD, map<string, size_t> &mapScoreKey2Pos, map<string, size_t> &mapCovKey2Pos, const long int &LDwindow);
-
-double getCov(const vector< vector<double> > &LD_cov, const size_t &pos_i, const size_t &pos_j );
 
 #endif
 

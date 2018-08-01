@@ -1,6 +1,6 @@
 /*
-	Bayesian Functional GWAS with Summary Statistics --- MCMC (bfGWAS_SS:MCMC)
-    Copyright (C) 2017  Jingjing Yang
+	Bayesian Functional GWAS with Summary Statistics --- MCMC (BFGWAS_SS:MCMC)
+    Copyright (C) 2018  Jingjing Yang
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,52 +45,56 @@ void CALCSS::CopyFromParam (PARAM &cPar)
     SNPmean = cPar.SNPmean; 
     pheno_mean = cPar.pheno_mean;
     pheno_var = cPar.pheno_var;
-
-    snpInfo=cPar.snpInfo;
+    snp_pos = cPar.snp_pos;
     
     return;
 }
 
 
 //calculat summary statistics of score statistics and LD matrix
-void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest){
+void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest, vector<double> &xtx_vec){
 
     cout << "\nStart calculating summary statistics ... \n";
 
     // Center y is centered by cPar.CopyPheno()
     gsl_blas_ddot(y, y, &pheno_var); 
     pheno_var /= ((double)(ni_test-1)) ;
+    cout << "ni_test = " << ni_test << endl;
+    cout << "ns_test = " << ns_test << endl;
     cout << "pheno_var = " << pheno_var << "\n";
 
     //cout << "create UcharTable ...\n";
     CreateUcharTable(UcharTable);
-
-    // Create a vector of "SNPPOS" structs snp_pos for analyzed SNPs (ns_test)
-    // (snpInfo will be cleared)
-    CreateSnpPosVec(snp_pos, snpInfo, ns_total, indicator_snp); // The same order (pos) as in genotype file
-    stable_sort(snp_pos.begin(), snp_pos.end(), comp_snp); // order snp_pos by chr/bp
 
     // define used variables 
     gsl_vector *xvec_i = gsl_vector_alloc(ni_test);
     gsl_vector *xvec_j = gsl_vector_alloc(ni_test);
     gsl_vector *xbeta_i = gsl_vector_alloc(ni_test);
 
-    double xtx_ij, xty, xtx_i, beta_i, v2, chisq_i, beta_SE_i;
-    beta.clear();
-    xtx_vec.clear();
-    LD.clear(); 
-    pval.clear();
-    pos_ChisqTest.clear();
-    beta_SE.clear();
+    double xtx_ij, xty, xtx_i, beta_i, v2, chisq_i, beta_SE_i, r2;
 
-    cout << "calculate xtx, beta, score statistics by the order of chr/bp ... \n";
+    // cout << "calculate xtx by the order of chr/bp ... \n";
+    xtx_vec.clear();
     for (size_t i=0; i<ns_test; ++i) {
         //calculate xtx_i
         getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
         gsl_blas_ddot(xvec_i, xvec_i, &xtx_i);
         xtx_vec.push_back( xtx_i );
+    }
+
+    // cout << "calculate beta, score statistics by the order of chr/bp ... \n";
+    beta.clear();
+    LD.clear(); 
+    pval.clear();
+    pos_ChisqTest.clear();
+    beta_SE.clear();
+    for (size_t i=0; i<ns_test; ++i) {
+        //calculate xtx_i
+        getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
+        xtx_i = xtx_vec[i];
 
         //calculate effect-size
+        if(xvec_i->size != y->size){cerr << "Genotype length dose not equal to phenotype length!\n Some samples in the genotype file may not have genotype data!\n Please check your phenotype and genotype input files!\n"; exit(-1);}
         gsl_blas_ddot(xvec_i, y, &xty);
         if(xtx_i > 0) beta_i = xty / xtx_i;
         else beta_i = 0.0;
@@ -112,7 +116,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
         
         // saving X'X to LD
         LD.push_back(vector<double>()); // save r2
-        LD[i].push_back(xtx_i / ((double)ni_test)); // varianct of x_i
+        LD[i].push_back(1.0); // 
 
         if(i < (ns_test-1) ){
             //calculate xtx_ij 
@@ -121,12 +125,12 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
                 {
                     getGTgslVec(X, xvec_j, snp_pos[j].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
                     gsl_blas_ddot(xvec_i, xvec_j, &xtx_ij);
-                    LD[i].push_back(xtx_ij / ((double)ni_test)); // covariance between x_i and x_j
+                    r2 = Conv_xtx2_r2(xtx_ij, xtx_vec, i, j); 
+                    LD[i].push_back( r2 ); // R2 between x_i and x_j
                 }
                 else{break;}
             }
         }
-
     }
 
     gsl_vector_free(xvec_i);
@@ -134,6 +138,16 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
     gsl_vector_free(xbeta_i);
 
     return;
+}
+
+double Conv_xtx2_r2(const double &xtx_ij, const vector<double> &xtx_vec, const size_t &i, const size_t &j){
+    double r2 = 0.0;
+    if(xtx_ij > 0.0){
+        if( (xtx_vec[i] > 0.0) && (xtx_vec[j] > 0.0) ){
+            r2 = xtx_ij / sqrt( xtx_vec[i] * xtx_vec[j] );
+        }
+    }
+    return r2;
 }
 
 
@@ -150,7 +164,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
     IFILE score_out=NULL;
 
     if(zipSS){
-        cov_file_str +=".cov.txt.gz";
+        cov_file_str +=".LDcorr.txt.gz";
         cov_out = ifopen(cov_file_str, "w", InputFile::BGZF);
 
         score_file_str += ".score.txt.gz";
@@ -160,7 +174,7 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
             perror("Fail to open LD or beta file!!! \n");
         }
     }else{
-        cov_file_str +=".cov.txt";
+        cov_file_str +=".LDcorr.txt";
         cov_out = ifopen(cov_file_str, "w", InputFile::UNCOMPRESSED);
 
         score_file_str += ".score.txt";
@@ -172,26 +186,23 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
     }
 
     // write an extra column saving xtx with centered genotypes
-    ifprintf(score_out, "#CHR\tPOS\tID\tREF\tALT\t N_INFORMATIVE\tFOUNDER_AF\tALL_AF\tINFORMATIVE_ALT_AC\tCALL_RATE\tHWE_PVALUE\tN_REF\tN_HET\tN_ALT\tU_STAT\tSQRT_V_STAT\tALT_EFFSIZE\tBETA_SE\tPVALUE\n");
+    ifprintf(score_out, "#CHROM\tPOS\tID\tREF\tALT\tN\tMAF\tHWE_PVALUE\tU_STAT\tSQRT_V_STAT\tEFFSIZE_BETA\tBETA_SE\tPVALUE\n");
     // assuming variants have unique CHR:POS 
-    ifprintf(cov_out, "#CHR\tCURRENT_POS\tCURRENT_ID\tCURRENT_REF\tCURRENT_ALT\tMARKERS_IN_WINDOW\tCOV_MATRICES\n");
+    ifprintf(cov_out, "#CHROM\tPOS\tID\tREF\tALT\tN\tMAF\tCORR\n");
     
-    double alt_ac;
-
     //Write files by the order of chr/bp
     for(size_t i=0; i<ns_test; i++){
 
-        alt_ac = 2 * (double)ni_test * snp_pos[i].maf;
         // write score statistics
-        ifprintf(score_out, "%s\t%ld\t%s\t%s\t%s\t%u\t%g\t%s\t%g\t%s\t%s\t%s\t%s\t%s\t%g\t%g\t%g\t%g\t%g\n", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].rs.c_str(), snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), ni_test, snp_pos[i].maf, "NA", alt_ac, "NA", "NA", "NA", "NA", "NA", U_STAT[i], SQRT_V_STAT[i], beta[i], beta_SE[i], pval[i]);
+        ifprintf(score_out, "%s\t%ld\t%s\t%s\t%s\t%u\t%g\t%s\t%g\t%g\t%g\t%g\t%g\n", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].rs.c_str(), snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), ni_test, snp_pos[i].maf, "NA", U_STAT[i], SQRT_V_STAT[i], beta[i], beta_SE[i], pval[i]);
 
         // write banded covariance matrix: chr pos ref alt
-        ifprintf(cov_out, "%s\t%ld\t%s\t%s\t%s\t", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].rs.c_str(), snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str());
+        ifprintf(cov_out, "%s\t%ld\t%s\t%s\t%s\t%u\t%g\t", snp_pos[i].chr.c_str(), snp_pos[i].bp, snp_pos[i].rs.c_str(), snp_pos[i].a_major.c_str(), snp_pos[i].a_minor.c_str(), ni_test, snp_pos[i].maf);
 
-        for(size_t j=0; j<LD[i].size(); j++){
-            ifprintf(cov_out, "%ld,", snp_pos[i+j].bp);
-        }
-        ifprintf(cov_out, "\t");
+      //  for(size_t j=0; j<LD[i].size(); j++){
+      //      ifprintf(cov_out, "%ld,", snp_pos[i+j].bp);
+      //  }
+      //  ifprintf(cov_out, "\t");
 
         for(size_t j=0; j<LD[i].size(); j++){
             ifprintf(cov_out, "%g,", LD[i][j]);
@@ -208,97 +219,29 @@ void CALCSS::WriteSS(const vector< vector<double> > &LD, const vector<double> &b
     int sys_status=1;
 
     if(zipSS){
-        printf("\nTabixing .cov.txt.gz files ... \n");
+        printf("Tabixing .LDcorr.txt.gz files ... \n");
         cmd = String("tabix -c \"#\" -s 1 -b 2 -e 2 -f ") + cov_file_str;
         sys_status = system(cmd.c_str());
         if ( sys_status == 0 ) {
-            printf( "\nCOV output %s has been tabixed\n", cov_file_str.c_str() );
+            printf( "LD correlation output %s has been tabixed\n", cov_file_str.c_str() );
         }
         else {
-            printf("\nUnable to tabix %s\n", cov_file_str.c_str());
+            printf("Unable to tabix %s\n", cov_file_str.c_str());
         }
 
-        printf("\nTabixing .score.txt.gz files ... \n");
+        printf("Tabixing .score.txt.gz files ... \n");
         cmd = String("tabix -c \"#\" -s 1 -b 2 -e 2 -f ") + score_file_str;
         sys_status = system(cmd.c_str());
         if ( sys_status == 0 ) {
-            printf( "\nScore statistics output %s has been tabixed\n", score_file_str.c_str() );
+            printf( "Score statistics output %s has been tabixed\n", score_file_str.c_str() );
         }
         else {
-            printf("\nUnable to tabix %s\n", score_file_str.c_str());
+            printf("Unable to tabix %s\n", score_file_str.c_str());
         }
     }
 
     return;
 }
-
-void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t &ns_test, const size_t &ni_test, const vector<SNPPOS> &snp_pos, const bool &refLD){
-// convert cov matrix to LD r2 matrix, save n*diagonal to xtx vector
-    xtx.clear();
-    double r2, v2;
-    vector<double> xtx_var;
-    xtx_var.clear();
-
-    cout << "Convert_LD ns_test = " << ns_test << "; ni_test = " << ni_test << endl;
-
-    if(refLD){
-        //use maf to calculate xtx
-        cout << "Using MAF from score.txt \n";
-        cout << "Print out LD from cov.txt:\n";
-        for(size_t i=0; i<snp_pos.size(); ++i){
-            //if(i < 10)
-                //cout << snp_pos[i].key  << " maf = " << snp_pos[i].maf << "; " ;
-            v2 = 2.0 * snp_pos[i].maf * (1.0 - snp_pos[i].maf);
-            xtx_var.push_back(v2)  ;
-            xtx.push_back( (double)ni_test * v2 ); // 
-
-            for(size_t j = 0; j < LD[i].size(); j++){
-                cout << LD[i][j] << ",";
-            }
-            cout << endl;
-        }
-    }
-    else{
-        //use xtx from cov matrix
-        cout << "Using xtx/n from cov.txt \n";
-        for(size_t i=0; i<ns_test; ++i){
-            xtx_var.push_back(LD[i][0])  ;
-            xtx.push_back( (double)ni_test * LD[i][0] ); // 
-        }
-    }
-    cout << "set xtx vector success ! "<< endl;
-
-    //cout << "LD size is " << LD.size() << endl;
-    //cout << "LD[0] size is " << LD[0].size() << endl;
-
-    for(size_t i=0; i<snp_pos.size(); i++){
-        LD[i][0] = 1.0;
-        //cout << xtx_var[i] << ",";
-
-        if(i < (snp_pos.size() - 1)){
-            if(xtx_var[i] == 0){
-                for(size_t j=1; j< (LD[i].size()-1) ; j++)
-                { LD[i][j] = 0.0 ; }
-            }
-            else{
-                for(size_t j=1; j< (LD[i].size()-1) ; j++){
-                    if(xtx_var[i+j] == 0.0)
-                    { LD[i][j] = 0.0 ; }
-                    else{
-                        r2 = LD[i][j] / sqrt( xtx_var[i] * xtx_var[i+j] ) ;
-                        //if(r2 < 1e-4) r2 = 0.0; // set r2 to 0 if r2 < 1e-4
-                        LD[i][j] = r2 ;
-                    }
-                    //cout << LD[i][j] << "," ;             
-                }
-            }
-        }
-        //cout << endl;
-    }
-
-    return;
-} 
-
 
 void getXty(const vector<double> &beta, const vector<double> &xtx, vector <double> &Xty)
 {
@@ -328,6 +271,7 @@ void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <
     return;
 }
 
+// For LD of the same samples
 double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx){
 
     double xtx_ij = 0.0;
@@ -351,34 +295,49 @@ double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const siz
     return xtx_ij;
 }
 
+// For reference LD
+double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx_vec, const vector<double> &snp_var_vec, const vector<double> &ni_effect_vec, const bool refLD)
+{
+    double xtx_ij = 0.0;
+    double ni_min;
 
+    if(refLD){
+        if(pos_i == pos_j){
+            xtx_ij = snp_var_vec[pos_i] * ni_effect_vec[pos_i];
+        }
+        else 
+        {
+            ni_min = min(ni_effect_vec[pos_i], ni_effect_vec[pos_j]);
 
-
-
-
-double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ){
-
-    double r2_ij = 0.0;
-
-    if(pos_i == pos_j) {
-        r2_ij = 1.0;
+            if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
+                {
+                    xtx_ij = LD[pos_i][pos_j - pos_i] * sqrt(snp_var_vec[pos_i] * snp_var_vec[pos_j]) * ni_min;   
+                }     
+            else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
+                {
+                    xtx_ij = LD[pos_j][pos_i - pos_j] * sqrt(snp_var_vec[pos_i] * snp_var_vec[pos_j]) * ni_min;
+                }
+        }
     }
-    else {
-        if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
-            {
-                r2_ij = LD[pos_i][pos_j - pos_i] ;   
-            }     
-        else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
-            {
-                r2_ij = LD[pos_j][pos_i - pos_j]  ;
-            }
+    else{
+        if(pos_i == pos_j){
+            xtx_ij = xtx_vec[pos_i];
+        }
+        else 
+        {
+            if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
+                {
+                    xtx_ij = LD[pos_i][pos_j - pos_i] * sqrt(xtx_vec[pos_i] * xtx_vec[pos_j]);   
+                }     
+            else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
+                {
+                    xtx_ij = LD[pos_j][pos_i - pos_j] * sqrt(xtx_vec[pos_i] * xtx_vec[pos_j]);
+                }
+        }
     }
 
-    r2_ij = r2_ij * r2_ij;
-
-    return r2_ij;
+    return xtx_ij;
 }
-
 
 
 

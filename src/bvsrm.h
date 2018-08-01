@@ -71,7 +71,7 @@ public:
     bool zipSS;
     long int LDwindow;
     vector<pair<size_t, double> > pos_ChisqTest;
-    vector<double> pval;
+    vector<double> pval_vec;
     double pheno_mean, pheno_var, yty;
 
     //multiple function related parameters
@@ -88,7 +88,8 @@ public:
     vector< pair<size_t, size_t> > SNPorder_vec; //<pos, rank>
     vector< pair<size_t, size_t> > SNPrank_vec; //<pos, order>
     double GV, rv, tau, logrv;
-    vector<double> beta_marginal, beta_SE, xtx_vec;
+    vector<double> mbeta, mbeta_SE, xtx_vec, snp_var_vec, ni_effect_vec;
+    bool refLD;
     vector<double> SNPmean;
     
     

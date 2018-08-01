@@ -199,7 +199,9 @@ public:
     size_t UnCompBufferSize;
     vector <size_t> CompBuffSizeVec;
     bool Compress_Flag;
-    map<string, size_t>  PhenoID2Ind;
+    map<string, size_t>  PhenoID2Ind; // map sampleID to index in y (for reorder pheno with respect to geno)
+    map<string, size_t>  PhenoID2Pos; // map sampleID to index in raw pheno (for obtaining pheno_index to be used with indicator_idv)
+    map<string, size_t> GenoSampleID2Ind; // index sampleIDs with both pheno and geno data
     vector<size_t> SampleVcfPos;
     vector<string> VcfSampleID; // size=total sample #
     vector<string> VcfSampleID_test; // sample id for ni_test in order of X[i][j]
@@ -210,8 +212,10 @@ public:
     // SS related parameters
     string file_score;
     string file_cov;
-    //vector<double> beta_marginal, beta_SE;
-
+    vector< vector<double> > LD_ref, LD;
+    vector<double> U_STAT, SQRT_V_STAT, pval_vec, xtx_vec, snp_var_vec;
+    vector<double>  mbeta, mbeta_SE, ni_effect_vec;
+    vector<pair<size_t, double> >  pos_ChisqTest;
     
 	bool mode_silence;
 	int a_mode;				//analysis mode, 1/2/3/4 for Frequentist tests
@@ -236,6 +240,7 @@ public:
 	double miss_level;
 	double maf_level;	
 	double hwe_level;
+	double r2_level;
 	
 	// BVSRM MCMC related parameters
     size_t win;
@@ -285,7 +290,7 @@ public:
 	
 		
 	map<string, size_t> mapScoreKey2Pos; //map snpkey to the position in score.txt
-	map<string, size_t> mapCovKey2Pos; // map snpkey to the position in cov.txt
+	map<string, size_t> mapLDKey2Pos; // map snpkey to the position in LDR2.txt
     map<int, string> mapCode2Func; // map unique code to a unique function type
 
 	map<string, int> mapID2num;		//map chr:pos:ref:alt to position, from 0 to n-1
@@ -310,28 +315,36 @@ public:
 	void WriteGenotypes(uchar **X);
 
 	// summary statistics;
-	void ReadSS (vector< vector<double> >  &LD, vector<double> &pval, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, vector<double> &beta_marginal, vector<double> &beta_SE);
+	void ReadSS ();
+	void UpdateScore();
     
 	//void CheckCvt ();
 	void ProcessPheno();
+	void UpdatePheno();
     void ReorderPheno(gsl_vector *y);
     
 	void CopyPheno (gsl_vector *y);
 	void CalcKin (gsl_matrix *matrix_kin);
 
+	// get LD from LDref
+	void Convert_LD();
     
 };
 
 
-void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const size_t &ns_total, const vector<bool> &indicator_snp);
-
-void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const size_t &ns_total);
+void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const vector<bool> &indicator_snp);
 
 bool comp_snp(const SNPPOS& lhs, const SNPPOS& rhs);
 
+// summary stat
 vector<string> split(const string& str, const string& delim);
 
 void SwapKey(string &key);
+
+
+// get r2 from LDref
+double getR2_ij(const vector< vector<double> > &LD, size_t idx_i, size_t idx_j, const bool &swap_i, const bool &swap_j);
+
 
 #endif
 

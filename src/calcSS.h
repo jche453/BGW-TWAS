@@ -68,7 +68,6 @@ public:
     vector <size_t> CompBuffSizeVec;
     bool Compress_Flag;
     vector<pair<int, double> > UcharTable;
-    vector <double> xtx_vec;
 
     string file_out;
     size_t ni_total, ni_test;   //number of individuals
@@ -88,21 +87,22 @@ public:
     //functions
     void CopyFromParam (PARAM &cPar);
 
-    void GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest);
+    void GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest, vector<double> &xtx_vec);
 
     void WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &beta_SE, const vector<double> &U_STAT, const vector<double> &SQRT_V_STAT, const vector<double> &pval);
 
 };
 
-void Convert_LD(vector< vector<double> > &LD, vector<double> &xtx, const size_t &ns_test, const size_t &ni_test, const vector<SNPPOS> &snp_pos, const bool &refLD);
+// convert cov_ij to r2_ij
+double Conv_xtx2_r2(const double &xtx_ij, const vector<double> &xtx_vec, const size_t &i, const size_t &j); 
 
 void getXty(const vector<double> &beta, const vector<double> &xtx, vector <double> &Xty);
 
 void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > &pos_ChisqTest);
 
-double getR2(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j ); 
-
 double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx);
+
+double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx_vec, const vector<double> &snp_var_vec, const vector<double> &ni_effect_vec, const bool refLD);
 
 double CalcResVar(const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &yty); 
 
