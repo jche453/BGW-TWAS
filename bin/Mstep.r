@@ -1,6 +1,6 @@
 Sys.setlocale('LC_ALL', 'C')
 options(stringsAsFactors=F)
-source("/net/fantasia/home/yjingj/GIT/bfGWAS/bin/R_funcs.r")
+# source("/home/jyang/GIT/bfGWAS_SS/bin/R_funcs.r")
 
 ######## Need to pass args(hypfile, paramfile, k, hypcurrent_file) from bash
 args <- commandArgs(TRUE)
@@ -17,8 +17,42 @@ hypcurrent_file=args[[6]]
 a_gamma <- b_gamma <- abgamma;
 print(paste("a_gamma=b_gamma = ", abgamma))
 
-ptm <- proc.time()
+###### Define functions to be used
+CI_fish_pi <- function(m, p, a, b){
+	pi_hat = (sum(m) + a - 1.0) / (p + a + b - 2.0)
+	if(pi_hat <= 0 || pi_hat > 1){
+		pi_hat = a/(a+b)
+		se_pi = 0
+	}else{
+		if(pi_hat * (1-pi_hat) / (p + a + b - 2.0) > 0){
+		  se_pi = sqrt(pi_hat * (1-pi_hat) / (p + a + b - 2.0))
+		}else{se_pi=0}
+	}
+	return(c(pi_hat, se_pi))
+}
 
+Est_sigma2 <- function(sigma2, m, tau, a, b){
+	sigma2_hat = (sum(sigma2 * m) * tau + 2 * b) / (sum(m) + 2 * (a + 1))
+	return(sigma2_hat)
+}
+
+CI_fish_sigma2 <- function(sigma2, m, tau, a, b){
+	sigma2_hat = Est_sigma2(sigma2, m, tau, a, b)
+	if( (sum(m) * tau - sum(m)/2 - (a+1) + 2*b/sigma2_hat) < 0){
+		se_sigma2=0
+	}else{
+		se_sigma2 = sigma2_hat * sqrt(1/(sum(m) * tau - sum(m)/2 - (a+1) + 2*b/sigma2_hat))
+	}
+	return(c(sigma2_hat, se_sigma2))
+}
+
+## log prior functions
+logprior_sigma <- function(a, b, x){ return(-(1+a) * log(x) - b/x) }
+
+logprior_pi <- function(a, b, x){ return((a-1) * log(x) + (b-1) * log(1 - x)) }
+
+
+ptm <- proc.time()
 ########### Load hypfile ....
 
 # hypfile="/net/fantasia/home/yjingj/GIT/bfGWAS/1KG_example/Test_Wkdir/hypval.current 
@@ -75,7 +109,8 @@ for(i in 1:n_type){
 colnames(hypmat) <- c("pi", "sigma2")
 print("hyper parameter values updates after MCMC: ")
 print(hypmat)
-write.table(format(hypmat, scientific=TRUE), file=hypcurrent_file, 
+write.table(format(hypmat, scientific=TRUE), 
+	file=hypcurrent_file, 
 	quote = FALSE, sep = "\t", row.names=FALSE, col.names=TRUE)
 
 #### Summarize log-likelihood

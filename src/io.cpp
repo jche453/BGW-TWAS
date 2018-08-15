@@ -262,6 +262,11 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
         	                    snp_nfunc++;
         	                }
                 	}
+
+                    if (snp_nfunc == 1)
+                      {
+                          mFunc[func_code]++;
+                      }
                     
                     //if ((snp_nfunc > 0) && (snp_nfunc <= n_type))
                     /*
@@ -298,6 +303,7 @@ bool Empty_anno (vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, size_t &
 {
     n_type = 1; // all variants are of one annotation
     mFunc.assign(1, 0);
+    // cout << "indicator_snp size = " << indicator_snp.size() << endl;
 
     for(size_t i = 0; i < indicator_snp.size(); i++){
         if(indicator_snp[i] == 0) continue;
@@ -619,7 +625,7 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
                        else s.assign( pch, nch-pch );
                        VcfSampleID.push_back(s);
                        // test if the sample ID has pheno data
-                       if ( (PhenoID2Pos.count(s)>0) && (GenoSampleID2Ind.count(s)) ) {
+                       if ( (PhenoID2Pos.count(s)>0) && (GenoSampleID2Ind.count(s) == 0) ) {
                        		//cout << "id = " << s << "tab_count = " << tab_count << ", ";
                            SampleVcfPos.push_back(tab_count); //record tab_position
                            GenoSampleID2Ind[s] = tab_count;
@@ -2766,6 +2772,12 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
                         snp_nfunc++;
                     }
             }
+
+            if (snp_nfunc == 1)
+              {
+                mFunc[func_code]++;
+              }
+
             
             //if ((snp_nfunc > 0) && (snp_nfunc <= n_type))
             /*
@@ -2783,7 +2795,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
 
         }
     }
-    cout << "/nNumber of annotation categories: " << n_type << endl;
+    cout << "Number of annotation categories: " << n_type << endl;
     cout << "Number of variants per category: "; PrintVector(mFunc);
     
     infile.close();

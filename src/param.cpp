@@ -97,7 +97,7 @@ vscale(0.0), iniType(3), calc_K(0), saveGeno(0), saveSS(0), zipSS(0),
 inputSS(0), refLD(0), printLD(0), LDwindow(1000000), rv(0.0), Compress_Flag(0), 
 mode_silence (false), a_mode (0), k_mode(1), d_pace (100000),
 GTfield("GT"), file_out("result"), 
-miss_level(0.05), maf_level(0.001), hwe_level(0.00001), r2_level(0.01),
+miss_level(0.05), maf_level(0.001), hwe_level(0.00001), r2_level(0.001),
 win(100),nadd_accept(0), ndel_accept(0), nswitch_accept(0),
 nother_accept(0), nadd(0), ndel(0),
 nswitch(0), nother(0),
@@ -789,11 +789,13 @@ void PARAM::UpdateScore(){
 					// use effective samples size, scale xtx_i value, update score statistics
 					beta2_i = mbeta[i] * mbeta[i];
 					beta_se2_i = mbeta_SE[i] * mbeta_SE[i];
-					ni_effect_i = yty / (xtx_vec[i] * beta_se2_i) - beta_se2_i / beta2_i + 1;
+					// ni_effect_i = yty / (xtx_vec[i] * beta_se2_i) - beta_se2_i / beta2_i + 1;
+					ni_effect_i = ni_test;
 					if(ni_effect_i < 0) ni_effect_i = 0;
 					ni_effect_vec.push_back(ni_effect_i);
 					xtx_i = ni_effect_i * snp_var_vec[i];
-					u_i = xtx_i * mbeta[i];
+					// u_i = xtx_i * mbeta[i];
+					u_i = U_STAT[i];
 					v_i = sqrt(xtx_i * pheno_var);
 					ni_effect_vec.push_back(ni_effect_i);
 
@@ -819,11 +821,13 @@ void PARAM::UpdateScore(){
 			if(refLD){
 				beta2_i = mbeta[i] * mbeta[i];
 				beta_se2_i = mbeta_SE[i] * mbeta_SE[i];
-				ni_effect_i = yty / (xtx_vec[i] * beta_se2_i) - beta_se2_i / beta2_i + 1;
+				// ni_effect_i = yty / (xtx_vec[i] * beta_se2_i) - beta_se2_i / beta2_i + 1;
+				ni_effect_i = ni_test;
 				if(ni_effect_i < 0) ni_effect_i = 0;
 				ni_effect_vec.push_back(ni_effect_i);
 				xtx_i = ni_effect_i * snp_var_vec[i];
-				u_i = xtx_i * mbeta[i];
+				// u_i = xtx_i * mbeta[i];
+				u_i = U_STAT[i];
 				v_i = sqrt(xtx_i * pheno_var);
 				ni_effect_vec.push_back(ni_effect_i);
 				
