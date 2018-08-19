@@ -188,7 +188,7 @@ public:
     int iniType;
     bool FIXHYP;
     
-    bool calc_K, saveGeno, saveSS, zipSS, inputSS, refLD, printLD;
+    bool calc_K, saveGeno, saveSS, zipSS, inputSS, refLD, printLD, use_xtx_LD;
     long int LDwindow;
 
     string iniSNPfile;

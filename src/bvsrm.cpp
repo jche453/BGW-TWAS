@@ -826,13 +826,18 @@ void BVSRM::setHyp(double theta_temp, double subvar_temp){
             else{
                 pch = (char *)line.c_str();
                 nch = strchr(pch, '\t');
-                theta[group_idx] = strtod(pch, NULL);
-                if(nch == NULL){
+                if(group_idx < n_type)
+                    theta[group_idx] = strtod(pch, NULL);
+                if(nch == NULL)
+                {
                  cerr << "Need input initial hyper parameter value for sigma2 \n";
-                    } else{pch = nch+1;}
-                if(group_idx < n_type)  {
-                    subvar[group_idx] = strtod(pch, NULL);
+                 exit(-1);
+                } 
+                else{
+                    pch = nch+1;
                 }
+                if(group_idx < n_type)
+                    subvar[group_idx] = strtod(pch, NULL);
                 group_idx++;
             }
         }
@@ -974,7 +979,7 @@ void BVSRM::InitialMCMC (uchar **X, const gsl_vector *Uty, vector<size_t> &rank,
 
     } // Start with most significant variants from SVT
     else if(iniType == 3){
-        cout << "Start with Step-wise selected variants. \n";
+        cout << "\nStart with Step-wise selected variants. \n";
     vector<pair<size_t, double> > rank_loglr;
     size_t posr, radd;
 
@@ -1061,12 +1066,12 @@ void BVSRM::InitialMCMC (uchar **X, const gsl_vector *Uty, vector<size_t> &rank,
     cHyp.h=pve_null;
     
     if (cHyp.logp==0) {cHyp.logp=-0.000001;}
-    if (cHyp.h==0) {cHyp.h=0.1;}
+    if (cHyp.h<1e-8) {cHyp.h=0.1;}
     
     gsl_matrix *UtXgamma=gsl_matrix_alloc (ni_test, cHyp.n_gamma);
     SetXgamma (UtXgamma, X, rank);
-   // cout<<"initial value of h = "<< h <<endl;
     
+    cout << "trace_G = " << trace_G << endl;
     double sigma_a2;
     if (trace_G!=0) {
         sigma_a2=cHyp.h*1.0/(trace_G*(1-cHyp.h)*exp(cHyp.logp));
@@ -2784,7 +2789,14 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     //cout << "Unique function types = " << n_type << endl;
     //cout << "ni_test = " << ni_test << endl;
     //cout << "ns_test = " << ns_test << endl;
-    //cout << "snp_pos size = " << snp_pos.size() << endl;
+    cout << "snp_pos size = " << snp_pos.size() << endl;
+    cout << "ni_effect_vec size = " << ni_effect_vec.size() << endl;
+    cout << snp_pos[0].key <<"; " << snp_pos[2].key <<"; " << snp_pos[3].key <<"; " << endl;
+    cout << snp_pos[0].maf <<"; " << snp_pos[2].maf <<"; " << snp_pos[3].maf <<"; " << endl;
+    PrintVector(xtx_vec, 3);
+    PrintVector(snp_var_vec, 3);
+    PrintVector(ni_effect_vec, 3);
+
 
     // obtain yty from pheno_var, set rv = pheno_var
     cout << "pheno_var = " << pheno_var << endl;
@@ -2891,7 +2903,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     gsl_t=gsl_ran_discrete_preproc (ns_test, p_gamma); // set up proposal function for gamma
     
     //Initial parameters
-    cout << "Start initializing MCMC ... \n";
+    cout << "\nStart initializing MCMC ... \n";
     InitialMCMC_SS (LD, Xty, rank_old, cHyp_old, pval_vec); // Initialize rank and cHyp
     cout << "Initial rank_old : "; 
     PrintVector(rank_old);
@@ -3145,7 +3157,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     gsl_vector_free(beta_new);
     
     delete [] p_gamma;
-    beta_g.clear();
+    // beta_g.clear();
     
     return;
 }
@@ -3177,7 +3189,7 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
         rank.clear();
         size_t rankj;
         
-        cout << "Start loading initial snp IDs from " << iniSNPfile << "\n";
+        cout << "\nStart loading initial snp IDs from " << iniSNPfile << "\n";
         
         while (!safeGetline(infile, lineid).eof()) {
             
@@ -3202,14 +3214,14 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
         } //take rank 0 if tracked no SNPs from the iniSNPfile
     }
     else if(iniType == 1 ) {
-        cout << "Start with top genome-wide significant variants.\n";
+        cout << "\nStart with top genome-wide significant variants.\n";
         rank.clear();
         for (size_t i=0; i<cHyp.n_gamma; ++i) {
             rank.push_back(i);
         }
     }
     else if( iniType == 3) {
-        cout << "Start with Step-wise selected variants.\n";
+        cout << "\nStart with Step-wise selected variants.\n";
         vector< pair<size_t, double> > rank_loglr;
         size_t pos_r, pos_j, radd, s_size;
         double xtx, rtr;
@@ -3244,7 +3256,6 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
             cout << "SetSSgamma with rank  " << endl; 
             PrintVector(rank);
             for(size_t l = 0; l < rank.size(); l++){
-
                 cout << "bp = " << snp_pos[ mapRank2pos[rank[l]] ].bp << ";" ;
             }
             cout << "\n XtX_cond : \n" ;
@@ -3274,7 +3285,6 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
                 
             if(rank_loglr[0].second > sig_lr )
             {
-
                 radd = rank_loglr[0].first;
                 pos_r = mapRank2pos[radd];
                 xtx = xtx_vec[pos_r];
@@ -3295,25 +3305,24 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
         gsl_vector_free(beta_cond);
     } 
     else{
-        cout << "Start with the top leading variant.\n";
+        cout << "\nStart with the top leading variant.\n";
         rank.clear();
         rank.push_back(0);
     } 
     
     cHyp.n_gamma = rank.size();
-    //cout << "number of snps = " << cHyp.n_gamma << endl;
+    cout << "number of snps = " << cHyp.n_gamma << endl;
     cout << "Initial model with ranks: \n"; PrintVector(rank);
     
     cHyp.logp=log((double)cHyp.n_gamma/(double)ns_test);
-    cHyp.h=pve_null;
-    
     if (cHyp.logp==0) {cHyp.logp=-0.000001;}
-    if (cHyp.h==0) {cHyp.h=0.1;}
-    
-    //gsl_matrix *UtXgamma=gsl_matrix_alloc (ni_test, cHyp.n_gamma);
-    //SetXgamma (UtXgamma, X, rank);
+
+    cHyp.h = 0.1;
+    //cHyp.h=pve_null;
+    //if (cHyp.h==0) {cHyp.h=0.1;}
    // cout<<"initial value of h = "<< h <<endl;
     
+    cout << "trace_G = " << trace_G << endl;
     double sigma_a2;
     if (trace_G!=0) {
         sigma_a2=cHyp.h*1.0/(trace_G*(1-cHyp.h)*exp(cHyp.logp));
@@ -3323,12 +3332,8 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
     if (sigma_a2==0) {sigma_a2=0.025;}
    // cout << "initial sigma_a2 = " << sigma_a2 << endl;
     
-    //cHyp.rho=CalcPveLM (UtXgamma, Uty, sigma_a2)/cHyp.h;
-    //gsl_matrix_free (UtXgamma);
-    
-    if (cHyp.rho>1.0) {cHyp.rho=1.0;}
-    if (cHyp.h<h_min) {cHyp.h=h_min;}
-    if (cHyp.h>h_max) {cHyp.h=h_max;}
+    //if (cHyp.h<h_min) {cHyp.h=h_min;}
+    //if (cHyp.h>h_max) {cHyp.h=h_max;}
     if (cHyp.logp<logp_min) {cHyp.logp=logp_min;}
     if (cHyp.logp>logp_max) {cHyp.logp=logp_max;}
     
@@ -3338,10 +3343,10 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
     cHyp.log_theta = log_theta;
     cHyp.subvar = subvar; // initial subvar vector
     
-    // cout<<"initial value of h = "<< h <<endl;
-    // cout<<"initial value of rho = "<<cHyp.rho<<endl;
-    // cout<<"initial value of theta_vec = "; PrintVector(theta);
-    // cout << "initial value of sub-variance_vec = "; PrintVector(subvar);
+    //cout<<"initial value of h = "<< h <<endl;
+    //cout<<"initial value of rho = "<<cHyp.rho<<endl;
+    //cout<<"initial value of theta_vec = "; PrintVector(theta);
+    //qcout << "initial value of sub-variance_vec = "; PrintVector(subvar);
     cout<<"Initially selected number of variants in the model = "<<cHyp.n_gamma<<endl;
     
     return;

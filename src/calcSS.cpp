@@ -52,7 +52,7 @@ void CALCSS::CopyFromParam (PARAM &cPar)
 
 
 //calculat summary statistics of score statistics and LD matrix
-void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest, vector<double> &xtx_vec){
+void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest, vector<double> &xtx_vec, vector<double> &snp_var_vec, vector<double> &ni_effect_vec){
 
     cout << "\nStart calculating summary statistics ... \n";
 
@@ -75,11 +75,17 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 
     // cout << "calculate xtx by the order of chr/bp ... \n";
     xtx_vec.clear();
+    snp_var_vec.clear();
+    ni_effect_vec.clear();
+    trace_G = 0;
     for (size_t i=0; i<ns_test; ++i) {
         //calculate xtx_i
         getGTgslVec(X, xvec_i, snp_pos[i].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
         gsl_blas_ddot(xvec_i, xvec_i, &xtx_i);
+        trace_G += xtx_i;
         xtx_vec.push_back( xtx_i );
+        snp_var_vec.push_back (xtx_i / double(ni_test) );
+        ni_effect_vec.push_back(ni_test);
     }
 
     // cout << "calculate beta, score statistics by the order of chr/bp ... \n";
@@ -115,8 +121,8 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
         beta_SE.push_back(beta_SE_i);
         
         // saving X'X to LD
-        LD.push_back(vector<double>()); // save r2
-        LD[i].push_back(1.0); // 
+        LD.push_back(vector<double>()); // save correlation
+        LD[i].push_back(snp_var_vec[i]); // save snp genotype variance
 
         if(i < (ns_test-1) ){
             //calculate xtx_ij 
@@ -141,6 +147,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 }
 
 double Conv_xtx2_r2(const double &xtx_ij, const vector<double> &xtx_vec, const size_t &i, const size_t &j){
+    // get correlation as r2
     double r2 = 0.0;
     if(xtx_ij > 0.0){
         if( (xtx_vec[i] > 0.0) && (xtx_vec[j] > 0.0) ){

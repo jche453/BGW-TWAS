@@ -1083,7 +1083,7 @@ bool ReadFile_geno (const string &file_geno, const set<string> &setSnps, vector<
             }
             pch = (nch == NULL) ? NULL : nch+1;
         }
-        if(ns_test < 5) cout << endl;
+        //if(ns_test < 5) cout << endl;
 
 		maf/=2.0*(double)(ni_test-n_miss);	
 		
@@ -2583,8 +2583,13 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
             if(rs.compare(".") == 0 || rs.empty())
                 { rs = key; }
 
-            snp_var_i = 2.0 * maf_i * (1.0 - maf_i);
-            xtx_i = snp_var_i * (double)ni_test;
+            if( (!u_na) && (!beta_na) && (beta_i != 0) ){
+                xtx_i = u_i / beta_i ;
+                snp_var_i = xtx_i / (double)ni_test;
+            }else{
+                snp_var_i = 2.0 * maf_i * (1.0 - maf_i);
+                xtx_i = snp_var_i * (double)ni_test;
+            }
 
             if( u_na && (!beta_na) ){
                 u_i = xtx_i * beta_i;
@@ -2932,7 +2937,7 @@ bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <
                 {
                     mch = strchr(pch, ',');
                     r = strtod(pch, NULL) ;
-                    // if(n_snp_score < 5) { cout << r << ","; }
+                    //if(n_snp_score < 5) { cout << r << ","; }
                     LD_ref[n_snp].push_back(r);
                     pch = (mch == NULL) ? NULL : mch+1;
                 }

@@ -630,6 +630,9 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
         else if (strcmp(argv[i], "-refLD")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.refLD=1; }
         }
+        else if (strcmp(argv[i], "-usextxLD")==0) {
+            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.use_xtx_LD=1; }
+        }
         else if (strcmp(argv[i], "-printLD")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.printLD=1; }
         }
@@ -736,7 +739,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         SS.CopyFromParam(cPar);
 
         // calculate LD matrix and effect-sizes from SVT
-       SS.GetSS(X_Genotype, y, cPar.LD, cPar.mbeta, cPar.mbeta_SE, cPar.U_STAT, cPar.SQRT_V_STAT, cPar.pval_vec, cPar.pos_ChisqTest, cPar.xtx_vec);
+       SS.GetSS(X_Genotype, y, cPar.LD, cPar.mbeta, cPar.mbeta_SE, cPar.U_STAT, cPar.SQRT_V_STAT, cPar.pval_vec, cPar.pos_ChisqTest, cPar.xtx_vec, cPar.snp_var_vec, cPar.ni_effect_vec);
 
         // save summary statistics
         SS.WriteSS(cPar.LD, cPar.mbeta, cPar.mbeta_SE, cPar.U_STAT, cPar.SQRT_V_STAT, cPar.pval_vec);
@@ -845,8 +848,9 @@ void BFGWAS::BatchRun (PARAM &cPar)
 
 	        // calculate LD matrix (X'X/n), mbeta (x'y / x'x), score statistics U_STAT (X'y), xtx_vec
 	        time_start=clock();	           
-        	SS.GetSS(X_Genotype, y, cPar.LD, cPar.mbeta, cPar.mbeta_SE, cPar.U_STAT, cPar.SQRT_V_STAT, cPar.pval_vec, cPar.pos_ChisqTest, cPar.xtx_vec);
+        	SS.GetSS(X_Genotype, y, cPar.LD, cPar.mbeta, cPar.mbeta_SE, cPar.U_STAT, cPar.SQRT_V_STAT, cPar.pval_vec, cPar.pos_ChisqTest, cPar.xtx_vec, cPar.snp_var_vec, cPar.ni_effect_vec);
         	cPar.pheno_var = SS.pheno_var;
+        	cPar.trace_G = SS.trace_G;
 
 	        // calculate pheno_var; generate snp_pos
 	        cout << "Get SS costs " << (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0) << " minutes \n";
@@ -871,7 +875,7 @@ void BFGWAS::BatchRun (PARAM &cPar)
         }else{
         	// Convert LD matrix from LDref
 	        cPar.Convert_LD() ; 
-	        cout << "\n Obtain LD correlation matrix from LDcorr.txt Success!" << endl; 
+	        cout << "\nObtain LD correlation matrix from LDcorr.txt Success!" << endl; 
 	        if(cPar.printLD){
 	        	string file_LD;
 	        	file_LD = "./output/" + cPar.file_out + ".LD.mat";

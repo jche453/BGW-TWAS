@@ -77,7 +77,7 @@ public:
     vector<bool> indicator_snp; //indicator for SNPs: 1 analyzed
 
     // Phenotype information
-    double pheno_mean, pheno_var;
+    double pheno_mean, pheno_var, trace_G;
 
     vector<SNPINFO> snpInfo; // SNP information
     vector<SNPPOS> snp_pos;
@@ -87,7 +87,7 @@ public:
     //functions
     void CopyFromParam (PARAM &cPar);
 
-    void GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest, vector<double> &xtx_vec);
+    void GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vector<double> &beta, vector<double> &beta_SE, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &pval, vector<pair<size_t, double> > &pos_ChisqTest, vector<double> &xtx_vec, vector<double> &snp_var_vec, vector<double> &ni_effect_vec);
 
     void WriteSS(const vector< vector<double> > &LD, const vector<double> &beta, const vector<double> &beta_SE, const vector<double> &U_STAT, const vector<double> &SQRT_V_STAT, const vector<double> &pval);
 
