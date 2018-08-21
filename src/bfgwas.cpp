@@ -630,6 +630,9 @@ void BFGWAS::Assign(int argc, char ** argv, PARAM &cPar)
         else if (strcmp(argv[i], "-refLD")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.refLD=1; }
         }
+        else if (strcmp(argv[i], "-scaleN")==0) {
+            if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.scaleN=1; }
+        }
         else if (strcmp(argv[i], "-usextxLD")==0) {
             if(argv[i+1] == NULL || argv[i+1][0] == '-') {cPar.use_xtx_LD=1; }
         }

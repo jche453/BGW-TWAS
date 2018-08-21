@@ -10,6 +10,14 @@ LoadEMdata <- function(filename, header = FALSE){
     return(paramdata)
 }
 
+LoadEMdata_bfgwas <- function(filename, header = FALSE){
+    paramdata = fread(filename, sep = "\t", header = header)
+    setnames(paramdata, c("ID", "chr", "bp", "ref", "alt", "maf", "func", "beta", "pi", "Zscore", "SE_beta", "LRT", "pval_LRT", "rank"))
+    setkey(paramdata, "ID")
+    return(paramdata)
+}
+
+
 LoadEMhyp <- function(filename, header=FALSE){
     EMhyp_data <- read.table(filename, sep = "\t", header = header)
     n_type <- (dim(EMhyp_data)[2] - 3)/4

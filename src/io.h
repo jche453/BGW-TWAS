@@ -115,11 +115,11 @@ void WriteVector(const gsl_vector * X, const string file_str);
 
 
 // With summary stat input
-// for loading summary statistics first time
-bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector<double> &pval_vec, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &xtx_vec, vector<double> &snp_var_vec, size_t &ns_test, size_t &ns_total, vector<double> &mbeta, vector<double> &mbeta_SE, vector <bool> &indicator_snp, const size_t &ni_test, const double &maf_level, const double &hwe_level, const double &pheno_var);
-
 // Read ref LDcorr.txt.gz file
-bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector< vector<double> >  &LD_ref, map<string, size_t> &mapLDKey2Pos);
+bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD_ref, map<string, size_t> &mapLDKey2Pos);
+
+// for loading summary statistics first time
+bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, map<string, size_t> &mapLDKey2Pos, vector<double> &pval_vec, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &xtx_vec, vector<double> &snp_var_vec, size_t &ns_test, size_t &ns_total, vector<double> &mbeta, vector<double> &mbeta_SE, vector <bool> &indicator_snp, const size_t &ni_test, const double &maf_level, const double &hwe_level, const double &pheno_var, const vector< vector<double> >  &LD_ref, const bool &use_xtx_LD);
 
 // Read annotation file
 bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, size_t> &mapScoreKey2Pos, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);

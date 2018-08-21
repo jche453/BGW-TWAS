@@ -94,7 +94,7 @@ void CalcWeight(const vector<bool> &indicator_func, vector<double> &weight, cons
 
 PARAM::PARAM(void):
 vscale(0.0), iniType(3), calc_K(0), saveGeno(0), saveSS(0), zipSS(0), 
-inputSS(0), refLD(0), printLD(0), use_xtx_LD(0), LDwindow(1000000), rv(0.0), Compress_Flag(0), 
+inputSS(0), refLD(0), scaleN(0), printLD(0), use_xtx_LD(0), LDwindow(1000000), rv(0.0), Compress_Flag(0), 
 mode_silence (false), a_mode (0), k_mode(1), d_pace (100000),
 GTfield("GT"), file_out("result"), 
 miss_level(0.05), maf_level(0.001), hwe_level(0.00001), r2_level(0.001),
@@ -414,10 +414,12 @@ void PARAM::ReadGenotypes (uchar **X, gsl_matrix *K) {
 void PARAM::ReadSS (){
 	if( (! file_score.empty()) && (!file_cov.empty()) ){
     		cout << "\nLoad summary statistics ...\n";
-    		if(ReadFile_score(file_score, snpInfo, mapScoreKey2Pos, pval_vec, pos_ChisqTest, U_STAT, SQRT_V_STAT, xtx_vec, snp_var_vec, ns_test, ns_total, mbeta, mbeta_SE, indicator_snp, ni_test, maf_level, hwe_level, pheno_var) == false)
+    		if(ReadFile_corr(file_cov, ns_test, snpInfo, LD_ref, mapLDKey2Pos) == false)
     			{ error = true; }
-    		if(ReadFile_corr(file_cov, ns_test, snpInfo, mapScoreKey2Pos, LD_ref, mapLDKey2Pos) == false)
+
+    		if(ReadFile_score(file_score, snpInfo, mapScoreKey2Pos, mapLDKey2Pos, pval_vec, pos_ChisqTest, U_STAT, SQRT_V_STAT, xtx_vec, snp_var_vec, ns_test, ns_total, mbeta, mbeta_SE, indicator_snp, ni_test, maf_level, hwe_level, pheno_var, LD_ref, use_xtx_LD) == false)
     			{ error = true; }
+    		
 
     		// read functional/annotation fule
 			if ( (!file_anno.empty()) && (!file_func_code.empty()) ) {
@@ -755,131 +757,37 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const ve
 
 // Update variants in the summary stat vectors
 void PARAM::UpdateScore(){
-	// cout << "snp_pos size from summary stat is " << snp_pos.size() << endl;
-
-	string key;
-	vector<SNPPOS> snp_pos_temp;
-	vector<double> U_STAT_temp, SQRT_V_STAT_temp, pval_vec_temp, xtx_vec_temp, mbeta_temp, mbeta_SE_temp, snp_var_vec_temp;
-    vector<pair<size_t, double> >  pos_ChisqTest_temp;
+	cout << "\nns_test from summary stat is " << ns_test << endl;
     double beta2_i, beta_se2_i, u_i, v_i, ni_effect_i, xtx_i;
     double yty = pheno_var * (double)ni_test;
     // cout << "yty in UpdateScore is " << yty << endl;
 
     ni_effect_vec.clear(); 
-    ns_test=0;
-
-	for(size_t i=0; i<snp_pos.size(); i++){
-		key = snp_pos[i].key;
-		if( mapLDKey2Pos.count(key) == 0 ){
-			SwapKey(key);
-			if( mapLDKey2Pos.count(key) == 0 )
-			{
-				indicator_snp[i] = 0;
-				// cout << key << " have summary stat but not LD info; removed from analysis. \n";
-			}else{
-				pval_vec_temp.push_back(pval_vec[i]);
-				snp_var_vec_temp.push_back(snp_var_vec[i]);
-				mbeta_temp.push_back(mbeta[i]);
-				mbeta_SE_temp.push_back(mbeta_SE[i]);
-				pos_ChisqTest_temp.push_back( make_pair(ns_test, pos_ChisqTest[i].second) );
-				snp_pos_temp.push_back(snp_pos[i]);
-
-				if(refLD){
-					// use effective samples size, scale xtx_i value, update score statistics
-					beta2_i = mbeta[i] * mbeta[i];
-					beta_se2_i = mbeta_SE[i] * mbeta_SE[i];
-					// ni_effect_i = yty / (xtx_vec[i] * beta_se2_i) - beta_se2_i / beta2_i + 1;
-					// if(ni_effect_i < 0) ni_effect_i = 0;
-					ni_effect_i = ni_test;
-					xtx_i = ni_effect_i * snp_var_vec[i];
-					// u_i = xtx_i * mbeta[i];
-					u_i = U_STAT[i];
-					v_i = sqrt(xtx_i * pheno_var);
-					ni_effect_vec.push_back(ni_effect_i);
-					U_STAT_temp.push_back(u_i);
-					SQRT_V_STAT_temp.push_back(v_i);
-					xtx_vec_temp.push_back(xtx_i);
-				}else{
-					ni_effect_vec.push_back(ni_test);
-					U_STAT_temp.push_back(U_STAT[i]);
-					SQRT_V_STAT_temp.push_back(SQRT_V_STAT[i]);
-					xtx_vec_temp.push_back(xtx_vec[i]);
-				}
-				ns_test++;
-			}
+    if(scaleN){
+    	cout << "Scale summary statistics with effective sample size!\n";
+    	for(size_t i=0; i<ns_test; i++){
+			// Calculate effective samples size, scale xtx_i value, update score statistics
+			beta2_i = mbeta[i] * mbeta[i];
+			beta_se2_i = mbeta_SE[i] * mbeta_SE[i];
+			ni_effect_i = yty / (xtx_vec[i] * beta_se2_i) - beta_se2_i / beta2_i + 1;
+			if(ni_effect_i <= 0) ni_effect_i = 1;
+			xtx_i = ni_effect_i * snp_var_vec[i];
+			u_i = xtx_i * mbeta[i];
+			v_i = sqrt(xtx_i * pheno_var);
+			ni_effect_vec.push_back(ni_effect_i);
+			U_STAT[i] = u_i;
+			SQRT_V_STAT[i] = v_i;
+			xtx_vec[i] = xtx_i;
 		}
-		else{
-			pval_vec_temp.push_back(pval_vec[i]);
-			snp_var_vec_temp.push_back(snp_var_vec[i]);
-			mbeta_temp.push_back(mbeta[i]);
-			mbeta_SE_temp.push_back(mbeta_SE[i]);
-			pos_ChisqTest_temp.push_back( make_pair(ns_test, pos_ChisqTest[i].second) );
-			snp_pos_temp.push_back(snp_pos[i]);
+    }else{
+    	ni_effect_vec.assign(ns_test, ni_test);
+    }
 
-			if(refLD){
-				beta2_i = mbeta[i] * mbeta[i];
-				beta_se2_i = mbeta_SE[i] * mbeta_SE[i];
-				// ni_effect_i = yty / (xtx_vec[i] * beta_se2_i) - beta_se2_i / beta2_i + 1;
-				// if(ni_effect_i < 0) ni_effect_i = 0;
-				ni_effect_i = ni_test;
-				xtx_i = ni_effect_i * snp_var_vec[i];
-				// u_i = xtx_i * mbeta[i];
-				u_i = U_STAT[i];
-				v_i = sqrt(xtx_i * pheno_var);
-				ni_effect_vec.push_back(ni_effect_i);
-				U_STAT_temp.push_back(u_i);
-				SQRT_V_STAT_temp.push_back(v_i);
-				xtx_vec_temp.push_back(xtx_i);
-			}else{
-				ni_effect_vec.push_back(ni_test);
-				xtx_vec_temp.push_back(xtx_vec[i]);
-				U_STAT_temp.push_back(U_STAT[i]);
-				SQRT_V_STAT_temp.push_back(SQRT_V_STAT[i]);
-			}
-			ns_test++;
-		}
-	}
-	U_STAT = U_STAT_temp;
-	SQRT_V_STAT = SQRT_V_STAT_temp;
-	pval_vec = pval_vec_temp;
-	xtx_vec = xtx_vec_temp;
-	snp_var_vec = snp_var_vec_temp;
-	mbeta = mbeta_temp;
-	mbeta_SE = mbeta_SE_temp;
-	pos_ChisqTest = pos_ChisqTest_temp;
-	snp_pos = snp_pos_temp;
-	cout << "\nNumber of variants in both score.txt and LDR2.txt: " << ns_test << endl;
-	cout << "snp_pos size: " << snp_pos.size() << endl;
-
-	// reset xtx_vec to reference LD
-
-	size_t pos_i_LD;
-	double snp_var_i;
-	if(use_xtx_LD){
-		cout << "Set snp_var_vec values to the ones from LD_ref\n";
-		xtx_vec.clear();
-		snp_var_vec.clear();
-		for(size_t i=0; i<snp_pos.size(); i++){
-			key = snp_pos[i].key;
-			if( mapLDKey2Pos.count(key) > 0 ){
-				pos_i_LD = mapLDKey2Pos[key];
-			}else{
-				SwapKey(key);
-				pos_i_LD = mapLDKey2Pos[key];
-			}
-			snp_var_i = LD_ref[pos_i_LD][0];
-			snp_var_vec.push_back(snp_var_i);
-			xtx_vec.push_back(snp_var_i * (double) ni_effect_vec[i]);	
-			if(i < 10) cout << snp_var_i << ", " ;
-		}	
-	}
-	cout << "\nxtx_vec size: " << xtx_vec.size() << endl;
-
+	// Calculate trace of X
 	trace_G=0;
 	for(size_t i = 0; i < xtx_vec.size() ; i++){
 		trace_G +=  xtx_vec[i];
 	}
-
 }
 
 // Get LD matrix from Ref LDR2.txt for variants in score.txt file
@@ -1000,8 +908,9 @@ vector<string> split(const string& str, const string& delim)
 void SwapKey(string &key){
 	vector<string> temp;
 	temp = split(key, ":");
-	if(temp.size() != 4) {
-		cout << "Key is in wrong format: " << key << endl;
+	if(temp.size() < 4) {
+		// cout << "temp.size" <<  temp.size << endl; 
+		cout << "SNP annotation (chr:pos:ref:alt) is in wrong format: " << key << endl;
 		exit(-1);
 	}else{
 		key = temp[0] + ":" + temp[1] + ":" + temp[3] + ":" + temp[2] ;

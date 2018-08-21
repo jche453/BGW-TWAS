@@ -312,7 +312,7 @@ bool Empty_anno (vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, size_t &
         mFunc[0]++;
     }
 
-    cout << "Number of annotation categories: " << n_type << endl;
+    cout << "\nNumber of annotation categories: " << n_type << endl;
     cout << "Number of variants per category: "; PrintVector(mFunc);
     
     return true;
@@ -2377,7 +2377,7 @@ void WriteVector(const gsl_vector * X, const string file_str){
 }
 
 // Read summary score statistics file for the first time
-bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector<double> &pval_vec, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &xtx_vec, vector<double> &snp_var_vec, size_t &ns_test, size_t &ns_total, vector<double> &mbeta, vector<double> &mbeta_SE, vector <bool> &indicator_snp, const size_t &ni_test, const double &maf_level, const double &hwe_level, const double &pheno_var)
+bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, map<string, size_t> &mapLDKey2Pos, vector<double> &pval_vec, vector<pair<size_t, double> >  &pos_ChisqTest, vector<double> &U_STAT, vector<double> &SQRT_V_STAT, vector<double> &xtx_vec, vector<double> &snp_var_vec, size_t &ns_test, size_t &ns_total, vector<double> &mbeta, vector<double> &mbeta_SE, vector <bool> &indicator_snp, const size_t &ni_test, const double &maf_level, const double &hwe_level, const double &pheno_var, const vector< vector<double> >  &LD_ref, const bool &use_xtx_LD)
 {
     string line;
     char *pch, *nch;
@@ -2385,8 +2385,9 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
     string rs, chr, minor, major, key;
     double maf_i, p_score, u_i, v_i, beta_i, beta_se_i;
     double hwe_pval, xtx_i, snp_var_i , chisq_i;
-    bool u_na, v_na, beta_na, beta_se_na, p_score_na;
+    bool u_na, v_na, beta_na, beta_se_na, p_score_na, maf_na;
     long int b_pos=0;
+    size_t pos_ld;
 
     // dummy variable for SNPINFO
     vector<bool> indicator_func_temp;
@@ -2414,7 +2415,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
         if (line[0] == '#') 
             { continue; }
         else {
-            u_na = false; v_na = false; 
+            maf_na = false; u_na = false; v_na = false; 
             beta_na = false; beta_se_na = false; p_score_na = false;
 
             pch = (char *)line.c_str();
@@ -2491,8 +2492,8 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
                			if( (maf_i < maf_level) || ((1-maf_i) < maf_level) )
 	                       { ns_total++; continue; }
                		}
-            	else { ns_total++; continue; }
-            } //  MAF has to be non-NAs for SNPs to be analyzed
+            	else { maf_na = true; }
+            } 
         
             if(nch == NULL) {
                 perror("Wrong data format in summary score statistic file");
@@ -2578,17 +2579,50 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
             	else { p_score_na = true; }          
             } // pvalue
 
-            // fill in NA values
+            // fill in snpID values
             key = chr + ":" + to_string(b_pos) + ":" + major + ":" + minor;
             if(rs.compare(".") == 0 || rs.empty())
                 { rs = key; }
 
-            if( (!u_na) && (!beta_na) && (beta_i != 0) ){
-                xtx_i = u_i / beta_i ;
-                snp_var_i = xtx_i / (double)ni_test;
-            }else{
-                snp_var_i = 2.0 * maf_i * (1.0 - maf_i);
-                xtx_i = snp_var_i * (double)ni_test;
+            // Set xtx_vec values
+            if(mapLDKey2Pos.count(key) == 0){
+                    SwapKey(key);
+                    if(mapLDKey2Pos.count(key) == 0){
+                        //snp dose not have reference covariance info
+                        ns_total++; continue;
+                    }else{
+                        if(use_xtx_LD){
+                            pos_ld = mapLDKey2Pos[key];
+                            snp_var_i = LD_ref[pos_ld][0];
+                            xtx_i = snp_var_i * (double) ni_test;
+                        }
+                        else if( (!u_na) && (!beta_na) && (beta_i != 0) ){
+                            xtx_i = u_i / beta_i ;
+                            snp_var_i = xtx_i / (double)ni_test;
+                        }
+                        else if(!maf_na){
+                            snp_var_i = 2.0 * maf_i * (1.0 - maf_i);
+                            xtx_i = snp_var_i * (double)ni_test;
+                        }else{
+                            ns_total++; continue;
+                        }
+                    }
+            }
+            else{
+                if(use_xtx_LD){
+                    pos_ld = mapLDKey2Pos[key];
+                    snp_var_i = LD_ref[pos_ld][0];
+                    xtx_i = snp_var_i * (double) ni_test;
+                }
+                else if( (!u_na) && (!beta_na) && (beta_i != 0) ){
+                    xtx_i = u_i / beta_i ;
+                    snp_var_i = xtx_i / (double)ni_test;
+                }else if(!maf_na){
+                    snp_var_i = 2.0 * maf_i * (1.0 - maf_i);
+                    xtx_i = snp_var_i * (double)ni_test;
+                }else{
+                    ns_total++; continue;
+                }
             }
 
             if( u_na && (!beta_na) ){
@@ -2596,8 +2630,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
                 u_na = false;
             }else if ( u_na && beta_na ){
             	cerr << "Effect size is NA for variant " << key << "\t" <<  rs << endl;
-            	ns_total ++;
-            	continue;
+            	ns_total ++; continue;
             }
 
             if (v_na){
@@ -2658,7 +2691,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
 
     cout << "\nLoading score statistics file " <<  file_score << " success ! "<<endl; 
     cout << "Total number of variants is " << ns_total  << endl; 
-    cout << "Number of variants passed filters is " << ns_test << endl;
+    cout << "Number of analyzed variants is " << ns_test << endl;
     return true;
 }
 
@@ -2812,15 +2845,9 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
 
 // REVISE 07/26/2018
 // Read reference LDcorr.txt.gz file
-bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, map<string, size_t> &mapScoreKey2Pos, vector< vector<double> >  &LD_ref, map<string, size_t> &mapLDKey2Pos)
+bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <SNPINFO> &snpInfo, vector< vector<double> >  &LD_ref, map<string, size_t> &mapLDKey2Pos)
 {
-
-    if (mapScoreKey2Pos.size() == 0 )
-    {
-        cerr << "\nNo variants loaded from the score.txt file! Fail loading reference LD file!\n";
-        return false;
-    }
-
+    cout << "\nStart loading LD correlation file ... \n";
     size_t n_snp, n_snp_score; // record position in cov file
     LD_ref.clear(); // Reference LD matrix from the LDR2.txt file
     mapLDKey2Pos.clear();
@@ -2836,7 +2863,6 @@ bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <
         {cout<<"error opening LD correlation file: "<<file_cov<<endl; return false;}
 
     n_snp = 0; 
-    n_snp_score = 0;
     while (!safeGetline(infile_cov, line).eof()) {
         if (line[0] == '#') {
             continue;
@@ -2916,16 +2942,6 @@ bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <
             mapLDKey2Pos[key] = n_snp; // record SNPs in LDcorr file positions
             LD_ref.push_back(vector<double>()); // assign a position for every vairiant in LDR2.txt
 
-            if(mapScoreKey2Pos.count(key) == 0){
-                SwapKey(key);
-                if(mapScoreKey2Pos.count(key) == 0){
-                    // SNP dose not exist in the score.txt file
-                    LD_ref[n_snp].push_back(1.0);
-                    n_snp++;
-                    continue;
-                }
-            }
-
             if(nch == NULL) {
                 perror("Wrong data format in summary corr file");
                 exit(-1);
@@ -2937,23 +2953,18 @@ bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <
                 {
                     mch = strchr(pch, ',');
                     r = strtod(pch, NULL) ;
-                    //if(n_snp_score < 5) { cout << r << ","; }
+                    //if(n_snp < 5) { cout << r << ","; }
                     LD_ref[n_snp].push_back(r);
                     pch = (mch == NULL) ? NULL : mch+1;
                 }
-                //if(n_snp_score < 5) { cout << endl; }
+                //if(n_snp < 5) { cout << endl; }
             }
-
-            //if(n_snp_score < 5) cout << n_snp << "th row of LD_ref has vec size : " << LD_ref[n_snp].size() << endl;
-
-            n_snp_score++;
+            //if(n_snp < 5) cout << n_snp << "th row of LD_ref has vec size : " << LD_ref[n_snp].size() << endl;
             n_snp++;
             
         }
     }
-
-    cout << "\nNumber of variants in LDR2.txt file is " << n_snp << endl;
-    cout << "Number of variants that appear in both score.txt file and LDR2.txt file is " << n_snp_score << endl;
+    cout << "Number of variants in LDR2.txt file is " << n_snp << endl;
     cout << "Load " << file_cov << " Success ... \n";
     infile_cov.close();
     infile_cov.clear();

@@ -1,13 +1,62 @@
 # rm(list=ls(all=TRUE))
 
 ####### Source Util Functions and set data directories
-source("/net/fantasia/home/yjingj/GIT/bfGWAS/bin/R_funcs.r")
+source("/home/jyang/GIT/bfGWAS_SS/bin/R_funcs.r")
 
-DataDir = "/net/fantasia/home/yjingj/bfGWAS/1KG_example/ExData/" # example data directory
-OutDir = "/net/fantasia/home/yjingj/GIT/bfGWAS/1KG_example/AnalyzeResults/" # directory to save plots
-ResultDir = "/net/fantasia/home/yjingj/GIT/bfGWAS/1KG_example/Test_Wkdir" # result directory
+DataDir = "/home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/" # example data directory
+OutDir = "/home/jyang/GIT/bfGWAS_SS/1KG_example/AnalyzeResults/" # directory to save plots
+ResultDir = "/home/jyang/GIT/bfGWAS_SS/1KG_example/Test_Wkdir" # result directory
 
 setwd(ResultDir)
+
+######## Compare results
+paramdata_bfgwas = LoadEMdata_bfgwas(filename="./output/CFH_REGION_1KG_bfgwas.paramtemp")
+# head(paramdata_bfgwas)
+
+paramdata_indv = LoadEMdata(filename="./output/CFH_REGION_1KG_indv.paramtemp")
+# head(paramdata_indv)
+
+paramdata_ss = LoadEMdata(filename="./output/CFH_REGION_1KG_ss.paramtemp")
+# head(paramdata_ss)
+
+##
+qplot(paramdata_ss$beta, paramdata_indv$beta) 
+ggsave("comp_beta_ss.pdf")
+
+qplot(paramdata_bfgwas$beta, paramdata_indv[paramdata_bfgwas$ID, ]$beta) 
+ggsave("comp_beta_bfgwas.pdf")
+
+##
+sum(paramdata_bfgwas$pi)
+sum(paramdata_indv$pi)
+sum(paramdata_ss$pi)
+
+##
+paramdata_bfgwas[paramdata_bfgwas$pi > 0.1, ]
+paramdata_indv[paramdata_indv$pi > 0.1, ]
+paramdata_ss[paramdata_ss$pi > 0.1, ]
+
+## True causal variants 
+VCF_Data = fread(paste(DataDir, "vcfs/causalSNP.vcf", sep = ""), sep="\t", header=TRUE)
+geno = VCF_Data[, 10:2513]
+geno[geno == "0|0"] = 0
+geno[geno == "1|1"] = 2
+geno[geno == "1|0" | geno == "0|1"] = 0
+
+geno = apply(geno, 1, as.numeric)
+maf_df = data.frame(VCF_Data[, 1:5],  maf = apply(geno, 2, calcMAF))
+maf_df = maf_df[maf_df$maf > 0.005, ]
+maf_df[1:3, ]
+
+paramdata_bfgwas[maf_df$ID[1:3], ]
+paramdata_indv[maf_df$ID[1:3], ]
+paramdata_ss[maf_df$ID[1:3], ]
+
+# variants that were excluded from the analysis will show NA values
+print(Causal_SNP_Result[, c(1:3, 6:10, 13), with = FALSE])
+
+
+
 
 ######## Load and analyze GWAS results by bfGWAS
 paramdata = LoadEMdata(filename="./Eoutput/paramtemp5.txt")
