@@ -157,7 +157,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
             pch = (char *)line.c_str();
             nch = strchr(pch, '\t');
             n_type = strtol(nch, NULL, 0);
-            cout << "Number of annotation categories" << n_type << endl;            
+            cout << "Number of annotation categories " << n_type << endl;            
             mFunc.assign(n_type, 0);
             continue;
         }
@@ -166,7 +166,7 @@ bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<s
             nch = strchr(pch, '\t');
             func_type.assign(pch, nch-pch);
             func_code = strtol(nch, NULL, 0);
-            cout << func_type << ":" << func_code << endl;
+            // cout << func_type << ":" << func_code << endl;
             mapFunc2Code[func_type] = func_code;
         }
     }
