@@ -2646,7 +2646,8 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
             if(beta_se_na){
                 if( (!beta_na) &&  (xtx_i > 0) &&  (ni_test > 2) ){
                     beta_se_i = (pheno_var * (ni_test - 1) / xtx_i - beta_i * beta_i) / (ni_test - 2);
-                    beta_se_na = false;
+                    if (beta_se_i < 0) {beta_se_i = -9;}
+                    else{ beta_se_na = false; }
                 }else{
                     beta_se_i = -9;
                 }

@@ -56,9 +56,10 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 
     cout << "\nStart calculating summary statistics ... \n";
 
+    double yty;
     // Center y is centered by cPar.CopyPheno()
-    gsl_blas_ddot(y, y, &pheno_var); 
-    pheno_var /= ((double)(ni_test-1)) ;
+    gsl_blas_ddot(y, y, &yty); 
+    pheno_var = yty / ((double)(ni_test-1)) ;
     cout << "ni_test = " << ni_test << endl;
     cout << "ns_test = " << ns_test << endl;
     cout << "pheno_var = " << pheno_var << "\n";
@@ -108,7 +109,8 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
         U_STAT.push_back(xty); // score statistic 
         v2 = pheno_var * xtx_i ;
         SQRT_V_STAT.push_back( sqrt(v2) ); // score statistic standard deviation
-        chisq_i = xty * xty / v2; // chisq test statistic
+        chisq_i = ((double)ni_test)*(log(yty)-log(yty-xty*xty/xtx_i)); // LRT statistic
+        // chisq_i = xty * xty / v2; // Score test statistic
         pval.push_back( gsl_cdf_chisq_Q (chisq_i, 1.0) ); // pvalue needed for BVSRM
         pos_ChisqTest.push_back( make_pair(i, chisq_i) ) ; // pos_ChisqTest needed for BVSRM
 
@@ -132,7 +134,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
                     getGTgslVec(X, xvec_j, snp_pos[j].pos, ni_test, ns_test, SNPmean, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable);
                     gsl_blas_ddot(xvec_i, xvec_j, &xtx_ij);
                     r2 = Conv_xtx2_r2(xtx_ij, xtx_vec, i, j); 
-                    LD[i].push_back( r2 ); // R2 between x_i and x_j
+                    LD[i].push_back( r2 ); // Correlation between x_i and x_j
                 }
                 else{break;}
             }
@@ -149,7 +151,7 @@ void CALCSS::GetSS(uchar **X, gsl_vector *y, vector< vector<double> > &LD, vecto
 double Conv_xtx2_r2(const double &xtx_ij, const vector<double> &xtx_vec, const size_t &i, const size_t &j){
     // get correlation as r2
     double r2 = 0.0;
-    if(xtx_ij > 0.0){
+    if(xtx_ij != 0.0){
         if( (xtx_vec[i] > 0.0) && (xtx_vec[j] > 0.0) ){
             r2 = xtx_ij / sqrt( xtx_vec[i] * xtx_vec[j] );
         }

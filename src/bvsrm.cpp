@@ -2970,11 +2970,11 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
             }
         
         for (size_t i=0; i<n_mh; ++i) {
-            //cout << "\n \n propose gamam...\n";
-            //cout << "old rank: "; PrintVector(rank_old);
-            //cout <<"XtX_old: "; PrintMatrix(XtX_old, rank_old.size(), rank_old.size());
-            //cout <<"Xty_old: "; PrintVector(Xty_old, rank_old.size());
-            //cout <<"beta_old: "; PrintVector(beta_old, rank_old.size());
+            cout << "\n \n propose gamam...\n";
+            cout << "old rank: "; PrintVector(rank_old);
+            cout <<"XtX_old: "; PrintMatrix(XtX_old, rank_old.size(), rank_old.size());
+            cout <<"Xty_old: "; PrintVector(Xty_old, rank_old.size());
+            cout <<"beta_old: "; PrintVector(beta_old, rank_old.size());
 
             //repeat = 1;
             cHyp_new = cHyp_old;
@@ -2983,13 +2983,13 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
             logMHratio = ProposeGamma_SS (rank_old, rank_new, cHyp_old, cHyp_new, repeat, LD, Xty, XtX_old, Xty_old, XtX_new, Xty_new); //JY
             time_Proposal += (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
 
-            //cout << "propose new rank: "; PrintVector(rank_new);
-            //cout <<"XtX_new: "; PrintMatrix(XtX_new, rank_new.size(), rank_new.size());
-            //cout <<"Xty_new: "; PrintVector(Xty_new, rank_new.size());
+            cout << "propose new rank: "; PrintVector(rank_new);
+            cout <<"XtX_new: "; PrintMatrix(XtX_new, rank_new.size(), rank_new.size());
+            cout <<"Xty_new: "; PrintVector(Xty_new, rank_new.size());
 
-            //cout << "flag_gamma = " << flag_gamma << endl;
-            //cout << "propose gamma success... with rank_new.size = " << rank_new.size() << endl;
-            //cout << "propose gamma logMHratio = "<<logMHratio << "; MHratio = " << exp(logMHratio) << endl;
+            cout << "flag_gamma = " << flag_gamma << endl;
+            cout << "propose gamma success... with rank_new.size = " << rank_new.size() << endl;
+            cout << "propose gamma logMHratio = "<<logMHratio << "; MHratio = " << exp(logMHratio) << endl;
             
             accept = 0;
             time_start = clock_t(); //record time on calculating posterior
@@ -3002,30 +3002,30 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
                 if (rank_new.size() > 0) {
                     set_mgamma(cHyp_new, rank_new, snp_pos);
                     getSubVec(sigma_subvec_new, rank_new, snp_pos);
-                    //cout << "sigma_subvec_new: "; PrintVector(sigma_subvec_new, rank_new.size());
+                    cout << "sigma_subvec_new: "; PrintVector(sigma_subvec_new, rank_new.size());
                     loglikegamma = CalcLikegamma(cHyp_new);
-                    //cout << "loglikegamma = " << loglikegamma << " in the non-Null model \n";
+                    cout << "loglikegamma = " << loglikegamma << " in the non-Null model \n";
                     logPost_new = CalcPosterior_SS (XtX_new, Xty_new, beta_new, cHyp_new, sigma_subvec_new, Error_Flag, loglike_new) + loglikegamma;
                     loglike_new += loglikegamma;
-                    //cout << "Logpos of the newly proposed non-Null model is " << logPost_new << endl;
+                    cout << "Logpos of the newly proposed non-Null model is " << logPost_new << endl;
                 }
                 else{
                     cHyp_new.m_gamma.assign(n_type, 0);
                     loglikegamma = CalcLikegamma(cHyp_new);
-                    //cout << "loglikegamma = " << loglikegamma << " in the Null model \n"; 
+                    cout << "loglikegamma = " << loglikegamma << " in the Null model \n"; 
                     logPost_new = loglikegamma;
                     loglike_new = loglikegamma;
                     cHyp_new.pve=0.0;
-                    //cout << "Logpos of the null model is " << logPost_new << endl;
+                    cout << "Logpos of the null model is " << logPost_new << endl;
                 }
-               //cout << "cHyp_old.m_gamma = "; PrintVector(cHyp_old.m_gamma);
-               //cout << "cHyp_new.m_gamma = "; PrintVector(cHyp_new.m_gamma);
-               //cout <<"beta_new: "; PrintVector(beta_new, rank_new.size());
+               cout << "cHyp_old.m_gamma = "; PrintVector(cHyp_old.m_gamma);
+               cout << "cHyp_new.m_gamma = "; PrintVector(cHyp_new.m_gamma);
+               cout <<"beta_new: "; PrintVector(beta_new, rank_new.size());
 
-                 // cout << "Calcposterior success." << endl;
+                  cout << "Calcposterior success." << endl;
                 if (!Error_Flag) {
                     logMHratio += logPost_new-logPost_old;
-                    //cout <<"logPost_old = " << logPost_old<< "; logPost_new = "<< logPost_new<< "\n logMHratio = " << logMHratio<< "; MHratio = " << exp(logMHratio) << endl;
+                    cout <<"logPost_old = " << logPost_old<< "; logPost_new = "<< logPost_new<< "\n logMHratio = " << logMHratio<< "; MHratio = " << exp(logMHratio) << endl;
                     if (logMHratio>0 || log(gsl_rng_uniform(gsl_r))<logMHratio)
                         { accept=1;  n_accept++; }
                 }
@@ -3033,7 +3033,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
             else if (flag_gamma == 0) { nother++; }
             time_Omega += (clock()-time_start)/(double(CLOCKS_PER_SEC)*60.0);
             
-            //cout << "accept = " << accept << endl;
+            cout << "accept = " << accept << endl;
             
             if (accept==1) {
                     if(flag_gamma==1) nadd_accept++;
@@ -3054,7 +3054,7 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
                     cerr << "Error: rank_old size != rank_new size\n";
                     exit(-1);
                 }
-                //cout << "Accept proposal: "; PrintVector(rank_old);
+                cout << "Accept proposal: "; PrintVector(rank_old);
                 
                 if(rank_old.size()>0){
                     gsl_vector_view sigma_oldsub=gsl_vector_subvector(sigma_subvec_old, 0, rank_old.size());
