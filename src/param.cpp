@@ -759,20 +759,22 @@ void CreateSnpPosVec(vector<SNPPOS> &snp_pos, vector<SNPINFO> &snpInfo, const ve
 void PARAM::UpdateScore(){
 	cout << "\nns_test from summary stat is " << ns_test << endl;
     double beta2_i, beta_se2_i, u_i, v_i, ni_effect_i, xtx_i;
-    double yty = pheno_var * (double)ni_test;
+    double yty = pheno_var * ((double)ni_test - 1.0);
     // cout << "yty in UpdateScore is " << yty << endl;
 
     ni_effect_vec.clear(); 
     if(scaleN){
     	cout << "Scale summary statistics with effective sample size!\n";
     	for(size_t i=0; i<ns_test; i++){
-			// Calculate effective samples size, scale xtx_i value, update score statistics
+			// Scale xtx_i value, update score statistics
 			beta2_i = mbeta[i] * mbeta[i];
 			beta_se2_i = mbeta_SE[i] * mbeta_SE[i];
-			ni_effect_i = yty / (xtx_vec[i] * beta_se2_i) - beta_se2_i / beta2_i + 1;
-			if(ni_effect_i <= 0) ni_effect_i = 1;
-			xtx_i = ni_effect_i * snp_var_vec[i];
-			u_i = xtx_i * mbeta[i];
+			ni_effect_i = ni_test;
+			xtx_i = yty / ((beta_se2_i * (double)(ni_test - 1) ) + beta2_i) ;
+			// ni_effect_i = (yty / (xtx_vec[i] * beta_se2_i)) - (beta2_i / beta_se2_i) + 1;
+			//if(ni_effect_i < 2) ni_effect_i = 2;
+			//xtx_i = (double)(ni_effect_i) * snp_var_vec[i];
+			u_i = xtx_i * mbeta[i] ;
 			v_i = sqrt(xtx_i * pheno_var);
 			ni_effect_vec.push_back(ni_effect_i);
 			U_STAT[i] = u_i;
@@ -882,7 +884,8 @@ void PARAM::Convert_LD(){
             }
         }
     }
-
+    // clear LD_ref to save memory
+    LD_ref.clear();
     return;
 } 
 

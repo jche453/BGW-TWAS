@@ -100,9 +100,7 @@ void getXty(const vector<double> &beta, const vector<double> &xtx, vector <doubl
 
 void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <double> &pval, vector<pair<size_t, double> > &pos_ChisqTest);
 
-double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx);
-
-double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx_vec, const vector<double> &snp_var_vec, const vector<double> &ni_effect_vec, const bool refLD);
+double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx_vec);
 
 double CalcResVar(const gsl_vector * Xty_cond, const gsl_vector * beta_cond, const double &yty); 
 

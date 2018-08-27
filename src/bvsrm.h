@@ -88,8 +88,8 @@ public:
     vector< pair<size_t, size_t> > SNPorder_vec; //<pos, rank>
     vector< pair<size_t, size_t> > SNPrank_vec; //<pos, order>
     double GV, rv, tau, logrv;
-    vector<double> mbeta, mbeta_SE, xtx_vec, snp_var_vec, ni_effect_vec;
-    bool refLD;
+    vector<double> mbeta, mbeta_SE, xtx_vec, snp_var_vec, ni_effect_vec, yty_vec;
+    bool refLD, scaleN;
     vector<double> SNPmean;
     
     
@@ -261,7 +261,7 @@ public:
 
     void SetSSgammaDel (const gsl_matrix *XtX_old, const gsl_vector *Xty_old, const vector<size_t> &rank_old, size_t col_id, gsl_matrix *XtX_new, gsl_vector *Xty_new);
 
-    double CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gsl_vector *beta, class HYPBSLMM &cHyp, gsl_vector *sigma_vec, bool &Error_Flag, double &loglike);
+    double CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gsl_vector *beta, class HYPBSLMM &cHyp, gsl_vector *sigma_vec, bool &Error_Flag, double &loglike, double &yty_max);
 
     double CalcLR_cond_SS(const double &rtr, const size_t pos_j, const vector< vector<double> > &LD, const vector<double> &Xty, const vector <size_t> &rank_cond, const gsl_vector *beta_cond, gsl_vector * Xtx_j);
 
@@ -282,6 +282,8 @@ public:
     void SetXtx(const vector< vector<double> > &LD, const vector<size_t> rank, const size_t &pos_j, gsl_vector *Xtx_temp); 
 
     void SetXtX(const vector< vector<double> > &LD, const vector<size_t> rank, gsl_matrix *XtX);
+
+    double Findmaxyty(const vector<size_t> &rank, const size_t s_size);
 
     
 };

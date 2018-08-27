@@ -37,31 +37,9 @@ paramdata_bfgwas[paramdata_bfgwas$pi > 0.1, ]
 paramdata_indv[paramdata_indv$pi > 0.1, ]
 paramdata_ss[paramdata_ss$pi > 0.1, ]
 
-# rs70621 ; rs61818956
-VCF_test = fread("/home/jyang/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/test.vcf", sep="\t", header=TRUE)
-geno = VCF_test[, 10:2513]
-geno[geno == "0|0"] = 0
-geno[geno == "1|1"] = 2
-geno[geno == "1|0" | geno == "0|1"] = 1
-geno = apply(geno, 1, as.numeric)
-rownames(geno) = colnames(VCF_test)[-(1:9)]
-colnames(geno) = c("rs61818956", "rs70621")
-data.frame(VCF_test[, 1:5],  maf = apply(geno, 2, calcMAF))
-
-summary(lm(y ~ geno[names(y), ] ))
-
-geno_centered = scale(geno, center = TRUE, scale = FALSE)
-XtX = t(geno_centered) %*% geno_centered
-
-temp = cbind(geno, Geno[, maf_df$ID[1:3]])
-head(temp)
-cor(temp)
-summary(lm(y ~ temp[names(y), 1:3] ))
-
-
 ## True causal variants 
 VCF_Data = fread(paste(DataDir, "vcfs/causalSNP.vcf", sep = ""), sep="\t", header=TRUE)
-Geno = VCF_Data[, 10:2513]
+Geno = VCF_Data[, 10:2513] # genotype of true causal SNPs
 Geno[Geno == "0|0"] = 0
 Geno[Geno == "1|1"] = 2
 Geno[Geno == "1|0" | Geno == "0|1"] = 1
@@ -73,7 +51,12 @@ maf_df = data.frame(VCF_Data[, 1:5],  maf = apply(Geno, 2, calcMAF))
 maf_df = maf_df[maf_df$maf > 0.005, ]
 maf_df[1:3, ]
 
-## Pheno
+# Variants that were excluded from the analysis will show NA values
+paramdata_bfgwas[maf_df$ID[1:3], ]
+paramdata_indv[maf_df$ID[1:3], ]
+paramdata_ss[maf_df$ID[1:3], ]
+
+## Load Phenotype
 pheno = read.table("/home/jyang/GIT/bfGWAS/1KG_example/ExData/phenoAMD_1KG.txt", header = FALSE)
 y = pheno$V2
 names(y) = pheno$V1
@@ -89,16 +72,7 @@ sqrt( var(y1 )  * sum(x1 * x1))
 
 summary(lm(y[names(x)] ~ x))
 
-paramdata_bfgwas[maf_df$ID[1:3], ]
-paramdata_indv[maf_df$ID[1:3], ]
-paramdata_ss[maf_df$ID[1], ]
-
-# variants that were excluded from the analysis will show NA values
-print(Causal_SNP_Result[, c(1:3, 6:10, 13), with = FALSE])
-
-
-
-
+################################################
 ######## Load and analyze GWAS results by bfGWAS
 paramdata = LoadEMdata(filename="./Eoutput/paramtemp5.txt")
 head(paramdata)

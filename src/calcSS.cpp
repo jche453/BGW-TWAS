@@ -280,69 +280,25 @@ void getPval(const vector<double> &beta, const vector<double> &beta_sd, vector <
     return;
 }
 
-// For LD of the same samples
-double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx){
-
+// LD has been set up for analyzed variants
+// xtx_vec has been setup based on snp variance and effective sample size
+double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx_vec)
+{
     double xtx_ij = 0.0;
 
     if(pos_i == pos_j){
-        xtx_ij = xtx[pos_i];
+        xtx_ij = xtx_vec[pos_i];
     }
     else 
     {
         if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
             {
-                xtx_ij = LD[pos_i][pos_j - pos_i] * sqrt(xtx[pos_i] * xtx[pos_j]);   
+                xtx_ij = LD[pos_i][pos_j - pos_i] * sqrt(xtx_vec[pos_i] * xtx_vec[pos_j]);   
             }     
         else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
             {
-                xtx_ij = LD[pos_j][pos_i - pos_j] * sqrt(xtx[pos_i] * xtx[pos_j]);
+                xtx_ij = LD[pos_j][pos_i - pos_j] * sqrt(xtx_vec[pos_i] * xtx_vec[pos_j]);
             }
-
-    }
-
-    return xtx_ij;
-}
-
-// For reference LD
-double getXtX(const vector< vector<double> > &LD, const size_t &pos_i, const size_t &pos_j, const vector<double> &xtx_vec, const vector<double> &snp_var_vec, const vector<double> &ni_effect_vec, const bool refLD)
-{
-    double xtx_ij = 0.0;
-    double ni_min;
-
-    if(refLD){
-        if(pos_i == pos_j){
-            xtx_ij = snp_var_vec[pos_i] * ni_effect_vec[pos_i];
-        }
-        else 
-        {
-            ni_min = min(ni_effect_vec[pos_i], ni_effect_vec[pos_j]);
-
-            if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
-                {
-                    xtx_ij = LD[pos_i][pos_j - pos_i] * sqrt(snp_var_vec[pos_i] * snp_var_vec[pos_j]) * ni_min;   
-                }     
-            else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
-                {
-                    xtx_ij = LD[pos_j][pos_i - pos_j] * sqrt(snp_var_vec[pos_i] * snp_var_vec[pos_j]) * ni_min;
-                }
-        }
-    }
-    else{
-        if(pos_i == pos_j){
-            xtx_ij = xtx_vec[pos_i];
-        }
-        else 
-        {
-            if( (pos_j - pos_i) > 0 && (pos_j - pos_i) < LD[pos_i].size()  ) 
-                {
-                    xtx_ij = LD[pos_i][pos_j - pos_i] * sqrt(xtx_vec[pos_i] * xtx_vec[pos_j]);   
-                }     
-            else if( (pos_i - pos_j) > 0 && (pos_i - pos_j) < LD[pos_j].size() ) 
-                {
-                    xtx_ij = LD[pos_j][pos_i - pos_j] * sqrt(xtx_vec[pos_i] * xtx_vec[pos_j]);
-                }
-        }
     }
 
     return xtx_ij;
