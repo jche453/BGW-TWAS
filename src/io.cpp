@@ -842,11 +842,6 @@ bool ReadFile_vcf (const string &file_vcf, const set<string> &setSnps, vector<bo
 
 	//cout << "Total sample number " << c_idv << "; analyzed sample number " << ctest_idv << "\n";
 
-        if (ctest_idv != ni_test) {
-            cerr << "matched sample size in the genotype file " << ctest_idv << " dose not equal to analyzed sample size " << ni_test << "\n";
-            exit(-1);
-        }
-
         if(ni_test > n_miss){
             maf/=2.0*(double)(ni_test-n_miss);
         }else{
