@@ -1,4 +1,4 @@
-/*
+                                                                                                                                                                                                                                                                     /*
     Bayesian Functional GWAS --- MCMC (BFGWAS:MCMC)
     Copyright (C) 2018  Jingjing Yang
 
@@ -38,6 +38,7 @@ void BVSRM::CopyFromParam (PARAM &cPar)
     vscale = cPar.vscale;
     FIXHYP = cPar.FIXHYP;
     saveSS = cPar.saveSS;
+    final_EM = cPar.final_EM;
     LDwindow = cPar.LDwindow;
 
     iniType = cPar.iniType;
@@ -94,6 +95,10 @@ void BVSRM::CopyFromParam (PARAM &cPar)
 	n_mh=cPar.n_mh;
 	randseed=cPar.randseed;
 	trace_G=cPar.trace_G;
+
+    //VB related 
+    max_iter=cPar.max_iter;
+    convergence=cPar.convergence;
 	
 	ni_total=cPar.ni_total;
 	ns_total=cPar.ns_total;
@@ -853,7 +858,7 @@ void BVSRM::setHyp(double theta_temp, double subvar_temp){
         log_qtheta.push_back(log(1.0 - theta[i]));
     }
     
-    cout << "Initial causal probability per category = "; PrintVector(theta);
+    cout << "Initial causal probability per category = "; PrintVector(theta); 
     cout << "Initial effect-size variance per category = "; PrintVector(subvar);
     //cout << "log_qtheta: "; PrintVector(log_qtheta); 
 
@@ -876,7 +881,7 @@ void BVSRM::InitialMCMC (uchar **X, const gsl_vector *Uty, vector<size_t> &rank,
     if (cHyp.n_gamma>s_max) {cHyp.n_gamma=s_max;}
     if (cHyp.n_gamma<s_min) {cHyp.n_gamma=s_min;}
     
-    
+    // is the SNPfile available for -geno sumstat? 
     if (!iniSNPfile.empty() && iniType == 0) {
         
         ifstream infile(iniSNPfile.c_str(), ifstream::in);
@@ -1178,7 +1183,7 @@ double BVSRM::CalcLikegamma(const class HYPBSLMM &cHyp)
     return loglikegamma;
 }
 
-// for the new model
+// for the new model -- Summary Statistics
 double BVSRM::CalcPosterior (const gsl_matrix *Xgamma, const gsl_matrix *XtX, const gsl_vector *Xty, const double yty, gsl_vector *Xb, gsl_vector *beta, class HYPBSLMM &cHyp, gsl_vector *sigma_vec, bool &Error_Flag, double &loglike)
 {
     //conditioning on hyper parameters: subvar, log_theta
@@ -1701,7 +1706,6 @@ void BVSRM::WriteHyptemp_SS(gsl_vector *LnPost, vector<double> &em_gamma){
 
 
 
-
 //Current MCMC function
 void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
     
@@ -1769,7 +1773,7 @@ void BVSRM::MCMC (uchar **X, const gsl_vector *y, bool original_method) {
     vector<double> Z_scores;
 
     cout << "Calculating Z_scores, standard errors of effect-sizes, LRT statistics, pvals ... \n";
-    MatrixCalcLmLR (X, z, pos_loglr, ns_test, ni_test, SNPmean, Gvec, xtx_vec, Z_scores, mbeta, mbeta_SE, pval_lrt, snp_pos, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable); //calculate trace_G or Gvec, Z_scores, beta_SE
+    MatrixCalcLmLR(X, z, pos_loglr, ns_test, ni_test, SNPmean, Gvec, xtx_vec, Z_scores, mbeta, mbeta_SE, pval_lrt, snp_pos, CompBuffSizeVec, UnCompBufferSize, Compress_Flag, UcharTable); //calculate trace_G or Gvec, Z_scores, beta_SE
  //calculate trace_G or Gvec
     trace_G = VectorSum(Gvec) / double(ns_test);
     cout << "Trace of Genotype Matrix = " << trace_G << endl;
@@ -2537,7 +2541,7 @@ void BVSRM::SetSSgamma(const vector< vector<double> > &LD, const vector<double> 
             for(size_t j=(i+1); j < (r_size); ++j ){
                 pos_j = mapRank2pos[rank[j]];
                 //cout << pos_j << "," ;
-                xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
+                xtx_ij =  getXtX(LD, pos_i, pos_j, xtx_vec);
                 gsl_matrix_set(XtX_gamma, i, j, xtx_ij);
                 gsl_matrix_set(XtX_gamma, j, i, xtx_ij);
             }
@@ -2781,6 +2785,13 @@ gsl_ran_discrete_t * BVSRM::MakeProposalSS(const size_t &pos, double *p_cond, co
     
     return (gsl_ran_discrete_preproc(ns_neib, p_cond));
 }
+
+
+// JML: 2019:
+// somewhere in here, add Variational Bayes_SS function instead of MCMC function
+// consider other functions within that are needed
+// look for ways to draw in the sum stats, as below, from calcSS.cpp
+
 
 
 // MCMC_SS function
@@ -3156,6 +3167,30 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
     WriteHyptemp(LnPost, em_gamma);
     //cout << "write paramtemp ... \n";
     WriteParam_SS(beta_g, snp_pos, pos_ChisqTest, pval_vec);
+
+
+    // if EM step = final EM step, then: 
+    // predict_Genotype= read.newGenotype: create this function 
+
+    PredictExpr(beta_g, snp_pos, predict_Genotype);
+    
+    
+    
+    // JML note JL Note 11/13/18
+    //this is writing the estimated parameters into a text file
+    // look at this function to see beta hat estimate and PIP_i estimate
+    // get all estimates that are non-zero, read in individual level genotype data
+    // then calculate X*hat(beta)*PIP.
+    
+    // to do this - need a different tag in the bfgwas.cpp
+    // cpar.aMode
+    
+    // above cpar.a_mode == 11
+    // Calculate predicted phenotype value here
+    // read in like you have individual level data
+    // look at read genotype, X_genotype
+    // SS.GetSS is extracting the summary stats from individual level and saving
+    
     //cout << "write snps_mcmc ... \n";
     //cout << "snps_mcmc length: " << snps_mcmc.size() << endl;
     WriteMCMC(snps_mcmc); // save all active SNPs from MCMC
@@ -3180,6 +3215,1810 @@ void BVSRM::MCMC_SS (const vector< vector<double> > &LD, const vector<double> &X
 // end of MCMC_SS version
 
 
+/// SS Variational Bayes
+// be sure to add max_iter and convergence to param.cpp:: JML
+
+
+void BVSRM::VB_SS_final (uchar **X, const vector<double> &Xty, const vector< vector<double> > &LD, size_t &max_iter, double &convergence) {
+    
+    //enable the list of data with IDs, extra file with IDs that are training, reserve part of the sample as validation/test sample    
+
+
+    // ensure fsample flag works for selecting a subset of the data. 
+
+    //declare types, make sure that is consistent 
+
+    cout << "\nRunning FINAL VB STEP with sumstat and genotype... \n";
+
+    cout << "genotype matrix: " << X;
+    //cout << "getGT variables: " << ni_test << "; " << SNPmean <<  endl;
+        
+
+       // same as MCMC, obtain yty from pheno_var, set rv = pheno_var
+    cout << "pheno_var = " << pheno_var << endl;
+    rv = pheno_var;
+    yty = pheno_var * (double)(ni_test) ;
+    cout << "yty is " << yty << endl;
+    if(yty == 0) {
+        cerr << "ERROR: phenotype variance is 0!" << endl;
+        exit(-1);
+    }
+
+	// what do we need?
+	// collect Xty, XtX, pheno_var,
+	// initialize hyperparams/set hyperparams to current values
+	// initial values for m_i for all i
+	// initial values for s_k 
+	// from hyperparam, get pi, sigma2_q 
+
+	// initialize values 
+    size_t iter_step;
+    iter_step = 0;
+    
+    class HYPBSLMM cHyp_old, cHyp_new;
+    bool Error_Flag=0;
+
+    vector<size_t> rank; //save beta estimates
+    for (size_t i=0; i<s_max; i++) {
+        rank.push_back( 0.0);
+   }
+    
+    cout << "final VB check 1" << endl;
+    // UcharTable, vector<SNPPOS> snp_pos were, pos_ChisqTest created in CALCSS SS
+    //cout << "Sort pos_ChisqTest, pval_vec by association evidence ... \n ";
+    stable_sort (pos_ChisqTest.begin(), pos_ChisqTest.end(), comp_lr); // sort ChisqStat
+
+    //cout << "Sort pval_vec by association evidence ... \n ";
+    stable_sort (pval_vec.begin(), pval_vec.end()); // sort pval
+    // PrintVector(pval_vec, 10);
+    
+    //cout << "Generate maps ... \n";
+    size_t pos; // rank based on chisq test statistic is more stable than based on pvalue
+    for (size_t i=0; i<ns_test; ++i) {
+        mapRank2pos[i]=pos_ChisqTest[i].first;
+        mapPos2Rank[pos_ChisqTest[i].first] = i;
+
+        mapRank2Order[i]=pos_ChisqTest[i].first;
+        mapOrder2Rank[pos_ChisqTest[i].first] = i;
+    }
+    
+    cout << "final VB check 2" << endl;
+    //Calculate proposal distribution for gamma (unnormalized), and set up gsl_r and gsl_t
+    //cout << "Calculate proposal distribution for gamma \n";
+    gsl_rng_env_setup();
+    const gsl_rng_type * gslType;
+    gslType = gsl_rng_default;
+    if (randseed<0)
+    {
+        time_t rawtime;
+        time (&rawtime);
+        tm * ptm = gmtime (&rawtime);
+        
+        randseed = (unsigned) (ptm->tm_hour%24*3600+ptm->tm_min*60+ptm->tm_sec);
+    }
+    gsl_r = gsl_rng_alloc(gslType);
+    gsl_rng_set(gsl_r, randseed);
+    p_gamma = new double[ns_test]; // defined in bvsrm.h
+
+    cout << "final VB check 3" << endl;
+    size_t p_gamma_top=0;
+    for(size_t i=0; i < pval_vec.size(); i++){
+        if (pval_vec[i] < 5e-8) { p_gamma_top++; }
+        else{ break; }
+    }
+    cout << "Number of variants with p-value < 5e-8 : " << p_gamma_top << endl;
+
+    
+    cout << "\nStart initializing VB... \n";
+    //cout << "\n rank = " << endl; PrintVector(rank);
+
+    //cout << "\n initial hyperParam = " ; PrintVector(theta); PrintVector(subvar);
+
+
+    InitialVB_SS (LD, Xty, rank, cHyp_old, pval_vec); // sets subvar and theta 
+
+
+    cout << "\n size of vectors and loop = " << ns_test << endl;
+
+    cout << "\n after initial VB hyperParam = " ; PrintVector(theta); PrintVector(subvar);
+
+
+    gsl_vector *m_curr = gsl_vector_alloc(ns_test);
+        cout << "\ncheck 0... \n";
+    gsl_vector_set_zero(m_curr);
+
+    cout << "\ncheck 1... \n";
+
+    gsl_vector *s2_curr = gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(s2_curr);
+
+    gsl_vector *sqrt_s2= gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(sqrt_s2);
+
+    gsl_vector *log_s2= gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(log_s2);
+
+    gsl_vector *inv_s2= gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(inv_s2);
+
+    gsl_vector *phi_curr = gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(phi_curr);
+
+    //gsl_vector *R_curr = gsl_vector_alloc(ns_test);
+   // gsl_vector_set_zero(R_curr);
+
+    gsl_vector *Ew_curr = gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(Ew_curr);
+
+
+    //convert standardized LM effects to GSL vector for easy multiplication
+    //gsl_vector *mbeta_2= gsl_vector_alloc(ns_test);
+    //gsl_vector_set_zero(mbeta_2);
+    // get pi_a
+    // get sigma_a2
+    
+   cout << "\ncheck 2... \n";
+   
+
+    vector<double> inv_subvar(n_type, 0.0); 
+    for(size_t i=0; i < n_type; i++){
+        inv_subvar[i] = (1.0 / subvar[i]); 
+    }
+
+    double tau = 1.0/rv; 
+
+    vector<double> hyptemp_odds(n_type, 0.0);
+    for(size_t i=0; i < n_type; i++){
+        hyptemp_odds[i] = theta[i]/(1-theta[i]); 
+    }
+
+    vector<double> sqrt_SDs(n_type, 0.0);
+    for(size_t i=0; i < n_type; i++){
+        sqrt_SDs[i] = sqrt(inv_subvar[i]*tau);
+    }
+
+    vector<double> log_rv_sub(n_type, 0.0);
+    for(size_t i=0; i < n_type; i++){
+        log_rv_sub[i] = log(rv*subvar[i]);
+    }
+
+    cout << "\n transformed meta params: \n"; 
+    PrintVector(inv_subvar);
+    PrintVector(hyptemp_odds);
+    PrintVector(sqrt_SDs);
+    PrintVector(log_rv_sub);
+
+    //question 1: how exactly can we pull the hypcurrent values from cHyp?
+    // Answer: names are subvar and theta 
+    // calc m[i]
+    // calc s2[i]
+
+    // how can we best do this for cis and trans?
+    // need to determine the annotation for each SNP
+    // need to call the correct theta and subvar based on a SNPs annotation 
+    // 
+    //
+
+
+        // initialize variables 
+        // save transformations of s2 to speed up iterations
+    /*
+    if(rank_loglr[0].second > sig_lr )
+            {
+                radd = rank_loglr[0].first;
+                pos_r = mapRank2pos[radd];
+                xtx = xtx_vec[pos_r];
+                SetXtx(LD, rank, pos_r, &Xtx_cond_temp.vector);
+                */
+
+
+        cout << "xtx_vec size = " << xtx_vec.size() << endl;
+
+        gsl_matrix *XtX=gsl_matrix_alloc(ns_test, ns_test);
+        gsl_matrix_set_zero(XtX);
+       // cout << "mbeta from LM = " ; PrintVector(mbeta);
+        SetXtX_VB(LD, ns_test, XtX);
+        //gsl_vector_view XtX_diag = gsl_matrix_diagonal(XtX);
+
+
+
+        // ok, can we get a param that indicates if this is the initial estimation step? 
+        // set the values to mbeta and pi,
+        // in future steps start from current estimates? 
+        // or might that be a problem too? 
+        //for(size_t i=0; i<ns_test; i++){
+            //gsl_vector_set(mbeta_2, i, mbeta[i]);
+        //}
+        
+        //double mean_theta=0.0;
+        //mean_theta = ((theta[0] + theta[1])/2);
+       // gsl_vector_set_all(phi_curr, mean_theta);
+
+        //cout << gsl_vector_get(mbeta_2, 10);
+
+        cout << "\ncheck 2\n";
+   	    for (size_t i=0; i < ns_test; i++) {
+
+           // gsl_vector *xij_vec = gsl_vector_alloc(ns_test);
+           // gsl_vector_set_zero(xij_vec);
+            //gsl_matrix_get_col(xij_vec, XtX, i);
+
+            //double xtx_ij = 0.0;
+            //size_t pos_i;
+
+            double xtx_i=0.0;
+            xtx_i = xtx_vec[i];
+           // double sum_temp = 0.0;
+           // double w_temp = 0.0;
+            //w_temp =  gsl_vector_get(Ew_curr, i);
+            //double phi_init = 0.0;
+            //phi_init = gsl_vector_get(phi_curr, i);
+            // JML: 3-28 - we haven't calculated phi yet - how do we initialize the sum?
+            // further, we need to initialize m and phi based on the final iteration of the previous VB steps...right?
+            // or do we only go back and forth to update the hyper params?
+            //double prod_temp=0.0;
+
+            //for(size_t j=0; j<ns_test ; j++){
+            //    if(j == i){continue;} else{
+            //   xtx_ij = getXtX(LD, i, j, xtx_vec);
+                //phi_init = gsl_vector_get(phi_curr, j);
+
+             //   sum_temp += xtx_ij*mbeta[j]*mean_theta;
+             //   }
+            //}
+
+            //gsl_vector_memcpy(Ew_curr, mbeta_2);
+
+            //gsl_vector_mul(Ew_curr, phi_curr); // this is zero for all elements in the initial step. 
+
+
+
+            //cout << "E[W]: " ; PrintVector(Ew_curr);
+            //cout << "X'X_i vector: " ; PrintVector(xij_vec);
+            //gsl_blas_ddot(xij_vec, Ew_curr, &prod_temp);
+            //cout << "w_temp: " << w_temp << endl; 
+            //cout << "temp product: " << prod_temp << endl;
+
+            //sum_temp = prod_temp - xtx_i*w_temp;
+
+            if (snp_pos[i].indicator_func[0] == 1) { //CIS
+
+            
+           // cout << "XtX_ii = " << xtx_i << "; xtx_vec[i] = " << xtx_vec[i] << endl;
+
+
+            //cout << "x'x_i = " << xtx_i << endl;
+
+            //m_curr[i] = Xty[i] / (XtX_diag[i] + inv_subvar[0]);
+   	    	//_curr[i] = gsl_vector_get(Xty, i) / (gsl_matrix_get(XtX, i, i) + inv_subvar[0]); //TO DO: need to find exactly how to call the appropriate annotation subvar
+   	        gsl_vector_set(s2_curr, i, rv / (xtx_i + inv_subvar[0]));
+
+            double s2_i=0.0;
+            s2_i = gsl_vector_get(s2_curr, i);
+
+            gsl_vector_set(m_curr, i, s2_i*tau*(Xty[i]));
+            gsl_vector_set(sqrt_s2, i, sqrt(s2_i));
+            gsl_vector_set(log_s2, i, log(s2_i));
+            gsl_vector_set(inv_s2, i, 1/(s2_i));
+
+
+            //double sqrt_s2_i=0.0; 
+            //sqrt_s2_i = gsl_vector_get(sqrt_s2, i);
+            //double m_i=0.0;
+            //m_i = gsl_vector_get(m_curr, i);
+
+           // if(isnan(m_i)) {
+            //cout << "beta, xtx_ij,mean_theta initial " << mbeta[i] << " ;" << xtx_ij << " ;" << mean_theta << endl;
+            //exit(-1);
+             //   }
+
+            double R_temp=0.0;
+            //R_temp = hyptemp_odds[0] * sqrt_s2_i*sqrt_SDs[0]; //* exp(pow(m_i, 2)/(2*s2_i)); force phi= zero
+            if( R_temp == INFINITY){
+                gsl_vector_set(phi_curr, i, 0.99); 
+            } else if ( R_temp < 1e-6){
+                gsl_vector_set(phi_curr, i, 0);
+            } else {
+            gsl_vector_set(phi_curr, i, R_temp/(1+R_temp)); 
+                }
+            } else { 
+           // cout << "XtX_ii = " << xtx_i << "; xtx_vec[i] = " << xtx_vec[i] << endl;
+            //gsl_vector_set(m_curr, i, (Xty[i]-sum_temp)/(xtx_i+inv_subvar[1]));
+
+            //m_curr[i] = Xty[i] / (XtX_diag[i] + inv_subvar[0]);
+            //_curr[i] = gsl_vector_get(Xty, i) / (gsl_matrix_get(XtX, i, i) + inv_subvar[0]); //TO DO: need to find exactly how to call the appropriate annotation subvar
+            gsl_vector_set(s2_curr, i, rv / (xtx_i + inv_subvar[1]));
+            double s2_i=0.0;
+            s2_i = gsl_vector_get(s2_curr, i);
+            gsl_vector_set(m_curr, i, s2_i*tau*(Xty[i]));
+            gsl_vector_set(sqrt_s2, i, sqrt(s2_i));
+            gsl_vector_set(log_s2, i, log(s2_i));
+            gsl_vector_set(inv_s2, i, 1/(s2_i));
+            //double m_i=0.0;
+            //m_i = gsl_vector_get(m_curr, i);
+            //double sqrt_s2_i=0.0; 
+            //sqrt_s2_i = gsl_vector_get(sqrt_s2, i);
+
+            double R_temp=0.0;
+           // R_temp = hyptemp_odds[1] * sqrt_s2_i*sqrt_SDs[1] ;//* exp(pow(m_i, 2)/(2*s2_i));
+            if( R_temp == INFINITY){
+                gsl_vector_set(phi_curr, i, 0.99); 
+            } else if ( R_temp < 1e-6){
+                gsl_vector_set(phi_curr, i, 0);
+            } else {
+            gsl_vector_set(phi_curr, i, R_temp/(1+R_temp)); 
+            }
+        } 
+        } 
+        cout << "\n after initial m, s, phi... \n";
+
+        //PrintVector(m_curr); 
+           // PrintVector(phi_curr);
+    // question 2: can we initialize m[i] by assuming Ew_j = 0? 
+        /*
+		for (size_t i=0; i < snp_pos.size(); i++) {
+   	    	 //TO DO: need to find exactly how to call the appropriate annotation subvar
+   	    }
+
+   	    for (size_t i=0; i < snp_pos.size(); i++) {
+   	    	R_init[i] <- (theta_vec[n_type]/(1-theta_vec[n_type])) * (gsl_vector_get(s2_init, i)/(subvar[n_type] * rv)) * exp(gsl_vector_get(m_init, i)/2*gsl_vector_get(s2_init, i)) ;
+   	    }
+
+   	    for (size_t i=0; i < snp_pos.size(); i++) {
+   	    	phi_init[i] <- gsl_vector_get(R_init, i)/(1 + gsl_vector_get(R_init, i));
+   	    }
+        */ 
+    //calc lower bound, iterate 
+
+
+   	    // need Ew_old, Ew_new, s2_old, s2_new, R_old, R_new, Phi_new 
+
+   	    // Calculate ELBO
+
+   	    // initialize m_new, R_new, phi_new vectors 
+   	    // initialize elbo_term vectors
+        /*
+        gsl_vector *m_new = gsl_vector_alloc(rank.size());
+        gsl_vector_set_zero(m_new);
+        gsl_vector *R_new = gsl_vector_alloc(rank.size());
+        gsl_vector_set_zero(R_new);
+        gsl_vector *phi_new = gsl_vector_alloc(rank.size());
+        gsl_vector_set_zero(phi_new);
+         */
+
+        vector<double> log_theta(n_type, 0.0);
+        for(size_t i=0; i < n_type; i++){
+        log_theta[i] = log(theta[i]);
+        }
+
+        vector<double> log_not_theta(n_type, 0.0);
+        for(size_t i=0; i < n_type; i++){
+        log_not_theta[i] = log(1-theta[i]);
+        }
+
+        vector<double> ELBO(max_iter, 0.0); // this may not be correct 
+        double m_temp ;
+        double phi_temp ;
+        double R_temp ;
+        double elbo_term1; 
+        double elbo_term2; 
+        double elbo_term3; 
+        //double elbo_term4; 
+        double elbo_term5; 
+        double sum_temp=0.0;
+        double delta = 100;
+        gsl_vector *Xty2 = gsl_vector_alloc(ns_test);
+
+    while ((iter_step<max_iter) && (delta > convergence)) {  // delta is ELBO convergence level
+        
+        
+
+        elbo_term1 = 0.0;
+        elbo_term2 = 0.0;
+        elbo_term3 = 0.0;
+        //elbo_term4 = 0.0;
+        elbo_term5 = 0.0;
+
+        //PrintVector(phi_curr);
+
+        for (size_t i=0; i < ns_test; i++) {
+
+            sum_temp = 0.0;
+            m_temp = 0.0;
+            phi_temp=0.0;
+            R_temp = 0.0;
+
+            gsl_vector *xij_vec = gsl_vector_alloc(ns_test);
+            gsl_vector_set_zero(xij_vec);
+            gsl_matrix_get_col(xij_vec, XtX, i);
+            gsl_vector_memcpy(Ew_curr, m_curr);
+
+            gsl_vector_mul(Ew_curr, phi_curr);
+
+            double prod_temp = 0.0;
+            gsl_blas_ddot(xij_vec, Ew_curr, &prod_temp);
+            //cout << "w_temp: " << w_temp << endl; 
+            //cout << "temp product: " << prod_temp << endl;
+
+            
+ 
+
+           // double xtx_ij = 0.0;
+            //size_t pos_i;
+
+            double xtx_i=0.0;
+            xtx_i = xtx_vec[i];
+            double w_temp = 0.0;
+            w_temp =  gsl_vector_get(Ew_curr, i);
+            //double phi_prev = 0.0;
+            //phi_prev = gsl_vector_get(phi_curr, i);
+            // JML: 3-28 - we haven't calculated phi yet - how do we initialize the sum?
+            // further, we need to initialize m and phi based on the final iteration of the previous VB steps...right?
+            // or do we only go back and forth to update the hyper params?
+            //double prod_temp=0.0;
+            sum_temp = prod_temp - xtx_i*w_temp;
+
+            if(isnan(sum_temp)) {
+            cout << "error! something is missing! w, xtx: " << w_temp << " ;" << xtx_i << "; " << prod_temp <<  endl;
+            PrintVector(m_curr);
+            PrintVector(phi_curr);
+            exit(-1);
+        }
+
+           // for(size_t j=0; j<ns_test; j++){
+             //   if(j == i){ continue;} else{
+              //  xtx_ij = getXtX(LD, i, j, xtx_vec);
+               // w_temp = gsl_vector_get(m_curr, j);
+                //phi_prev = gsl_vector_get(phi_curr, j);
+                //sum_temp += xtx_ij*w_temp*phi_prev;
+           //     }
+           // }
+
+            //cout << "are the sums the same? : ""; " << sum_temp2 << endl;
+           // if(iter_step == 0){
+                //PrintVector(Ew_curr);
+           // }
+
+            //m_curr[i] = Xty[i] / (XtX_diag[i] + inv_subvar[0]);
+            //_curr[i] = gsl_vector_get(Xty, i) / (gsl_matrix_get(XtX, i, i) + inv_subvar[0]); //TO DO: need to find exactly how to call the appropriate annotation subvar
+            //gsl_vector_set(s2_curr, i, rv / (xtx_i + inv_subvar[0]));
+            double s2_i=0.0;
+            s2_i = gsl_vector_get(s2_curr, i);
+            double sqrt_s2_i=0.0; 
+            sqrt_s2_i = gsl_vector_get(sqrt_s2, i);
+            double log_s2_i=0.0; 
+            log_s2_i = gsl_vector_get(log_s2, i);
+            double inv_s2_i=0.0; 
+            inv_s2_i = gsl_vector_get(inv_s2, i);
+
+            // rather than sum over all j neq i, obtain dot product of ith vector and w, and subtract out x_i ' x_i * w_i
+           // double w_temp = 0.0;
+           // w_temp =  gsl_vector_get(Ew_curr, i);
+           // double prod_temp=0.0;
+
+            //cout << "E[W]: " ; PrintVector(Ew_curr);
+            //cout << "X'X_i vector: " ; PrintVector(xij_vec);
+           // gsl_blas_ddot(xij_vec, Ew_curr, &prod_temp);
+            //cout << "w_temp: " << w_temp << endl; 
+            //cout << "temp product: " << prod_temp << endl;
+
+            //sum_temp = prod_temp - xtx_i*w_temp;
+
+            //cout << "sum temp and xtx_i*w_temp: " << sum_temp << ", " <<  xtx_i << "*" << w_temp << endl;
+
+            //cout << "temp sum: " << sum_temp << endl; 
+            //cout << "X'y_i: " << Xty[i] << endl; 
+    
+            // if cis, use cis_subvar etc 
+            if (snp_pos[i].indicator_func[0]==1) { //CIS
+            m_temp = s2_i*tau*(Xty[i] - sum_temp);  // is it worth it to add inv_subvar to all elemenets of XtX, take inverse, and multiply? 
+            double m2_i = gsl_pow_2(m_temp);
+            R_temp = hyptemp_odds[0] * (sqrt_s2_i*sqrt_SDs[0]) *  exp(0.5*inv_s2_i*m2_i) ;
+            if( R_temp == INFINITY){
+                phi_temp = 0.99;
+            } else if ( R_temp < 1e-7){
+                gsl_vector_set(phi_curr, i, 0);
+            } else {
+            phi_temp = R_temp/(1 + R_temp);
+            }
+           // if (iter_step==1){
+           // cout << "m_curr " << m_temp << endl;
+
+            //cout << "hyp param  " << hyptemp_odds[1] << ", " << sqrt_SDs[1] << ", " << inv_s2_i << ", " << sqrt_s2_i << endl;
+
+            //cout << "R curr " << R_temp << endl;
+            //}
+            double phi2_i = gsl_pow_2(phi_temp);
+            elbo_term1 += xtx_i * (phi_temp * (s2_i + m2_i) - phi2_i*m2_i ); 
+            elbo_term3 += phi_temp * (log(phi_temp) - log_theta[0]) - (1-phi_temp)*(log((1-phi_temp) - log_not_theta[0])); 
+            elbo_term5 += 0.5*phi_temp*(1 + log_s2_i - log_rv_sub[0] - tau*inv_subvar[0]*(s2_i + m2_i)); 
+
+            }
+            else { //TRANS
+            m_temp = s2_i*tau*(Xty[i] - sum_temp) ;
+            double m2_i = gsl_pow_2(m_temp);
+            R_temp = hyptemp_odds[1] * (sqrt_s2_i*sqrt_SDs[1]) * exp(0.5*inv_s2_i*m2_i) ;
+            if( R_temp == INFINITY){
+                phi_temp = .99;
+            } else if ( R_temp < 1e-7){
+                gsl_vector_set(phi_curr, i, 0);
+            } else {
+            phi_temp = R_temp/(1 + R_temp);
+            }
+            //if (iter_step==1){
+           // cout << "m_curr " << m_temp << endl;
+
+           // cout << "hyp param  " << hyptemp_odds[1] << ", " << sqrt_SDs[1] << ", " << inv_s2_i << ", " << sqrt_s2_i << endl;
+
+            //cout << "R curr " << R_temp << endl;
+           // }
+            double phi2_i = gsl_pow_2(phi_temp);
+            elbo_term1 += xtx_i * (phi_temp * (s2_i + m2_i) - phi2_i*m2_i ); 
+            elbo_term3 += phi_temp * (log(phi_temp) - log_theta[1]) - (1-phi_temp)*(log((1-phi_temp) - log_not_theta[1])); 
+            //elbo_term4 += phi_temp * log_theta[1] + (1-phi_temp)*log_not_theta[1];
+            elbo_term5 += 0.5*phi_temp*(1 + log_s2_i - log_rv_sub[1] - tau*inv_subvar[1]*(s2_i + m2_i)); 
+
+            // missing another ELBO term! see Carb and Stevens 
+            }
+
+            // update ith element of m_curr and phi_curr for recalculating E[w] for next SNP. 
+            gsl_vector_set(m_curr, i, m_temp);
+            gsl_vector_set(phi_curr, i, phi_temp);
+            gsl_vector_set(Xty2, i, Xty[i]);
+            gsl_vector_free(xij_vec);
+        
+            } //end iter through all SNPs
+            //PrintVector(m_curr); 
+            //PrintVector(phi_curr);
+
+        gsl_vector *r = gsl_vector_alloc(ns_test);
+        gsl_vector_memcpy(r, m_curr);
+        gsl_vector_mul(r, phi_curr);
+        double yXr=0.0;
+        gsl_vector *xtxr = gsl_vector_alloc(ns_test);
+        gsl_vector_set_zero(xtxr);
+        double rXXr=0.0;
+
+        gsl_blas_ddot(Xty2, r,  &yXr );
+        gsl_blas_dgemv(CblasNoTrans, 1.0, XtX, r, 0.0, xtxr);
+        gsl_blas_ddot(r, xtxr, &rXXr);
+
+        
+        elbo_term2 = (yty - 2*yXr + rXXr);
+
+        //if (iter_step == 1 || iter_step == 3 ||  iter_step == 20) {
+       // cout<< "elbo term 2 elements: " << yty << ", " << yXr << ", " << rXXr << endl;
+       //   cout << "elbo1: " << elbo_term1 << "; " << "elbo2: " << elbo_term2 << "; " << "elbo3: " << elbo_term3 << "; " << "elbo5: " << elbo_term5 << endl;
+      //}
+        iter_step++;
+        
+        ELBO[iter_step]=(-0.5*tau*elbo_term1 - (0.5*tau * elbo_term2) - elbo_term3 + elbo_term5);
+
+        //cout << "current ELBO = " << ELBO[iter_step] << " ; previous ELBO = " << ELBO[iter_step-1] << endl; 
+        
+        ////////////////////////////////////
+        delta = abs((ELBO[iter_step]-ELBO[iter_step-1])/ELBO[iter_step]);
+        //cout << "delta = " << delta << endl;
+        
+        gsl_vector_free(r);
+        gsl_vector_free(xtxr);
+
+        /*
+        gsl_vector_memcpy(m_curr, m_new);
+        gsl_vector_memcpy(R_curr, R_new);
+        gsl_vector_memcpy(phi_curr, phi_new);
+        gsl_vector_set_zero(m_new);
+        gsl_vector_set_zero(R_new);
+        gsl_vector_set_zero(phi_new);
+        */
+        
+        //if ((int_step+1)%10==0) {cout<<int_step+1<<" "<<setprecision(5)<<delta<<" "<<ELBO(int_step)<<endl;}
+
+        //continue; 
+    } // end while loop
+
+    gsl_vector *Ew = gsl_vector_alloc(ns_test);
+    gsl_vector_memcpy(Ew, m_curr);
+    double wxy=0.0;
+    gsl_vector_mul(Ew, phi_curr);
+    gsl_blas_ddot (Xty2, Ew, &wxy);
+    double R2 = wxy / yty; //this is giving bad numbers! 
+
+    cout << "R2 = " << R2 << endl;
+
+    // sum of phi per annotation groups
+    vector<double> sum_mi2(n_type, 0.0);
+    vector<double> m_phi(n_type, 0.0);
+    for (size_t i=0; i < ns_test; i++){
+        double phi_i = 0.0;
+        double m_i = 0.0;
+        if (snp_pos[i].indicator_func[0]==1) {
+            phi_i = gsl_vector_get(phi_curr, i);
+            m_i = gsl_vector_get(m_curr, i);
+            m_phi[0] += phi_i;
+            sum_mi2[0] += phi_i*m_i * m_i;
+        } else {
+            phi_i = gsl_vector_get(phi_curr, i);
+            m_i = gsl_vector_get(m_curr, i);
+            m_phi[1] += phi_i;
+            sum_mi2[1] += phi_i*m_i * m_i;
+        }
+    }
+
+    cout << "total iterations: " << iter_step << endl;
+    cout << "sum Phi and sum m^2 per cat = " ; PrintVector(m_phi); PrintVector(sum_mi2);
+    cout << endl;
+
+        // change in R function! Done 3/18/19
+
+    // what is our output? 
+    // phi, that's PIP. 
+    // m_hat = E[w | gamma = 1]
+
+    //save m_curr, phi_curr, E[w], s2
+    // after final M-H step, save y_hat 
+
+    // make sure output can be fed into Mstep.R 
+
+    double elbo_min =  ELBO[iter_step];
+
+    // 4/23, adding step to calculate sum(phi_i * m_i * X_g) within each block for each subject. 
+    // if current EM iter is final iter, then:
+    // read in genotype data
+    // calculate phi * m * X matrix, get n x 1 vector 
+    // do this for training and test 
+    // save a text file that is one column ind ID and one column sum(phi_m_X). 
+    // then, y^ = sum (sum(phi_m_X)) over all blocks. 
+
+        cout << "final EM step, calculate test and training R2.\n";
+        size_t posr=0;
+        //double xtx;
+        
+        //rank.clear();
+        //rank.push_back(0);
+        //posr = SNPrank_vec[0].first;
+        //xtx = xtx_vec[posr];
+        // cout << "rank added: " << 0 << ", ";
+        
+        //gsl_matrix * XtXr = gsl_matrix_alloc(cHyp.n_gamma, cHyp.n_gamma);
+        //gsl_vector * Xtxvec = gsl_vector_alloc(cHyp.n_gamma);
+        gsl_vector * sum_PhiMX = gsl_vector_alloc(ni_test);
+        gsl_vector_set_zero(sum_PhiMX);
+        gsl_vector * xvec = gsl_vector_alloc(ni_test);
+        cout << "pre- R2 loop" << endl;
+        for (size_t i=0; i < ns_test; ++i){
+            posr = i;
+
+           // original function getGTgslVec(uchar ** X, gsl_vector *xvec, size_t marker_i, const size_t ni_test, const size_t ns_test)
+            gsl_vector_set_zero(xvec);
+            getGTgslVec(X, xvec, posr, ni_test, ns_test); //get geno column
+            //cout << "testing the R2 loop, did we get the vector of genotypes? " << endl;
+            //gsl_matrix_set_col(Xr, i, xvec);
+
+            double w_i = 0.0;
+            
+            w_i = gsl_vector_get(Ew, i);
+            gsl_vector_scale(xvec, w_i);
+            gsl_vector_add(sum_PhiMX, xvec);
+            }
+        
+        //PrintMatrix(XtXr, cHyp.n_gamma, cHyp.n_gamma);
+        
+        gsl_vector_free(xvec);
+        //gsl_vector_free(Xtxvec);
+
+
+        // outfile - save indicator_idv, sum_PhiMX
+    string file_sum;
+    file_sum="./output/"+file_out;
+    file_sum+=".sumPhiMX";
+    
+    ofstream outfile_sum;
+    outfile_sum.open (file_sum.c_str(), ofstream::out);
+    if (!outfile_sum) {cout<<"error writing file: "<<file_sum.c_str()<<endl; return;}
+    
+    //outfile"<<"chr"<<"\t" <<"bp"<<"\t" <<"markerID"<<"\t<<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta_bfgwas"<<"\t"<<"mbeta_SE" << "\t" << "ChisqTest" << "\t" << "pval_svt"  << "\t" << "rank" << endl;
+    
+    //JML 3/22 this is the error: the rank is 1, but the ns_test is too many. 
+    // maybe just do all SNPs in VB? 
+    // can reduce the initial_VB_SS function. 
+    for (size_t i=0; i<ni_test; ++i) { 
+        
+        // save the sums with subject ID to get a total y^
+        outfile_sum<<VcfSampleID_test[i]<<"\t"<<gsl_vector_get(sum_PhiMX, i) ;
+
+        //r = mapPos2Rank[i]; //leaving this just to keep consistency with previous result
+        //outfile << scientific << setprecision(3) << pos_ChisqTest[r].second << "\t"<< pval[r] << "\t" ;
+        //outfile << r << endl;
+        outfile_sum << endl;
+    }
+    outfile_sum.clear();    
+    outfile_sum.close();
+    
+
+    
+    //save E(file_out, lnpost, GV, rv, n[i], Gvec[i], m[i], sigma2[i])
+    string file_hyp;
+    file_hyp = "./output/" + file_out;
+    file_hyp += ".hyptemp";
+
+    ofstream outfile_hyp;
+
+    // write *.hyptemp
+    cout << "Open ... \n" << file_hyp;
+
+    outfile_hyp.open (file_hyp.c_str(), ofstream::out);
+    if (!outfile_hyp) {cout<<"error writing file: "<<file_hyp<<endl; return;}
+
+    cout << "Start writing hyptemp ... \n" << file_hyp;
+
+    outfile_hyp << file_out << "\t";
+    
+    cout << elbo_min << "\t" << R2 << "\t" << rv << "\t" ; 
+
+    outfile_hyp << scientific << setprecision(6) << elbo_min << "\t" << R2 << "\t" << rv ;
+
+    for(size_t i=0; i < n_type; i++){
+
+        cout << mFunc[i] << "\t" << "NA" << "\t" << m_phi[i] << "\t" << sum_mi2[i] << endl;
+
+        outfile_hyp << "\t" << mFunc[i] ;
+        outfile_hyp << scientific << setprecision(6) << "\t" << "NA" ;
+        outfile_hyp << "\t" << (m_phi[i]) ;
+        if(m_phi[i] > 0)
+            {outfile_hyp << "\t" << sum_mi2[i] ;}
+        else {outfile_hyp << "\t" << sum_mi2[i]  ;}
+    }
+    outfile_hyp << endl;
+
+    outfile_hyp.clear();
+    outfile_hyp.close();
+
+
+    string file_str;
+    file_str="./output/"+file_out;
+    file_str+=".paramtemp";
+    
+    ofstream outfile (file_str.c_str(), ofstream::out);
+    if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
+    
+    //outfile"<<"chr"<<"\t" <<"bp"<<"\t" <<"markerID"<<"\t<<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta_bfgwas"<<"\t"<<"mbeta_SE" << "\t" << "ChisqTest" << "\t" << "pval_svt"  << "\t" << "rank" << endl;
+    
+    //JML 3/22 this is the error: the rank is 1, but the ns_test is too many. 
+    // maybe just do all SNPs in VB? 
+    // can reduce the initial_VB_SS function. 
+    for (size_t i=0; i<ns_test; ++i) { 
+        
+        // save the data along the order of all variants, snp_pos is sorted by order
+        outfile<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<<snp_pos[i].rs<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
+        outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
+        
+        for (size_t j=0; j < n_type; j++) {
+            if (snp_pos[i].indicator_func[j]) {
+                outfile << j << "\t";
+                break;
+            }
+            else if(j == (n_type - 1)) outfile << "NA" << "\t";
+        }
+
+            outfile << gsl_vector_get(phi_curr, i) << "\t" << gsl_vector_get(m_curr, i) << "\t" << gsl_vector_get(sqrt_s2, i);
+        
+        //r = mapPos2Rank[i]; //leaving this just to keep consistency with previous result
+        //outfile << scientific << setprecision(3) << pos_ChisqTest[r].second << "\t"<< pval[r] << "\t" ;
+        //outfile << r << endl;
+        outfile << endl;
+    }
+    outfile.clear();    
+    outfile.close();
+
+    gsl_vector_free(m_curr);
+    gsl_vector_free(phi_curr);
+    gsl_vector_free(s2_curr);
+    gsl_vector_free(log_s2);
+    gsl_vector_free(sqrt_s2);
+    gsl_vector_free(inv_s2);
+    gsl_matrix_free(XtX);
+
+    return;
+    
+}
+
+
+void BVSRM::VB_SS( const vector<double> &Xty, const vector< vector<double> > &LD, size_t &max_iter, double &convergence) {
+    
+    //enable the list of data with IDs, extra file with IDs that are training, reserve part of the sample as validation/test sample    
+
+
+    // ensure fsample flag works for selecting a subset of the data. 
+
+    //declare types, make sure that is consistent 
+
+    cout << "\nRunning VB with Precalculated Summary Statistics ... \n";
+
+       // same as MCMC, obtain yty from pheno_var, set rv = pheno_var
+    cout << "pheno_var = " << pheno_var << endl;
+    rv = pheno_var;
+    yty = pheno_var * (double)(ni_test) ;
+    cout << "yty is " << yty << endl;
+    if(yty == 0) {
+        cerr << "ERROR: phenotype variance is 0!" << endl;
+        exit(-1);
+    }
+
+    // what do we need?
+    // collect Xty, XtX, pheno_var,
+    // initialize hyperparams/set hyperparams to current values
+    // initial values for m_i for all i
+    // initial values for s_k 
+    // from hyperparam, get pi, sigma2_q 
+
+    // initialize values 
+    size_t iter_step;
+    iter_step = 0;
+    
+    class HYPBSLMM cHyp_old, cHyp_new;
+    bool Error_Flag=0;
+
+    vector<size_t> rank; //save beta estimates
+    for (size_t i=0; i<s_max; i++) {
+        rank.push_back( 0.0);
+   }
+    
+    
+    // UcharTable, vector<SNPPOS> snp_pos were, pos_ChisqTest created in CALCSS SS
+    //cout << "Sort pos_ChisqTest, pval_vec by association evidence ... \n ";
+    stable_sort (pos_ChisqTest.begin(), pos_ChisqTest.end(), comp_lr); // sort ChisqStat
+
+    //cout << "Sort pval_vec by association evidence ... \n ";
+    stable_sort (pval_vec.begin(), pval_vec.end()); // sort pval
+    // PrintVector(pval_vec, 10);
+    
+    //cout << "Generate maps ... \n";
+    size_t pos; // rank based on chisq test statistic is more stable than based on pvalue
+    for (size_t i=0; i<ns_test; ++i) {
+        mapRank2pos[i]=pos_ChisqTest[i].first;
+        mapPos2Rank[pos_ChisqTest[i].first] = i;
+
+        mapRank2Order[i]=pos_ChisqTest[i].first;
+        mapOrder2Rank[pos_ChisqTest[i].first] = i;
+    }
+    
+    //Calculate proposal distribution for gamma (unnormalized), and set up gsl_r and gsl_t
+    //cout << "Calculate proposal distribution for gamma \n";
+    gsl_rng_env_setup();
+    const gsl_rng_type * gslType;
+    gslType = gsl_rng_default;
+    if (randseed<0)
+    {
+        time_t rawtime;
+        time (&rawtime);
+        tm * ptm = gmtime (&rawtime);
+        
+        randseed = (unsigned) (ptm->tm_hour%24*3600+ptm->tm_min*60+ptm->tm_sec);
+    }
+    gsl_r = gsl_rng_alloc(gslType);
+    gsl_rng_set(gsl_r, randseed);
+    p_gamma = new double[ns_test]; // defined in bvsrm.h
+
+    size_t p_gamma_top=0;
+    for(size_t i=0; i < pval_vec.size(); i++){
+        if (pval_vec[i] < 5e-8) { p_gamma_top++; }
+        else{ break; }
+    }
+    cout << "Number of variants with p-value < 5e-8 : " << p_gamma_top << endl;
+
+    
+    cout << "\nStart initializing VB... \n";
+    //cout << "\n rank = " << endl; PrintVector(rank);
+
+    //cout << "\n initial hyperParam = " ; PrintVector(theta); PrintVector(subvar);
+
+
+    InitialVB_SS (LD, Xty, rank, cHyp_old, pval_vec); // sets subvar and theta 
+
+
+    cout << "\n size of vectors and loop = " << ns_test << endl;
+
+    cout << "\n after initial VB hyperParam = " ; PrintVector(theta); PrintVector(subvar);
+
+
+    gsl_vector *m_curr = gsl_vector_alloc(ns_test);
+        cout << "\ncheck 0... \n";
+    gsl_vector_set_zero(m_curr);
+
+    cout << "\ncheck 1... \n";
+
+    gsl_vector *s2_curr = gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(s2_curr);
+
+    gsl_vector *sqrt_s2= gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(sqrt_s2);
+
+    gsl_vector *log_s2= gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(log_s2);
+
+    gsl_vector *inv_s2= gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(inv_s2);
+
+    gsl_vector *phi_curr = gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(phi_curr);
+
+    //gsl_vector *R_curr = gsl_vector_alloc(ns_test);
+   // gsl_vector_set_zero(R_curr);
+
+    gsl_vector *Ew_curr = gsl_vector_alloc(ns_test);
+    gsl_vector_set_zero(Ew_curr);
+
+
+    //convert standardized LM effects to GSL vector for easy multiplication
+    //gsl_vector *mbeta_2= gsl_vector_alloc(ns_test);
+    //gsl_vector_set_zero(mbeta_2);
+    // get pi_a
+    // get sigma_a2
+    
+   cout << "\ncheck 2... \n";
+   
+
+    vector<double> inv_subvar(n_type, 0.0); 
+    for(size_t i=0; i < n_type; i++){
+        inv_subvar[i] = (1.0 / subvar[i]); 
+    }
+
+    double tau = 1.0/rv; 
+
+    vector<double> hyptemp_odds(n_type, 0.0);
+    for(size_t i=0; i < n_type; i++){
+        hyptemp_odds[i] = theta[i]/(1-theta[i]); 
+    }
+
+    vector<double> sqrt_SDs(n_type, 0.0);
+    for(size_t i=0; i < n_type; i++){
+        sqrt_SDs[i] = sqrt(inv_subvar[i]*tau);
+    }
+
+    vector<double> log_rv_sub(n_type, 0.0);
+    for(size_t i=0; i < n_type; i++){
+        log_rv_sub[i] = log(rv*subvar[i]);
+    }
+
+    cout << "\n transformed meta params: \n"; 
+    PrintVector(inv_subvar);
+    PrintVector(hyptemp_odds);
+    PrintVector(sqrt_SDs);
+    PrintVector(log_rv_sub);
+
+    //question 1: how exactly can we pull the hypcurrent values from cHyp?
+    // Answer: names are subvar and theta 
+    // calc m[i]
+    // calc s2[i]
+
+    // how can we best do this for cis and trans?
+    // need to determine the annotation for each SNP
+    // need to call the correct theta and subvar based on a SNPs annotation 
+    // 
+    //
+
+
+        // initialize variables 
+        // save transformations of s2 to speed up iterations
+    /*
+    if(rank_loglr[0].second > sig_lr )
+            {
+                radd = rank_loglr[0].first;
+                pos_r = mapRank2pos[radd];
+                xtx = xtx_vec[pos_r];
+                SetXtx(LD, rank, pos_r, &Xtx_cond_temp.vector);
+                */
+
+
+        cout << "xtx_vec size = " << xtx_vec.size() << endl;
+
+        gsl_matrix *XtX=gsl_matrix_alloc(ns_test, ns_test);
+        gsl_matrix_set_zero(XtX);
+       // cout << "mbeta from LM = " ; PrintVector(mbeta);
+        SetXtX_VB(LD, ns_test, XtX);
+        //gsl_vector_view XtX_diag = gsl_matrix_diagonal(XtX);
+
+
+
+        // ok, can we get a param that indicates if this is the initial estimation step? 
+        // set the values to mbeta and pi,
+        // in future steps start from current estimates? 
+        // or might that be a problem too? 
+        //for(size_t i=0; i<ns_test; i++){
+            //gsl_vector_set(mbeta_2, i, mbeta[i]);
+        //}
+        
+        //double mean_theta=0.0;
+        //mean_theta = ((theta[0] + theta[1])/2);
+       // gsl_vector_set_all(phi_curr, mean_theta);
+
+        //cout << gsl_vector_get(mbeta_2, 10);
+
+        cout << "\ncheck 2\n";
+        for (size_t i=0; i < ns_test; i++) {
+
+           // gsl_vector *xij_vec = gsl_vector_alloc(ns_test);
+           // gsl_vector_set_zero(xij_vec);
+            //gsl_matrix_get_col(xij_vec, XtX, i);
+
+            //double xtx_ij = 0.0;
+            //size_t pos_i;
+
+            double xtx_i=0.0;
+            xtx_i = xtx_vec[i];
+           // double sum_temp = 0.0;
+           // double w_temp = 0.0;
+            //w_temp =  gsl_vector_get(Ew_curr, i);
+            //double phi_init = 0.0;
+            //phi_init = gsl_vector_get(phi_curr, i);
+            // JML: 3-28 - we haven't calculated phi yet - how do we initialize the sum?
+            // further, we need to initialize m and phi based on the final iteration of the previous VB steps...right?
+            // or do we only go back and forth to update the hyper params?
+            //double prod_temp=0.0;
+
+            //for(size_t j=0; j<ns_test ; j++){
+            //    if(j == i){continue;} else{
+            //   xtx_ij = getXtX(LD, i, j, xtx_vec);
+                //phi_init = gsl_vector_get(phi_curr, j);
+
+             //   sum_temp += xtx_ij*mbeta[j]*mean_theta;
+             //   }
+            //}
+
+            //gsl_vector_memcpy(Ew_curr, mbeta_2);
+
+            //gsl_vector_mul(Ew_curr, phi_curr); // this is zero for all elements in the initial step. 
+
+
+
+            //cout << "E[W]: " ; PrintVector(Ew_curr);
+            //cout << "X'X_i vector: " ; PrintVector(xij_vec);
+            //gsl_blas_ddot(xij_vec, Ew_curr, &prod_temp);
+            //cout << "w_temp: " << w_temp << endl; 
+            //cout << "temp product: " << prod_temp << endl;
+
+            //sum_temp = prod_temp - xtx_i*w_temp;
+
+            if (snp_pos[i].indicator_func[0] == 1) { //CIS
+
+            
+           // cout << "XtX_ii = " << xtx_i << "; xtx_vec[i] = " << xtx_vec[i] << endl;
+
+
+            //cout << "x'x_i = " << xtx_i << endl;
+
+            //m_curr[i] = Xty[i] / (XtX_diag[i] + inv_subvar[0]);
+            //_curr[i] = gsl_vector_get(Xty, i) / (gsl_matrix_get(XtX, i, i) + inv_subvar[0]); //TO DO: need to find exactly how to call the appropriate annotation subvar
+            gsl_vector_set(s2_curr, i, rv / (xtx_i + inv_subvar[0]));
+
+            double s2_i=0.0;
+            s2_i = gsl_vector_get(s2_curr, i);
+
+            gsl_vector_set(m_curr, i, s2_i*tau*(Xty[i]));
+            gsl_vector_set(sqrt_s2, i, sqrt(s2_i));
+            gsl_vector_set(log_s2, i, log(s2_i));
+            gsl_vector_set(inv_s2, i, 1/(s2_i));
+
+
+            //double sqrt_s2_i=0.0; 
+            //sqrt_s2_i = gsl_vector_get(sqrt_s2, i);
+            //double m_i=0.0;
+            //m_i = gsl_vector_get(m_curr, i);
+
+           // if(isnan(m_i)) {
+            //cout << "beta, xtx_ij,mean_theta initial " << mbeta[i] << " ;" << xtx_ij << " ;" << mean_theta << endl;
+            //exit(-1);
+             //   }
+
+            double R_temp=0.0;
+            //R_temp = hyptemp_odds[0] * sqrt_s2_i*sqrt_SDs[0]; //* exp(pow(m_i, 2)/(2*s2_i)); force phi= zero
+            if( R_temp == INFINITY){
+                gsl_vector_set(phi_curr, i, 0.99); 
+            } else if ( R_temp < 1e-8){
+                gsl_vector_set(phi_curr, i, 0);
+            } else {
+            gsl_vector_set(phi_curr, i, R_temp/(1+R_temp)); 
+                }
+            } else { 
+           // cout << "XtX_ii = " << xtx_i << "; xtx_vec[i] = " << xtx_vec[i] << endl;
+            //gsl_vector_set(m_curr, i, (Xty[i]-sum_temp)/(xtx_i+inv_subvar[1]));
+
+            //m_curr[i] = Xty[i] / (XtX_diag[i] + inv_subvar[0]);
+            //_curr[i] = gsl_vector_get(Xty, i) / (gsl_matrix_get(XtX, i, i) + inv_subvar[0]); //TO DO: need to find exactly how to call the appropriate annotation subvar
+            gsl_vector_set(s2_curr, i, rv / (xtx_i + inv_subvar[1]));
+            double s2_i=0.0;
+            s2_i = gsl_vector_get(s2_curr, i);
+            gsl_vector_set(m_curr, i, s2_i*tau*(Xty[i]));
+            gsl_vector_set(sqrt_s2, i, sqrt(s2_i));
+            gsl_vector_set(log_s2, i, log(s2_i));
+            gsl_vector_set(inv_s2, i, 1/(s2_i));
+            //double m_i=0.0;
+            //m_i = gsl_vector_get(m_curr, i);
+            //double sqrt_s2_i=0.0; 
+            //sqrt_s2_i = gsl_vector_get(sqrt_s2, i);
+
+            double R_temp=0.0;
+           // R_temp = hyptemp_odds[1] * sqrt_s2_i*sqrt_SDs[1] ;//* exp(pow(m_i, 2)/(2*s2_i));
+            if( R_temp == INFINITY){
+                gsl_vector_set(phi_curr, i, 0.99); 
+            } else if ( R_temp < 1e-8){
+                gsl_vector_set(phi_curr, i, 0);
+            } else {
+            gsl_vector_set(phi_curr, i, R_temp/(1+R_temp)); 
+            }
+        } 
+        } 
+        cout << "\n after initial m, s, phi... \n";
+
+        //PrintVector(m_curr); 
+           // PrintVector(phi_curr);
+    // question 2: can we initialize m[i] by assuming Ew_j = 0? 
+        /*
+        for (size_t i=0; i < snp_pos.size(); i++) {
+             //TO DO: need to find exactly how to call the appropriate annotation subvar
+        }
+
+        for (size_t i=0; i < snp_pos.size(); i++) {
+            R_init[i] <- (theta_vec[n_type]/(1-theta_vec[n_type])) * (gsl_vector_get(s2_init, i)/(subvar[n_type] * rv)) * exp(gsl_vector_get(m_init, i)/2*gsl_vector_get(s2_init, i)) ;
+        }
+
+        for (size_t i=0; i < snp_pos.size(); i++) {
+            phi_init[i] <- gsl_vector_get(R_init, i)/(1 + gsl_vector_get(R_init, i));
+        }
+        */ 
+    //calc lower bound, iterate 
+
+
+        // need Ew_old, Ew_new, s2_old, s2_new, R_old, R_new, Phi_new 
+
+        // Calculate ELBO
+
+        // initialize m_new, R_new, phi_new vectors 
+        // initialize elbo_term vectors
+        /*
+        gsl_vector *m_new = gsl_vector_alloc(rank.size());
+        gsl_vector_set_zero(m_new);
+        gsl_vector *R_new = gsl_vector_alloc(rank.size());
+        gsl_vector_set_zero(R_new);
+        gsl_vector *phi_new = gsl_vector_alloc(rank.size());
+        gsl_vector_set_zero(phi_new);
+         */
+
+        vector<double> log_theta(n_type, 0.0);
+        for(size_t i=0; i < n_type; i++){
+        log_theta[i] = log(theta[i]);
+        }
+
+        vector<double> log_not_theta(n_type, 0.0);
+        for(size_t i=0; i < n_type; i++){
+        log_not_theta[i] = log(1-theta[i]);
+        }
+
+        vector<double> ELBO(max_iter, 0.0); // this may not be correct 
+        double m_temp ;
+        double phi_temp ;
+        double R_temp ;
+        double elbo_term1; 
+        double elbo_term2; 
+        double elbo_term3; 
+        //double elbo_term4; 
+        double elbo_term5; 
+        double sum_temp=0.0;
+        double delta = 100;
+        gsl_vector *Xty2 = gsl_vector_alloc(ns_test);
+
+        cout << "max iter: " << max_iter << " & convergence: " << convergence << endl;
+
+    while ((iter_step<max_iter) && (delta > convergence)) {  // delta is ELBO convergence level
+        
+        
+
+        elbo_term1 = 0.0;
+        elbo_term2 = 0.0;
+        elbo_term3 = 0.0;
+        //elbo_term4 = 0.0;
+        elbo_term5 = 0.0;
+
+        //PrintVector(phi_curr);
+
+        for (size_t i=0; i < ns_test; i++) {
+
+            sum_temp = 0.0;
+            m_temp = 0.0;
+            phi_temp=0.0;
+            R_temp = 0.0;
+
+            gsl_vector *xij_vec = gsl_vector_alloc(ns_test);
+            gsl_vector_set_zero(xij_vec);
+            gsl_matrix_get_col(xij_vec, XtX, i);
+            gsl_vector_memcpy(Ew_curr, m_curr);
+
+            gsl_vector_mul(Ew_curr, phi_curr);
+
+            double prod_temp = 0.0;
+            gsl_blas_ddot(xij_vec, Ew_curr, &prod_temp);
+            //cout << "w_temp: " << w_temp << endl; 
+            //cout << "temp product: " << prod_temp << endl;
+
+            
+ 
+
+           // double xtx_ij = 0.0;
+            //size_t pos_i;
+
+            double xtx_i=0.0;
+            xtx_i = xtx_vec[i];
+            double w_temp = 0.0;
+            w_temp =  gsl_vector_get(Ew_curr, i);
+            double phi_prev = 0.0;
+            //phi_prev = gsl_vector_get(phi_curr, i);
+            // JML: 3-28 - we haven't calculated phi yet - how do we initialize the sum?
+            // further, we need to initialize m and phi based on the final iteration of the previous VB steps...right?
+            // or do we only go back and forth to update the hyper params?
+            //double prod_temp=0.0;
+            sum_temp = prod_temp - xtx_i*w_temp;
+
+            if(isnan(sum_temp)) {
+            cout << "error! something is missing! w, xtx: " << w_temp << " ;" << xtx_i << "; " << prod_temp <<  endl;
+            PrintVector(m_curr);
+            PrintVector(phi_curr);
+            exit(-1);
+        }
+
+           // for(size_t j=0; j<ns_test; j++){
+             //   if(j == i){ continue;} else{
+              //  xtx_ij = getXtX(LD, i, j, xtx_vec);
+               // w_temp = gsl_vector_get(m_curr, j);
+                //phi_prev = gsl_vector_get(phi_curr, j);
+                //sum_temp += xtx_ij*w_temp*phi_prev;
+           //     }
+           // }
+
+            //cout << "are the sums the same? : ""; " << sum_temp2 << endl;
+           // if(iter_step == 0){
+                //PrintVector(Ew_curr);
+           // }
+
+            //m_curr[i] = Xty[i] / (XtX_diag[i] + inv_subvar[0]);
+            //_curr[i] = gsl_vector_get(Xty, i) / (gsl_matrix_get(XtX, i, i) + inv_subvar[0]); //TO DO: need to find exactly how to call the appropriate annotation subvar
+            //gsl_vector_set(s2_curr, i, rv / (xtx_i + inv_subvar[0]));
+            double s2_i=0.0;
+            s2_i = gsl_vector_get(s2_curr, i);
+            double sqrt_s2_i=0.0; 
+            sqrt_s2_i = gsl_vector_get(sqrt_s2, i);
+            double log_s2_i=0.0; 
+            log_s2_i = gsl_vector_get(log_s2, i);
+            double inv_s2_i=0.0; 
+            inv_s2_i = gsl_vector_get(inv_s2, i);
+
+            // rather than sum over all j neq i, obtain dot product of ith vector and w, and subtract out x_i ' x_i * w_i
+           // double w_temp = 0.0;
+           // w_temp =  gsl_vector_get(Ew_curr, i);
+           // double prod_temp=0.0;
+
+            //cout << "E[W]: " ; PrintVector(Ew_curr);
+            //cout << "X'X_i vector: " ; PrintVector(xij_vec);
+           // gsl_blas_ddot(xij_vec, Ew_curr, &prod_temp);
+            //cout << "w_temp: " << w_temp << endl; 
+            //cout << "temp product: " << prod_temp << endl;
+
+            //sum_temp = prod_temp - xtx_i*w_temp;
+
+            //cout << "sum temp and xtx_i*w_temp: " << sum_temp << ", " <<  xtx_i << "*" << w_temp << endl;
+
+            //cout << "temp sum: " << sum_temp << endl; 
+            //cout << "X'y_i: " << Xty[i] << endl; 
+    
+            // if cis, use cis_subvar etc 
+            if (snp_pos[i].indicator_func[0]==1) { //CIS
+            m_temp = s2_i*tau*(Xty[i] - sum_temp);  // is it worth it to add inv_subvar to all elemenets of XtX, take inverse, and multiply? 
+            double m2_i = gsl_pow_2(m_temp);
+            R_temp = hyptemp_odds[0] * (sqrt_s2_i*sqrt_SDs[0]) *  exp(0.5*inv_s2_i*m2_i) ;
+            if( R_temp == INFINITY){
+                phi_temp = 0.99;
+            } else if ( R_temp < 1e-8){
+                gsl_vector_set(phi_curr, i, 0);
+            } else {
+            phi_temp = R_temp/(1 + R_temp);
+            }
+           // if (iter_step==1){
+           // cout << "m_curr " << m_temp << endl;
+
+            //cout << "hyp param  " << hyptemp_odds[1] << ", " << sqrt_SDs[1] << ", " << inv_s2_i << ", " << sqrt_s2_i << endl;
+
+            //cout << "R curr " << R_temp << endl;
+            //}
+            double phi2_i = gsl_pow_2(phi_temp);
+            elbo_term1 += xtx_i * (phi_temp * (s2_i + m2_i) - phi2_i*m2_i ); 
+            elbo_term3 += phi_temp * (log(phi_temp) - log_theta[0]) - (1-phi_temp)*(log((1-phi_temp) - log_not_theta[0])); 
+            elbo_term5 += 0.5*phi_temp*(1 + log_s2_i - log_rv_sub[0] - tau*inv_subvar[0]*(s2_i + m2_i)); 
+
+            }
+            else { //TRANS
+            m_temp = s2_i*tau*(Xty[i] - sum_temp) ;
+            double m2_i = gsl_pow_2(m_temp);
+            R_temp = hyptemp_odds[1] * (sqrt_s2_i*sqrt_SDs[1]) * exp(0.5*inv_s2_i*m2_i) ;
+            if( R_temp == INFINITY){
+                phi_temp = .99;
+            } else if ( R_temp < 1e-8){
+                gsl_vector_set(phi_curr, i, 0);
+            } else {
+            phi_temp = R_temp/(1 + R_temp);
+            }
+            //if (iter_step==1){
+           // cout << "m_curr " << m_temp << endl;
+
+           // cout << "hyp param  " << hyptemp_odds[1] << ", " << sqrt_SDs[1] << ", " << inv_s2_i << ", " << sqrt_s2_i << endl;
+
+            //cout << "R curr " << R_temp << endl;
+           // }
+            double phi2_i = gsl_pow_2(phi_temp);
+            elbo_term1 += xtx_i * (phi_temp * (s2_i + m2_i) - phi2_i*m2_i ); 
+            elbo_term3 += phi_temp * (log(phi_temp) - log_theta[1]) - (1-phi_temp)*(log((1-phi_temp) - log_not_theta[1])); 
+            //elbo_term4 += phi_temp * log_theta[1] + (1-phi_temp)*log_not_theta[1];
+            elbo_term5 += 0.5*phi_temp*(1 + log_s2_i - log_rv_sub[1] - tau*inv_subvar[1]*(s2_i + m2_i)); 
+
+            // missing another ELBO term! see Carb and Stevens 
+            }
+
+            // update ith element of m_curr and phi_curr for recalculating E[w] for next SNP. 
+            gsl_vector_set(m_curr, i, m_temp);
+            gsl_vector_set(phi_curr, i, phi_temp);
+            gsl_vector_set(Xty2, i, Xty[i]);
+            gsl_vector_free(xij_vec);
+        
+            } //end iter through all SNPs
+            //PrintVector(m_curr); 
+            //PrintVector(phi_curr);
+
+        gsl_vector *r = gsl_vector_alloc(ns_test);
+        gsl_vector_memcpy(r, m_curr);
+        gsl_vector_mul(r, phi_curr);
+        double yXr=0.0;
+        gsl_vector *xtxr = gsl_vector_alloc(ns_test);
+        gsl_vector_set_zero(xtxr);
+        double rXXr=0.0;
+
+        gsl_blas_ddot(Xty2, r,  &yXr );
+        gsl_blas_dgemv(CblasNoTrans, 1.0, XtX, r, 0.0, xtxr);
+        gsl_blas_ddot(r, xtxr, &rXXr);
+
+        
+        elbo_term2 = (yty - 2*yXr + rXXr);
+
+        //if (iter_step == 1 || iter_step == 3 ||  iter_step == 20) {
+       // cout<< "elbo term 2 elements: " << yty << ", " << yXr << ", " << rXXr << endl;
+       cout << "elbo1: " << elbo_term1 << "; " << "elbo2: " << elbo_term2 << "; " << "elbo3: " << elbo_term3 << "; " << "elbo5: " << elbo_term5 << endl;
+      //}
+        iter_step++;
+        
+        ELBO[iter_step]=(-0.5*tau*elbo_term1 - (0.5*tau * elbo_term2) - elbo_term3 + elbo_term5);
+
+        cout << "current ELBO = " << ELBO[iter_step] << " ; previous ELBO = " << ELBO[iter_step-1] << endl; 
+        
+        ////////////////////////////////////
+        delta = abs((ELBO[iter_step]-ELBO[iter_step-1])/ELBO[iter_step]);
+        cout << "delta = " << delta << endl;
+        
+        gsl_vector_free(r);
+        gsl_vector_free(xtxr);
+
+        /*
+        gsl_vector_memcpy(m_curr, m_new);
+        gsl_vector_memcpy(R_curr, R_new);
+        gsl_vector_memcpy(phi_curr, phi_new);
+        gsl_vector_set_zero(m_new);
+        gsl_vector_set_zero(R_new);
+        gsl_vector_set_zero(phi_new);
+        */
+        
+        //if ((int_step+1)%10==0) {cout<<int_step+1<<" "<<setprecision(5)<<delta<<" "<<ELBO(int_step)<<endl;}
+
+        //continue; 
+    } // end while loop
+
+    gsl_vector *Ew = gsl_vector_alloc(ns_test);
+    gsl_vector_memcpy(Ew, m_curr);
+    double wxy=0.0;
+    gsl_vector_mul(Ew, phi_curr);
+    gsl_blas_ddot (Xty2, Ew, &wxy);
+    double R2 = wxy / yty; //this is giving bad numbers! 
+
+    cout << "R2 = " << R2 << endl;
+
+    // sum of phi per annotation groups
+    vector<double> sum_mi2(n_type, 0.0);
+    vector<double> m_phi(n_type, 0.0);
+    for (size_t i=0; i < ns_test; i++){
+        double phi_i = 0.0;
+        double m_i = 0.0;
+        if (snp_pos[i].indicator_func[0]==1) {
+            phi_i = gsl_vector_get(phi_curr, i);
+            m_i = gsl_vector_get(m_curr, i);
+            m_phi[0] += phi_i;
+            sum_mi2[0] += phi_i*m_i * m_i;
+        } else {
+            phi_i = gsl_vector_get(phi_curr, i);
+            m_i = gsl_vector_get(m_curr, i);
+            m_phi[1] += phi_i;
+            sum_mi2[1] += phi_i*m_i * m_i;
+        }
+    }
+
+    cout << "total iterations: " << iter_step << endl;
+    cout << "sum Phi and sum m^2 per cat = " ; PrintVector(m_phi); PrintVector(sum_mi2);
+    cout << endl;
+
+        // change in R function! Done 3/18/19
+
+    // what is our output? 
+    // phi, that's PIP. 
+    // m_hat = E[w | gamma = 1]
+
+    //save m_curr, phi_curr, E[w], s2
+    // after final M-H step, save y_hat 
+
+    // make sure output can be fed into Mstep.R 
+
+    double elbo_min =  ELBO[iter_step];
+
+    // 4/23, adding step to calculate sum(phi_i * m_i * X_g) within each block for each subject. 
+    // if current EM iter is final iter, then:
+    // read in genotype data
+    // calculate phi * m * X matrix, get n x 1 vector 
+    // do this for training and test 
+    // save a text file that is one column ind ID and one column sum(phi_m_X). 
+    // then, y^ = sum (sum(phi_m_X)) over all blocks.
+
+        // outfile - save indicator_idv, sum_PhiMX
+    
+    
+
+    
+    //save E(file_out, lnpost, GV, rv, n[i], Gvec[i], m[i], sigma2[i])
+    string file_hyp;
+    file_hyp = "./output/" + file_out;
+    file_hyp += ".hyptemp";
+
+    ofstream outfile_hyp;
+
+    // write *.hyptemp
+    cout << "Open ... \n" << file_hyp;
+
+    outfile_hyp.open (file_hyp.c_str(), ofstream::out);
+    if (!outfile_hyp) {cout<<"error writing file: "<<file_hyp<<endl; return;}
+
+    cout << "Start writing hyptemp ... \n" << file_hyp;
+
+    outfile_hyp << file_out << "\t";
+    
+    cout << elbo_min << "\t" << R2 << "\t" << rv << "\t" ; 
+
+    outfile_hyp << scientific << setprecision(6) << elbo_min << "\t" << R2 << "\t" << rv ;
+
+    for(size_t i=0; i < n_type; i++){
+
+        cout << mFunc[i] << "\t" << "NA" << "\t" << m_phi[i] << "\t" << sum_mi2[i] << endl;
+
+        outfile_hyp << "\t" << mFunc[i] ;
+        outfile_hyp << scientific << setprecision(6) << "\t" << "NA" ;
+        outfile_hyp << "\t" << (m_phi[i]) ;
+        if(m_phi[i] > 0)
+            {outfile_hyp << "\t" << sum_mi2[i] ;}
+        else {outfile_hyp << "\t" << sum_mi2[i]  ;}
+    }
+    outfile_hyp << endl;
+
+    outfile_hyp.clear();
+    outfile_hyp.close();
+
+
+    string file_str;
+    file_str="./output/"+file_out;
+    file_str+=".paramtemp";
+    
+    ofstream outfile (file_str.c_str(), ofstream::out);
+    if (!outfile) {cout<<"error writing file: "<<file_str.c_str()<<endl; return;}
+    
+    //outfile"<<"chr"<<"\t" <<"bp"<<"\t" <<"markerID"<<"\t<<"REF"<<"\t" <<"ALT"<<"\t" << "maf" << "\t" << "Func_code"<< "\t" <<"gamma" << "\t" <<"beta_bfgwas"<<"\t"<<"mbeta_SE" << "\t" << "ChisqTest" << "\t" << "pval_svt"  << "\t" << "rank" << endl;
+    
+    //JML 3/22 this is the error: the rank is 1, but the ns_test is too many. 
+    // maybe just do all SNPs in VB? 
+    // can reduce the initial_VB_SS function. 
+    for (size_t i=0; i<ns_test; ++i) { 
+        
+        // save the data along the order of all variants, snp_pos is sorted by order
+        outfile<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<<snp_pos[i].rs<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
+        outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
+        
+        for (size_t j=0; j < n_type; j++) {
+            if (snp_pos[i].indicator_func[j]) {
+                outfile << j << "\t";
+                break;
+            }
+            else if(j == (n_type - 1)) outfile << "NA" << "\t";
+        }
+
+            outfile << gsl_vector_get(phi_curr, i) << "\t" << gsl_vector_get(m_curr, i) << "\t" << gsl_vector_get(sqrt_s2, i);
+        
+        //r = mapPos2Rank[i]; //leaving this just to keep consistency with previous result
+        //outfile << scientific << setprecision(3) << pos_ChisqTest[r].second << "\t"<< pval[r] << "\t" ;
+        //outfile << r << endl;
+        outfile << endl;
+    }
+    outfile.clear();    
+    outfile.close();
+
+    gsl_vector_free(m_curr);
+    gsl_vector_free(phi_curr);
+    gsl_vector_free(s2_curr);
+    gsl_vector_free(log_s2);
+    gsl_vector_free(sqrt_s2);
+    gsl_vector_free(inv_s2);
+    gsl_matrix_free(XtX);
+
+    return;
+    
+}
+//InitialMCMC_SS with Summary Statistics
+void BVSRM::InitialVB_SS (const vector< vector<double> > &LD, const vector<double> &Xty, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval)
+{
+    //cout << "significant chisquare value : " << q_genome << endl;
+    cHyp.n_gamma=0;
+    for (size_t i=0; i<pval.size(); ++i) {
+        if (pval[i] < 5e-8) {cHyp.n_gamma++;}
+    }
+
+    //cout << "number of included snps = " << cHyp.n_gamma << endl;
+    if (cHyp.n_gamma>s_max) {cHyp.n_gamma=s_max;}
+    if (cHyp.n_gamma<s_min) {cHyp.n_gamma=s_min;}
+    if (cHyp.n_gamma<1) {cHyp.n_gamma=1;} // Initialize with at least one variant
+    
+    
+    if (!iniSNPfile.empty() && iniType == 0) {
+        
+        ifstream infile(iniSNPfile.c_str(), ifstream::in);
+        if(!infile) {cout << "Error opening file " << iniSNPfile << endl; exit(-1);}
+        string lineid;
+        rank.clear();
+        size_t rankj;
+        
+        cout << "\nStart loading initial snp IDs from " << iniSNPfile << "\n";
+        
+        while (!safeGetline(infile, lineid).eof()) {
+            
+            for (size_t i=0; i < snp_pos.size(); i++) {
+                if (snp_pos[i].rs.compare(lineid) == 0) {
+                    // order i
+                    rankj = mapOrder2Rank[i] ;
+                    rank.push_back(rankj);
+                    //cout << lineid << " with rank = " << rankj;
+                    //snp_pos[orderj].printMarker();
+                    break;
+                }
+            }
+        }
+        infile.close();
+        infile.clear();
+        
+        if (rank.size() == 0) {
+            for (size_t i=0; i<cHyp.n_gamma; ++i) {
+                rank.push_back(i);
+            }
+        } //take rank 0 if tracked no SNPs from the iniSNPfile
+    }
+    else if(iniType == 1 ) {
+        cout << "\nStart with top genome-wide significant variants.\n";
+        rank.clear();
+        for (size_t i=0; i<cHyp.n_gamma; ++i) {
+            rank.push_back(i);
+        }
+    }
+    else if( iniType == 3) {
+        cout << "\nStart with Step-wise selected variants.\n";
+        vector< pair<size_t, double> > rank_loglr;
+        size_t pos_r, pos_j, radd, s_size;
+        double xtx, rtr, yty_max;
+
+        double sig_lr = gsl_cdf_chisq_Qinv(5e-8, 1) ;
+        cout << "Genome-wide significant LRT is " << sig_lr << endl;
+
+        size_t topMarkers = 500;
+        //cout << "ns_test = " << ns_test << endl;
+        if(topMarkers > ns_test) topMarkers = ns_test;
+        //cout << "pos_ChisqTest size = " << pos_ChisqTest.size() << endl;
+
+        rank.clear();
+        rank.push_back(0);
+        //cout << "Initial rank size " << rank.size() << endl;
+
+        //excluded top SSNP
+        for(size_t i=1; i < topMarkers; i++){
+            rank_loglr.push_back( make_pair(i, pos_ChisqTest[i].second) );
+        } // rank_loglr: pair of rank and ChisqTest
+
+        //cout << "s_max = " << s_max << endl; 
+        gsl_matrix *XtX_cond=gsl_matrix_alloc (s_max, s_max);
+        gsl_vector *Xty_cond=gsl_vector_alloc (s_max);
+        gsl_vector *Xtx_cond=gsl_vector_alloc (s_max);
+        gsl_vector *beta_cond = gsl_vector_alloc (s_max);
+
+        for(size_t i = 1; i < s_max; i++)
+        {
+            s_size = rank.size();
+            SetSSgamma(LD, Xty, rank, XtX_cond, Xty_cond);
+            //cout << "SetSSgamma with rank  " << endl; PrintVector(rank);
+            //for(size_t l = 0; l < rank.size(); l++){
+            //    cout << "bp = " << snp_pos[ mapRank2pos[rank[l]] ].bp << ";" ;
+            //}
+            //cout << "\n XtX_cond : \n" ; PrintMatrix(XtX_cond, s_size, s_size);
+            //cout << "\n Xty_cond : \n"; PrintVector(Xty_cond, s_size);
+
+            gsl_matrix_const_view XtX_cond_temp = gsl_matrix_const_submatrix(XtX_cond, 0, 0, s_size, s_size);
+            gsl_vector_const_view Xty_cond_temp = gsl_vector_const_subvector(Xty_cond, 0, s_size);
+
+            // calculate beta-hat
+            gsl_vector_view beta_cond_temp = gsl_vector_subvector(beta_cond, 0, s_size);
+            CalcBeta(&XtX_cond_temp.matrix, &Xty_cond_temp.vector, &beta_cond_temp.vector);
+
+            // calculate conditioned residual variance
+            gsl_vector_const_view beta_cond_const = gsl_vector_const_subvector(beta_cond, 0, s_size);
+            yty_max = Findmaxyty(rank, s_size);
+            rtr = CalcResVar(&Xty_cond_temp.vector, &beta_cond_const.vector, yty_max);
+            // cout << "rtr = " << rtr << endl;
+
+            gsl_vector_view Xtx_cond_temp = gsl_vector_subvector(Xtx_cond, 0, s_size);
+            for(size_t j=0; j < rank_loglr.size(); j++){
+                pos_j = mapRank2pos[ rank_loglr[j].first ];
+                rank_loglr[j].second = CalcLR_cond_SS(rtr, pos_j, LD, Xty, rank, &beta_cond_const.vector, &Xtx_cond_temp.vector);
+            }
+            stable_sort(rank_loglr.begin(), rank_loglr.end(), comp_lr); //sort conditional LRT statistics
+            // cout << "Next top conditioned LRT is " << rank_loglr[0].second << endl;
+                
+            if(rank_loglr[0].second > sig_lr )
+            {
+                radd = rank_loglr[0].first;
+                pos_r = mapRank2pos[radd];
+                xtx = xtx_vec[pos_r];
+                SetXtx(LD, rank, pos_r, &Xtx_cond_temp.vector);
+
+                gsl_vector_const_view Xtx_cond_const = gsl_vector_const_subvector(Xtx_cond, 0, s_size);
+                if ( ColinearTest_SS(&XtX_cond_temp.matrix, &Xtx_cond_const.vector, &beta_cond_temp.vector, xtx) ) continue ;
+                else{
+                    rank.push_back(radd); // include rank r into initial model
+                    rank_loglr.erase(rank_loglr.begin());
+                }
+            }
+            else  {break;}
+        }
+        cout << "\n XtX_cond : \n" ; PrintMatrix(XtX_cond, s_size, s_size);
+        cout << "\n Xty_cond : \n"; PrintVector(Xty_cond, s_size);
+        gsl_matrix_free(XtX_cond);
+        gsl_vector_free(Xty_cond);
+        gsl_vector_free(Xtx_cond);
+        gsl_vector_free(beta_cond);
+    } 
+    else{
+        cout << "\nStart with the top leading variant.\n";
+        rank.clear();
+        rank.push_back(0);
+    } 
+    
+    cHyp.n_gamma = rank.size();
+    cout << "number of snps = " << cHyp.n_gamma << endl;
+    cout << "Initial model with ranks: \n"; PrintVector(rank);
+    
+    cHyp.logp=log((double)cHyp.n_gamma/(double)ns_test);
+    if (cHyp.logp==0) {cHyp.logp=-0.000001;}
+
+    cHyp.h = 0.1;
+    //cHyp.h=pve_null;
+    //if (cHyp.h==0) {cHyp.h=0.1;}
+   // cout<<"initial value of h = "<< h <<endl;
+    
+    cout << "trace_G = " << trace_G << endl;
+    double sigma_a2;
+    if (trace_G!=0) {
+        sigma_a2=cHyp.h*1.0/(trace_G*(1-cHyp.h)*exp(cHyp.logp));
+    } else {
+        sigma_a2=cHyp.h*1.0/( (1-cHyp.h)*exp(cHyp.logp)*(double)ns_test);
+    }
+    if (sigma_a2==0) {sigma_a2=0.025;}
+   // cout << "initial sigma_a2 = " << sigma_a2 << endl;
+    
+    //if (cHyp.h<h_min) {cHyp.h=h_min;}
+    //if (cHyp.h>h_max) {cHyp.h=h_max;}
+    if (cHyp.logp<logp_min) {cHyp.logp=logp_min;}
+    if (cHyp.logp>logp_max) {cHyp.logp=logp_max;}
+    
+    //cout << "start setHyp... \n";
+    setHyp(((double)cHyp.n_gamma/(double)ns_test), sigma_a2);
+    cHyp.theta = theta;
+    cHyp.log_theta = log_theta;
+    cHyp.subvar = subvar; // initial subvar vector
+    
+    //cout<<"initial value of h = "<< h <<endl;
+    //cout<<"initial value of rho = "<<cHyp.rho<<endl;
+    //cout<<"initial value of theta_vec = "; PrintVector(theta);
+    //qcout << "initial value of sub-variance_vec = "; PrintVector(subvar);
+    cout<<"Initially selected number of variants in the model = "<<cHyp.n_gamma<<endl;
+    
+    return;
+}
+
+/*
+void BVSRM::WriteHyptemp_VB(gsl_vector *ELBO, vector<double> &em_gamma){
+    
+    double elbo_min =  gsl_vector_get(ELBO, iter_step);
+    cout << "ELBO Min = " << elbo_min << endl;
+    
+    //save E(file_out, lnpost, GV, rv, n[i], Gvec[i], m[i], sigma2[i])
+    string file_hyp;
+    file_hyp = "./output/" + file_out;
+    file_hyp += ".hyptemp";
+
+    ofstream outfile_hyp;
+
+    // write *.hyptemp
+    cout << "Open ... \n" << file_hyp;
+
+    outfile_hyp.open (file_hyp.c_str(), ofstream::out);
+    if (!outfile_hyp) {cout<<"error writing file: "<<file_hyp<<endl; return;}
+
+    cout << "Start writing hyptemp ... \n" << file_hyp;
+
+    outfile_hyp << file_out << "\t";
+    
+    cout << elbo_min << "\t" << R2 << "\t" << rv << "\t" ; 
+
+    outfile_hyp << scientific << setprecision(6) << elbo_min << "\t" << R2 << "\t" << rv ;
+
+    for(size_t i=0; i < n_type; i++){
+
+        cout << mFunc[i] << "\t" << "NA" << "\t" << m_phi[i] << "\t" << sum_mi2[i] << endl;
+
+        outfile_hyp << "\t" << mFunc[i] ;
+        outfile_hyp << scientific << setprecision(6) << "\t" << "NA" ;
+        outfile_hyp << "\t" << (m_phi[i]) ;
+        outfile_hyp << "\t" << sum_mi2[i]  ;
+
+    }
+    outfile_hyp << endl;
+
+    outfile_hyp.clear();
+    outfile_hyp.close();
+    
+} /*
+
+
+
+/*
+// ok, we need to calculate the XtX, but for all SNPs in a block, not just SNPs that are in top variant rank 
+void BVSRM::SetXtX_VB(const vector< vector<double> > &LD, const vector<size_t> rank, gsl_matrix *XtX){
+
+    double xtx_ij = 0.0;
+    size_t pos_i, pos_j;
+
+// will this work, or do we need to modify to use indicator_snp instead of rank? 
+    // if we have a vector of all SNPs in a block, this will give us the full XtX matrix. 
+
+    for(size_t i=0; i<rank.size(); i++){
+
+        pos_i = mapRank2pos[ rank[i] ] ;
+        gsl_matrix_set(XtX, i, i, xtx_vec[pos_i]);
+
+        for(size_t j= (i+1); j<rank.size(); j++){
+            pos_j = mapRank2pos[ rank[j] ] ;
+            xtx_ij = getXtX(LD, pos_i, pos_j, xtx_vec);
+            gsl_matrix_set(XtX, i, j, xtx_ij);
+            gsl_matrix_set(XtX, j, i, xtx_ij);
+        }
+
+    }
+
+    return ;
+} */
 
 //InitialMCMC_SS with Summary Statistics
 void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval)
@@ -3367,6 +5206,8 @@ void BVSRM::InitialMCMC_SS (const vector< vector<double> > &LD, const vector<dou
     
     return;
 }
+
+
 
 // Calculate posterior likelihood with summary statistics
 double BVSRM::CalcPosterior_SS (const gsl_matrix *XtX, const gsl_vector *Xty, gsl_vector *beta, class HYPBSLMM &cHyp, gsl_vector *sigma_vec, bool &Error_Flag, double &loglike, double &yty_max)
@@ -3654,6 +5495,26 @@ void BVSRM::SetXtX(const vector< vector<double> > &LD, const vector<size_t> rank
     return ;
 }
 
+void BVSRM::SetXtX_VB(const vector< vector<double> > &LD, const size_t &ns_test, gsl_matrix *XtX){
+
+    double xtx_ij = 0.0;
+    //size_t pos_i, pos_j;
+
+    for(size_t i=0; i<ns_test; i++){
+
+        gsl_matrix_set(XtX, i, i, xtx_vec[i]); //JML: 3/28: could I be getting XtX incorrectly? What is xtx_vec? 
+
+        for(size_t j= (i+1); j<ns_test; j++){
+            xtx_ij = getXtX(LD, i, j, xtx_vec);
+            gsl_matrix_set(XtX, i, j, xtx_ij);
+            gsl_matrix_set(XtX, j, i, xtx_ij);
+        }
+
+    }
+
+    return ;
+}
+
 double BVSRM::Findmaxyty(const vector<size_t> &rank, const size_t s_size){
     double yty_max = yty;
     size_t pos_i;
@@ -3682,3 +5543,37 @@ void BVSRM::SetXtx(const vector< vector<double> > &LD, const vector<size_t> rank
     return ;
 }
 
+
+
+// Collection of tools and code needed for predicting gene expression 
+
+
+/* this takes the result, and will select only included SNPs
+
+// for (size_t i=0; i<ns_test; ++i) {
+        
+        // save the data along the order of all variants, snp_pos is sorted by order
+        rs = snp_pos[i].rs;
+        outfile<<snp_pos[i].chr<<"\t"<<snp_pos[i].bp<<"\t"<<rs<<"\t"<< snp_pos[i].a_major<<"\t"<<snp_pos[i].a_minor<<"\t" ;
+        outfile << scientific << setprecision(3)  << snp_pos[i].maf << "\t";
+        
+        for (size_t j=0; j < n_type; j++) {
+            if (snp_pos[i].indicator_func[j]) {
+                outfile << j << "\t";
+                break;
+            }
+            else if(j == (n_type - 1)) outfile << "NA" << "\t";
+        }
+        
+        pos = snp_pos[i].pos;
+        //beta_g is saved by position
+        if (beta_g[pos].second!=0) {
+            pi_temp = beta_g[pos].second/(double)s_step;
+            outfile << pi_temp <<"\t" << beta_g[pos].first/beta_g[pos].second<< "\t" << mbeta_SE[pos] << "\t" ;
+        }
+        else {
+            pi_temp = 0.0;
+            outfile << 0.0 << "\t" << 0.0 << "\t" << 0.0 << "\t";
+        }
+        pi_vec.push_back(make_pair(rs, pi_temp));
+*/ 

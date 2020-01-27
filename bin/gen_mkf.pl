@@ -78,14 +78,18 @@ my $wkDir=getcwd();
 my $makeFile = "bfGWAS.mk";
 my $genofile = "vcf";
 
-my $toolE="/bin/Estep_mcmc";
+my $toolE="/home/jluningham/Projects/bfGWAS_SS/bin/Estep_mcmc";
+my $rs="/mnt/icebreaker/data2/home/jluningham/Projects/bfGWAS_SS/bin/Mstep.R";
 my $annoDir="";
 my $genoDir = "";
 my $pheno="";
 my $annoCode="";
-my $hyppar="";
-my $filelist = "/net/fantasia/home/yjingj/GIT/bfGWAS/1KG_example/ExData/fileheads_4region.txt";
-my $rs="./bin/Mstep.r";
+my $hyppar="/mnt/YangFSS/data/ROSMAP_GWAS_Segments/DDX11_GWAS/hypval.current";
+my $filelist = "/mnt/YangFSS/data/ROSMAP_GWAS_Segments/ROSMAP_GWAS_Seg_filehead_short.txt";
+my $start_pos="31226778";
+my $end_pos="31257725";
+my $target_chr="12";
+my $window_size="1e6";
 
 my $EM=5;
 my $GTfield="GT";
@@ -98,12 +102,15 @@ my $burnin="50000";
 my $Nmcmc="50000";
 my $NmcmcLast="50000";
 my $compress=0;
-my $initype="3";
+my $initype="0";
 my $rv="1";
 my $pp="1e-6";
 my $abgamma="0.1";
+# my $algorithm="VB";
+my $max_iter="1000";
+my $convergence="1e-7";
 
-my $maxmem = "3000";
+my $maxmem = "8000";
 my $time = "24:00:00";
 my $nice = "0";
 my $jobid="";
@@ -111,23 +118,38 @@ my $xnode="";
 my $wnode="";
 my $part="nomosix";
 
+my $seed="2017";
+my $refld=0;
+my $usextxld=0;
+my $r2_level="0.001";
+my $LDdir="/home/jyang/Collaborations/IrwinSAGE/BFGWAS_Analysis/RefLD/AA";
+my $Scoredir="/mnt/YangFSS/data/BU_GWASs_CDSymptomDimensions/BFGWAS/AA/ScoreStat";
+my $N="499";
+my $pv="0.56";
+my $EMdir="/home/jluningham/Projects/BFGWAS/ROSMAP/Scripts";
+
 
 #initialize options
 Getopt::Long::Configure ('bundling');
 
 if(!GetOptions ('h'=>\$help, 'v'=>\$verbose, 'd'=>\$debug, 'm'=>\$man,
-                'w:s'=>\$wkDir, 'Estep:s' =>\$toolE, 'ad:s'=>\$annoDir, 
-                'geno:s'=>\$genofile,
-                'ac:s'=>\$annoCode, 'gd:s'=>\$genoDir, 'pheno:s'=>\$pheno,
-                'hyp:s'=>\$hyppar, 'G:s'=>\$GTfield, 'maf:s'=>\$maf,
-                'smin:s'=>\$smin, 'smax:s'=>\$smax, 'win:s'=>\$win,
-                'b:s'=>\$burnin, 'N:s'=>\$Nmcmc, 'NL:s'=>\$NmcmcLast,
-                'c:i'=>\$compress, 'initype:s'=>\$initype, 'rv:s'=>\$rv,
-                'pp:s'=>\$pp, 'abgamma:s'=>\$abgamma, 
-                'mem:s'=>\$maxmem, 'time:s'=>\$time, 'f:s'=>\$filelist, 'em:i'=>\$EM, 'rs:s'=>\$rs,
-                'l:s'=>\$launchMethod, 'mf:s'=>\$makeFile, 'nice:s'=>\$nice, 
-                'j:s' =>\$jobid, 'xnode:s'=>\$xnode, 'wnode:s'=>\$wnode, 'part:s'=>\$part)
-  || !defined($wkDir) || scalar(@ARGV)!=0)
+'w:s'=>\$wkDir, 'Estep:s' =>\$toolE, 'ad:s'=>\$annoDir,
+'geno:s'=>\$genofile, 'ac:s'=>\$annoCode, 'gd:s'=>\$genoDir, 'pheno:s'=>\$pheno, 'window_size:i'=>\$window_size,
+'hyp:s'=>\$hyppar, 'start:i'=>\$start_pos, 'end:i'=>\$end_pos,
+'targ:s'=>\$target_chr,'G:s'=>\$GTfield, 'maf:s'=>\$maf,
+'smin:s'=>\$smin, 'smax:s'=>\$smax, 'win:s'=>\$win,
+'b:s'=>\$burnin, 'N:s'=>\$Nmcmc, 'NL:s'=>\$NmcmcLast,
+'c:i'=>\$compress, 'n:i'=>\$N, 'converg:s'=>\$convergence, 'iter:i'=>\$max_iter,
+'initype:s'=>\$initype, 'rv:s'=>\$rv, #'algo:s'=>\$algorithm,
+'pp:s'=>\$pp, 'abgamma:s'=>\$abgamma,
+'mem:s'=>\$maxmem, 'time:s'=>\$time, 'f:s'=>\$filelist, 'em:i'=>\$EM, 'rs:s'=>\$rs,
+'l:s'=>\$launchMethod, 'mf:s'=>\$makeFile, 'nice:s'=>\$nice,
+'j:s' =>\$jobid, 'xnode:s'=>\$xnode, 'wnode:s'=>\$wnode, 'part:s'=>\$part,
+'refLD:s'=>\$refld, 'seed:s'=>\$seed, 'r2:s'=>\$r2_level,
+'LDdir:s'=>\$LDdir, 'Scoredir:s'=>\$Scoredir, 'EMdir:s'=>\$EMdir,
+'pv:s'=>\$pv, 'usextxLD:i'=>\$usextxld )
+|| !defined($wkDir) || scalar(@ARGV)!=0)
+
 {
     if ($help)
     {
@@ -168,16 +190,24 @@ printf("\n");
 printf("launch method : %s\n", $launchMethod);
 printf("work directory : %s\n", $wkDir);
 print "Estep: ", $toolE, "\n";
-print "genoDir: ", $genoDir, "\n", "annoDir: ", $annoDir, "\n",
-        "pheno: ", $pheno, "\nannoCode: ", $annoCode, "\n", 
-        "hyppar: ", $hyppar, "\nfileheads: ", $filelist, "\n", 
-        "Rscript: ", $rs, "\n",
-        "GTfield ", $GTfield, "; maf ", $maf, "; smin ", $smin, "\n", 
-        "smax ", $smax, "; win ", $win, "; burnin ", $burnin, "; Nmcmc ", $Nmcmc, "\n",
-        "NmcmcLast ", $NmcmcLast, "; compress ", $compress, "; initype ", $initype, "\n",
-        "rv ", $rv, "; pp ", $pp, "; abgamma ", $abgamma, "\n"; 
+print "genoDir: ", $genoDir,
+"\nannoDir: ", $annoDir,
+"\npheno: ", $pheno,
+"\n LDdir: ", $LDdir,
+"\n Scoredir: ", $Scoredir,
+"\nannoCode: ", $annoCode, "\n",
+"hyppar: ", $hyppar,
+"\nfileheads: ", $filelist, "\n",
+"Rscript: ", $rs, "\n",
+"Start Pos: ", $start_pos, "\n",
+"End Pos: ", $end_pos, "\n",
+"Chr: ", $target_chr, "\n",
+"run_Estep.sh and run_Mstep.sh directory: ", $EMdir, "\n";
+#  "GTfield ", $GTfield, "; maf ", $maf, "; smin ", $smin, "\n",
+#  "smax ", $smax, "; win ", $win, "; burnin ", $burnin, "; Nmcmc ", $Nmcmc, "\n",
+#  "NmcmcLast ", $NmcmcLast, "; compress ", $compress, "; initype ", $initype, "\n",
+#  "rv ", $rv, "; pp ", $pp, "; abgamma ", $abgamma, "\n";
 printf("\n");
-
 my $comp = "";
 if ($compress != 0){
   $comp = "-comp"
@@ -240,13 +270,17 @@ for(my $j=0; $j< @filehead; ++$j)
         $tgt = "$wkDir/OUT/$line.$i.OK";
         $dep = "$wkDir/pre_em.OK";
         if($genofile eq "vcf"){
-           @cmd = "$toolE -vcf $genoDir/$line.vcf.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp  -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
+           @cmd = "$toolE -vcf $genoDir/$line.vcf.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp  -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
         }elsif ($genofile eq "genotxt"){
-          @cmd = "$toolE -g $genoDir/$line.geno.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
+          @cmd = "$toolE -g $genoDir/$line.geno.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
         }elsif ($genofile eq "bed") {
-          @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
-        }else{
-          die "genoDir need to be one of the vcf, genotxt, or bed file types\!\n"
+          @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
+        }elsif($genofile eq "sumstat"){
+            @cmd = "$EMdir/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size ";
+            # @cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
+        }
+        else{
+            die "genoDir need to be one of the vcf, genotxt, bed, or sumstat file types\!\n"
         }
 
         makeJob($launchMethod, $tgt, $dep, $wkDir, @cmd);
@@ -265,7 +299,9 @@ makeJob("local", $tgt, $dep, $wkDir, @cmd);
 
 $tgt = "$wkDir/R$i.OK";
 $dep = "$wkDir/Eoutput/cp_param$i.OK $wkDir/pre_em.OK";
-@cmd = "Rscript --no-save --no-restore --verbose $rs $hypfile $i $pp $abgamma $wkDir/Eoutput/EM_result.txt $hypcurrent >> $wkDir/Rout.txt";
+
+@cmd = "Rscript --no-save --no-restore --verbose $rs $hypfile $i $pp $abgamma $wkDir/Eoutput/EM_result.txt $hypcurrent MCMC >> $wkDir/Rout.txt";
+
 makeJob("local", $tgt, $dep, $wkDir, @cmd);
 
 
@@ -283,23 +319,27 @@ for $i (1..$EM){
         $dep = "$wkDir/R$ipre.OK";
         if($i < $EM){
           if($genofile eq "vcf"){
-            @cmd = "$toolE -vcf $genoDir/$line.vcf.gz -a $annoDir/Anno\_$line.gz -p $pheno -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt ";
+            @cmd = "$toolE -vcf $genoDir/$line.vcf.gz -a $annoDir/Anno\_$line.gz -p $pheno -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt ";
           }elsif ($genofile eq "genotxt"){
-            @cmd = "$toolE -g $genoDir/$line.geno.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
+            @cmd = "$toolE -g $genoDir/$line.geno.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
           }elsif ($genofile eq "bed") {
-            @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
+            @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
+          }elsif($genofile eq "sumstat"){
+              @cmd = "$EMdir/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size" ;
+              # @cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
           }else{
-            die "genoDir need to be one of the vcf, genotxt, or bed file types\!\n"
+              die "genoDir need to be one of the vcf, genotxt, bed, or sumstat file types\!\n"
           }
         } elsif ($i == $EM){
             if($genofile eq "vcf"){
-              @cmd = "$toolE -vcf $genoDir/$line.vcf.gz -a $annoDir/Anno\_$line.gz -p $pheno -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $NmcmcLast $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt ";
+              @cmd = "$toolE -vcf $genoDir/$line.vcf.gz -a $annoDir/Anno\_$line.gz -p $pheno -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $NmcmcLast $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt ";
             }elsif ($genofile eq "genotxt"){
-              @cmd = "$toolE -g $genoDir/$line.geno.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $NmcmcLast $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
-            }elsif ($genofile eq "bed") {
-              @cmd = "$toolE -bfile $genoDir/$line -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -bvsrm -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $NmcmcLast $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
+              @cmd = "$toolE -g $genoDir/$line.geno.gz -p $pheno -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -GTfield $GTfield -maf $maf -rmin $rho -rmax $rho -smin $smin -smax $smax -win $win -o $line -w $burnin -s $NmcmcLast $comp -initype $initype -rv $rv > $wkDir/OUT/$line.output.txt";
+            }elsif($genofile eq "sumstat"){
+                @cmd = "$EMdir/run_Estep.sh $wkDir $line $N $pv $burnin $Nmcmc $LDdir $Scoredir $hypcurrent $start_pos $end_pos $target_chr $window_size";
+                #@cmd = "$toolE -score $genoDir/$line.SS.score.txt.gz -inputSS $refLD -LDcorr ${LDdir}/${line}.LDcorr.txt.gz -a $annoDir/Anno\_$line.gz -fcode $annoCode -hfile $hypcurrent -n $N -pv $pv -maf $maf -r2 $r2_level -bvsrm -smin $smin -smax $smax -win $win -o $line -w $burnin -s $Nmcmc $comp -initype $initype -seed ${seed} > $wkDir/OUT/$line.output.txt";
             }else{
-              die "genoDir need to be one of the vcf, genotxt, or bed file types\!\n"
+                die "genoDir need to be one of the vcf, genotxt, bed, or sumstat file types\!\n"
             }
       }
         makeJob($launchMethod, $tgt, $dep, $wkDir, @cmd);
@@ -318,8 +358,9 @@ for $i (1..$EM){
 
   $tgt = "$wkDir/R$i.OK";
   $dep = "$wkDir/Eoutput/cp_param$i.OK";
-  @cmd = "Rscript --no-save --no-restore --verbose $rs $hypfile $i $pp $abgamma $wkDir/Eoutput/EM_result.txt $hypcurrent >> $wkDir/Rout.txt";
-  makeJob("local", $tgt, $dep, $wkDir, @cmd);
+  @cmd = "Rscript --no-save --no-restore --verbose $rs $hypfile $i $pp $abgamma $wkDir/Eoutput/EM_result.txt $hypcurrent MCMC >> $wkDir/Rout.txt";
+   
+    makeJob("local", $tgt, $dep, $wkDir, @cmd);
 
 }
 

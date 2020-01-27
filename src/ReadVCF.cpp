@@ -272,10 +272,9 @@ void getGTgslVec(uchar ** X, gsl_vector *xvec, size_t marker_i, const size_t ni_
         for (size_t j=0; j<ni_test; j++) {
             geno = UcharToDouble(X[marker_i][j]);
             //cout << geno << ", ";
-            if (geno < 0.0 || geno > 2.0) {
-                cerr << "wrong genotype value = " << geno << endl;
-                exit(1);
-            }
+            if (geno < 0.0) {geno = 0.0;} else if (geno > 2.0) {
+                geno = 2.0;
+            } 
             gsl_vector_set(xvec, j, geno);
             geno_mean += geno;
         }

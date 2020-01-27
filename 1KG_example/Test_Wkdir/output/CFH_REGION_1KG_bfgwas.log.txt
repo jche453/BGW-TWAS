@@ -1,0 +1,33 @@
+##
+## GEMMA Version = bfGWAS_MCMC
+##
+## Command Line Input = -vcf /home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/vcfs/CFH_REGION_1KG.vcf.gz -p /home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/phenoAMD_1KG.txt -a /home/jyang/GIT/bfGWAS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz -fcode /home/jyang/GIT/bfGWAS/1KG_example/ExData/AnnoCode6.txt -hfile /home/jyang/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -GTfield GT -rmin 1 -rmax 1 -rv 1 -bvsrm -maf 0.005 -win 100 -smin 0 -smax 10 -w 10000 -s 10000 -o CFH_REGION_1KG_bfgwas -initype 3 -seed 2017 
+##
+## Date = Tue Aug 21 22:24:18 2018
+
+##
+## Summary Statistics:
+## number of total individuals = 2504
+## number of analyzed individuals = 2504
+## number of total SNPs = 31330
+## number of analyzed SNPs = 3689
+## Phenotype mean = 0.49401
+## Phenotype var = 0.250064
+##
+## MCMC related:
+## initial value of |gamma| = 2
+## random seed = 2017
+## acceptance ratio = 0.14305
+## Region_PIP = 1
+##
+## Computation Time:
+## total computation time = 2.17067 min 
+## computation time break down: 
+##      time on proposal = 0 min 
+##      time on mcmc = 1.3435 min 
+##      time on Omega = 0 min 
+Accept #add=5, total add step = 6650
+Accept #delete=5, total delete step = 6897
+Accept #switch=2851, total switch step = 6453
+Accept #other=0, total other step = 0
+##

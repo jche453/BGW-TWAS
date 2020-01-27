@@ -96,7 +96,7 @@ PARAM::PARAM(void):
 vscale(0.0), iniType(3), calc_K(0), saveGeno(0), saveSS(0), zipSS(0), 
 inputSS(0), refLD(0), scaleN(0), printLD(0), use_xtx_LD(0), LDwindow(1000000), rv(0.0), Compress_Flag(0), 
 mode_silence (false), a_mode (0), k_mode(1), d_pace (100000),
-GTfield("GT"), file_out("result"), 
+GTfield("GT"), file_out("result"), final_EM(0),
 miss_level(0.05), maf_level(0.005), hwe_level(0.001), r2_level(0.001),
 win(100),nadd_accept(0), ndel_accept(0), nswitch_accept(0),
 nother_accept(0), nadd(0), ndel(0),
@@ -104,10 +104,11 @@ nswitch(0), nother(0),
 h_min(-1), h_max(1.0), h_scale(-1),
 rho_min(1.0), rho_max(1.0),	rho_scale(-1),
 logp_min(0.0), logp_max(0.0), logp_scale(-1),
-s_min(0), s_max(10), 
+s_min(0), s_max(10), max_iter(1000), convergence(1e-7),
 w_step(50000),	s_step(500000), n_accept(0),
 n_mh(10), randseed(2016), error(false), ni_test(0),
-time_total(0.0), time_G(0.0), time_Omega(0.0)
+time_total(0.0), time_G(0.0), time_Omega(0.0),
+target_chr("12"), start_pos(241229212), end_pos(241315842), window_size(1000000)
 {}
 
 
@@ -204,9 +205,21 @@ void PARAM::ReadFiles (void)
 	        if (ReadFile_anno (file_anno, file_func_code, mapFunc2Code, indicator_snp, snpInfo, n_type, mFunc, mapID2num)==false) {error=true;}
 	    }
 	    else{
-	    	cout << "\nEmpty annotation file, all variants are treated as of one category!\n";
-	    	if (Empty_anno (indicator_snp, snpInfo, n_type, mFunc)==false) {error=true;}
-	    } 
+            cout << "\nAnnotation assignment by position!\n";
+            if (setANNOCode (start_pos, end_pos, target_chr, window_size, indicator_snp, snpInfo, n_type, mFunc)==false) {error=true;}
+	    }
+    // For the future: clean this up by allowing empty annotation if target chr, position, and window_size are not provided!
+   // else{
+    //    cout << "\nEmpty annotation file, no target position, all variants are treated as of one category!\n";
+     //   if (Empty_anno (indicator_snp, snpInfo, n_type, mFunc)==false) {error=true;}
+        
+   // }
+
+	    // need Snp info
+
+
+	    if (EM_step=final_EM)
+	    if (!file_grex.empty()) // 
 
 	return;
 }
@@ -220,7 +233,7 @@ void PARAM::CheckParam (void)
 	//check parameters
 	if (k_mode!=1 && k_mode!=2) {cout<<"error! unknown kinship/relatedness input mode: "<<k_mode<<endl; error=true;}
 
-	if (a_mode!=11 && a_mode!=12 && a_mode!=21 && a_mode!=22 && a_mode!=43 && a_mode!=51 && a_mode!=52 && a_mode!=53 && a_mode!=54 && !saveGeno && !saveSS)   
+	if (a_mode!=11 && a_mode!=12 && a_mode!=21 && a_mode!=31 && a_mode!=22 && a_mode!=43 && a_mode!=51 && a_mode!=52 && a_mode!=53 && a_mode!=54 && !saveGeno && !saveSS)   
 	{cout<<"error! unknown analysis mode: "<<a_mode<<". make sure -saveSS -saveGenoe -gk or -lm or -bvsrm or -predict is sepcified correctly."<<endl; error=true;}
 
 	if (miss_level>1) {cout<<"error! missing level needs to be between 0 and 1. current value = "<<miss_level<<endl; error=true;}
@@ -241,7 +254,8 @@ void PARAM::CheckParam (void)
 	if (logp_scale>1.0) {cout<<"error! pscale value must be between 0 and 1. current value = "<<logp_scale<<endl; error=true;}
 
 	if (rho_max==1 && rho_min==1 && a_mode==12) {cout<<"error! ridge regression does not support a rho parameter. current values = "<<rho_max<<" and "<<rho_min<<endl; error=true;}
-		
+	if (final_EM){cout<< "Final EM, calculate VB R2" << endl;}
+	if (!final_EM){cout<< "Not final EM, check " << endl;}
 	
 	//check if files are compatible with each other, and if files exist
 	if (!file_bfile.empty()) {
@@ -349,7 +363,7 @@ void PARAM::CheckData (void) {
 
 	//set parameters for BSLMM
 	//and check for predict
-	if (a_mode==11 || a_mode==12 || a_mode==13) {
+	if (a_mode==11 || a_mode==12 || a_mode==13 || a_mode==31) {
 		if (a_mode==11) {n_mh=1;}	
 		if (logp_min==0) {logp_min=-1.0*log((double)ns_test);}
 	
@@ -420,7 +434,6 @@ void PARAM::ReadSS (){
     		if(ReadFile_score(file_score, snpInfo, mapScoreKey2Pos, mapLDKey2Pos, pval_vec, pos_ChisqTest, U_STAT, SQRT_V_STAT, xtx_vec, snp_var_vec, ns_test, ns_total, mbeta, mbeta_SE, indicator_snp, ni_test, maf_level, hwe_level, pheno_var, LD_ref, use_xtx_LD) == false)
     			{ error = true; }
     		
-
     		// read functional/annotation fule
 			if ( (!file_anno.empty()) && (!file_func_code.empty()) ) {
 		    	cout << "\nStart loading annotation files ... \n";
@@ -428,10 +441,15 @@ void PARAM::ReadSS (){
 		        if (ReadFile_anno (file_anno, file_func_code, mapScoreKey2Pos, mapFunc2Code, snpInfo, n_type, mFunc)==false) 
 		        	{error=true;}
 		    }
+        // remove new function for testing 11-17-18
 		    else {
-		    	if (Empty_anno (indicator_snp, snpInfo, n_type, mFunc)==false) 
-		    		{error=true;}
-		    } 
+               cout << "\nAnnotation assignment by position!\n";
+               if (setANNOCode (start_pos, end_pos, target_chr, window_size, indicator_snp, snpInfo, n_type, mFunc)==false) {error=true;}
+            }
+        //else {
+            //if (Empty_anno (indicator_snp, snpInfo, n_type, mFunc)==false)
+            //{error=true;}
+        //}
     }else{
     	cerr << "Need to specify summary score.txt and cov.txt files!";
     	error = true;

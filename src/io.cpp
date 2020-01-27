@@ -2969,11 +2969,125 @@ bool ReadFile_corr(const string &file_cov, const size_t &ns_test, const vector <
 }
 
 
+// JML
+// 10/26/18
+// New function for assigning CIS and TRANS annotation with target chromosome, start_pos, end_pos, window_size. 
+// 
+bool setANNOCode (long int &start_pos, long int &end_pos, const string &target_chr, long int &window_size, vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc){
+    cout << "Annotation will be assigned by CHR and BP Position";
+    string chr;
+    long int b_pos=0;
+    size_t snp_i = 0;
+    //  mFunc; vector with 2 elements of zero
+    mFunc.assign(2, 0);
+    n_type = 2;
+    
+    // probably don't need this:
+    //string func_type;
+   // int func_code, snp_nfunc;
+    
+    // initiate a new variable with value zero, ++ it to count the snps that are annotated
+
+    int snp_count = 0;
+	
+	// need different function to test if the start or end position was provided. 
+	// 
+    if (start_pos == NULL || end_pos == NULL) {cout<<"error: CIS and TRANS range not provided"; return false;}
+	
+    long int begin_window;
+    if (window_size < start_pos) begin_window = start_pos - window_size;
+    else begin_window = 0;
+    
+    long int end_window = end_pos; 
+    end_window = end_window + window_size;
+    
+    string test_chrom;
+    test_chrom.assign(target_chr);
+
+    cout << "Target chr = " << target_chr << endl;
+
+    cout << "Starting annotation assignment..." << endl;
+    cout << "chr " << test_chrom << " begin_window " << begin_window  << "; " << "end_window " << end_window  << "; "  << endl;
+// for loop to loop through the indicator snp vector // the size of the vector
+    for (snp_i = 0; snp_i < indicator_snp.size(); snp_i++){
+       if (!indicator_snp[snp_i]) {
+
+            continue;
+        }
+            else{
+
+                snpInfo[snp_i].indicator_func.assign(n_type, 0);
+                // assign empty vector of 2 for indicator_func, with 0s
+                //vector<bool> indicator_func (2, 0);
+                // NOTE: This is vector<bool> in the SNPINFO class struct. 
 
 
+                    //maf_temp = snpInfo[snp_i].maf; // hold the MAF 
+                chr = snpInfo[snp_i].chr; 
+                b_pos = snpInfo[snp_i].base_position; 
+
+               // cout << "current chr and pos " << chr << ":" << b_pos << endl;
+            
+            
+            // start and end should be the exact gene position
+            // add a variable for window size +/- gene pos
+            
+            // note: cannot take negative values, so may need to set to zero if subtracting window leads to negatives
+            
+            // need a way to bring "CIS" and "TRANS" codes into the function 
+            //first compare chr, if it does not match, no need to compare bpos
+                 if(test_chrom == chr) {
+                       if( begin_window <= b_pos && end_window >= b_pos) {
+                              snpInfo[snp_i].indicator_func[0] = 1; //CIS 
+                              mFunc[0]++; 
+                              } 
+                       else {
+                          snpInfo[snp_i].indicator_func[1] = 1; //TRANS
+                          mFunc[1]++;
+                          } 
+                        }
+                    else {
+                            snpInfo[snp_i].indicator_func[1] = 1; //TRANS
+                            mFunc[1]++;
+                        } 
+                        //cout << "indicator temp CIS " << snpInfo[snp_i].indicator_func[0] << endl;
+                        //cout << "indicator temp TRANS " << snpInfo[snp_i].indicator_func[1] << endl;
+                    }
+                    snp_count++;
+                }
+    if(target_chr == test_chrom) {
+        cout << "target chrom read in correctly" << endl;
+    }
+    else{
+        cout << "error pulling in target chrom!" << endl;
+    }
+                    //if(snp_i < 10)  cout << func_type << " with code " << func_code << endl;
+                        
+    cout << "Number of annotation categories " << n_type << endl;  
+    cout << "Number of variants per category: "; PrintVector(mFunc);
+    cout << "total snp number = " << snp_i << endl;
+    cout << "snp count " << snp_count << endl;
+    return true;
+}
 
 
+// 11/01: compiled and run, but there is a segmentation fault when:
+//Xty_cond :
+//-156.293,
+//number of snps = 1
+//Initial model with ranks:
+//0,
+//trace_G = 3.49568e+06
+//rv = phenotype variance  = 6.59884
+//after set, tau = 0.151542
+//Initial causal probability per category =
+//Initial effect-size variance per category =
+//Initially selected number of variants in the model = 1
+//0,
+//Initial number of selected variants per category :
+//Segmentation fault (core dumped)
 
+// so somewhere else in the code it is trying to print mFunc but it's causing an error.
 
 
 

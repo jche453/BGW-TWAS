@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BVSRM_H__                
+#ifndef __BVSRM_H__            
 #define __BVSRM_H__
 
 #include <vector>
@@ -58,6 +58,7 @@
 #include "lm.h"
 #include "mathfunc.h"
 #include "calcSS.h"
+#include "ReadVCF.h"
 
 using namespace std;
 
@@ -91,7 +92,8 @@ public:
     vector<double> mbeta, mbeta_SE, xtx_vec, snp_var_vec, ni_effect_vec, yty_vec;
     bool refLD, scaleN;
     vector<double> SNPmean;
-    
+    int max_iter;
+    double convergence;
     
     double h, h_global;
     vector <double> rho_vec;
@@ -117,6 +119,7 @@ public:
 	string file_geno;
     string file_vcf;
 	string file_out;
+    string final_EM;
 	
 	// LMM related parameters
 	double l_min;
@@ -275,6 +278,11 @@ public:
 
     void MCMC_SS (const vector< vector<double> > &LD, const vector<double> &Xty);
 
+    void InitialVB_SS (const vector< vector<double> > &LD, const vector<double> &Xty, vector<size_t> &rank, class HYPBSLMM &cHyp, const vector<double> &pval);
+      
+    void VB_SS (const vector<double> &Xty, const vector< vector<double> > &LD, size_t &max_iter, double &convergence);
+      
+    void VB_SS_final (uchar **X, const vector<double> &Xty, const vector< vector<double> > &LD, size_t &max_iter, double &convergence);
     void WriteParam_SS(vector<pair<double, double> > &beta_g, const vector<SNPPOS> &snp_pos, const vector<pair<size_t, double> > &pos_ChisqTest, const vector<double> pval);
 
     bool ColinearTest_SS(const gsl_matrix *XtX_temp, const gsl_vector * Xtx_temp, gsl_vector * beta_temp, const double &xtx);
@@ -283,6 +291,8 @@ public:
 
     void SetXtX(const vector< vector<double> > &LD, const vector<size_t> rank, gsl_matrix *XtX);
 
+    void SetXtX_VB(const vector< vector<double> > &LD, const size_t &ns_test, gsl_matrix *XtX);
+    
     double Findmaxyty(const vector<size_t> &rank, const size_t s_size);
 
     

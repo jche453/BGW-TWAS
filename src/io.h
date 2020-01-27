@@ -124,6 +124,7 @@ bool ReadFile_score(const string &file_score, vector<SNPINFO> &snpInfo, map<stri
 // Read annotation file
 bool ReadFile_anno (const string &file_anno, const string &file_func_code, map<string, size_t> &mapScoreKey2Pos, map<string, int> &mapFunc2Code, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
 
+bool setANNOCode (long int &start_pos, long int &end_pos, const string &target_chr, long int &window_size, vector<bool> &indicator_snp, vector<SNPINFO> &snpInfo, size_t &n_type, vector<size_t> &mFunc);
 
 #endif
 

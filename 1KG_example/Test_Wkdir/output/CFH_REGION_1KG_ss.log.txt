@@ -1,0 +1,31 @@
+##
+## Software Version = bfGWAS_SS_MCMC
+##
+## Command Line Input = -score /home/jyang/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_indv.score.txt.gz -LDcorr /home/jyang/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/output/CFH_REGION_1KG_indv.LDcorr.txt.gz -a /home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/annos/Anno_CFH_REGION_1KG.gz -fcode /home/jyang/GIT/bfGWAS_SS/1KG_example/ExData/AnnoCode6.txt -n 2504 -pv 0.25 -inputSS -hfile /home/jyang/GIT/bfGWAS_SS/1KG_example/Test_Wkdir/hypval.current -bvsrm -maf 0.005 -win 100 -smin 0 -smax 10 -w 10000 -s 10000 -o CFH_REGION_1KG_ss -initype 3 -seed 2017 
+##
+## Date = Tue Aug 21 22:35:11 2018
+
+##
+## Summary Statistics:
+## number_of_total_individuals = 2504
+## number_of_analyzed_individuals = 2504
+## number_of_total_SNPs = 3689
+## number_of_analyzed_SNPs = 3689
+## Phenotype_var = 0.25
+##
+## MCMC related:
+## initial value of |gamma| = 2
+## random seed = 2017
+## acceptance ratio = 0.14305
+## Region_PIP = 1
+##
+## Computation Time:
+## total computation time = 0.1435 min 
+## computation time break down: 
+##      time on MCMC = 0.022 min 
+##      time on Proposal = 0.0158333 min 
+##      time on Posterior = 2637.63 min 
+Accept #add=5, total add step = 6650
+Accept #delete=5, total delete step = 6897
+Accept #switch=2851, total switch step = 6453
+##
