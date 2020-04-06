@@ -1,0 +1,18 @@
+running
+  '/usr/lib64/R/bin/R --slave --no-restore --no-save --no-restore --file=/mnt/icebreaker/data2/home/jluningham/Projects/bfGWAS_SS/bin/Mstep.R --args /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/hyptemp0.txt 0 1e-6 0.1 /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/EM_result.txt /mnt/YangFSS/data/jchen/BayesianTWAS/Test/hypval.current MCMC'
+
+running
+  '/usr/lib64/R/bin/R --slave --no-restore --no-save --no-restore --file=/mnt/icebreaker/data2/home/jluningham/Projects/bfGWAS_SS/bin/Mstep.R --args /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/hyptemp1.txt 1 1e-6 0.1 /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/EM_result.txt /mnt/YangFSS/data/jchen/BayesianTWAS/Test/hypval.current MCMC'
+
+running
+  '/usr/lib64/R/bin/R --slave --no-restore --no-save --no-restore --file=/mnt/icebreaker/data2/home/jluningham/Projects/bfGWAS_SS/bin/Mstep.R --args /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/hyptemp2.txt 2 1e-6 0.1 /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/EM_result.txt /mnt/YangFSS/data/jchen/BayesianTWAS/Test/hypval.current MCMC'
+
+running
+  '/usr/lib64/R/bin/R --slave --no-restore --no-save --no-restore --file=/mnt/icebreaker/data2/home/jluningham/Projects/bfGWAS_SS/bin/Mstep.R --args /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/hyptemp3.txt 3 1e-6 0.1 /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/EM_result.txt /mnt/YangFSS/data/jchen/BayesianTWAS/Test/hypval.current MCMC'
+
+running
+  '/usr/lib64/R/bin/R --slave --no-restore --no-save --no-restore --file=/mnt/icebreaker/data2/home/jluningham/Projects/bfGWAS_SS/bin/Mstep.R --args /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/hyptemp4.txt 4 1e-6 0.1 /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/EM_result.txt /mnt/YangFSS/data/jchen/BayesianTWAS/Test/hypval.current MCMC'
+
+running
+  '/usr/lib64/R/bin/R --slave --no-restore --no-save --no-restore --file=/mnt/icebreaker/data2/home/jluningham/Projects/bfGWAS_SS/bin/Mstep.R --args /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/hyptemp5.txt 5 1e-6 0.1 /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Eoutput/EM_result.txt /mnt/YangFSS/data/jchen/BayesianTWAS/Test/hypval.current MCMC'
+

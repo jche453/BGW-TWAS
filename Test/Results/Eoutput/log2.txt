@@ -1,0 +1,31 @@
+##
+## Software Version = bfGWAS_SS_MCMC
+##
+## Command Line Input = -inputSS -score /mnt/YangFSS/data/jchen/BayesianTWAS/Test/Score_stat/cis_0.5_He2_0.2_trainExpr_11.score.txt.gz -LDcorr /mnt/YangFSS/data/jchen/BayesianTWAS/Test/LD/cis_0.5_He2_0.2_trainExpr_11.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /mnt/YangFSS/data/jchen/BayesianTWAS/Test/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 0.996475 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o cis_0.5_He2_0.2_trainExpr_11 -w 10000 -s 10000 -bvsrm -initype 3 -seed 24157 
+##
+## Date = Thu Mar 19 00:36:11 2020
+
+##
+## Summary Statistics:
+## number_of_total_individuals = 499
+## number_of_analyzed_individuals = 499
+## number_of_total_SNPs = 22641
+## number_of_analyzed_SNPs = 22641
+## Phenotype_var = 0.996475
+##
+## MCMC related:
+## initial value of |gamma| = 1
+## random seed = 24157
+## acceptance ratio = 0.05175
+## Region_PIP = 0
+##
+## Computation Time:
+## total computation time = 2.82483 min 
+## computation time break down: 
+##      time on MCMC = 0.00466667 min 
+##      time on Proposal = 0.0005 min 
+##      time on Posterior = 56424.4 min 
+Accept #add=386, total add step = 6568
+Accept #delete=387, total delete step = 427
+Accept #switch=262, total switch step = 426
+##
