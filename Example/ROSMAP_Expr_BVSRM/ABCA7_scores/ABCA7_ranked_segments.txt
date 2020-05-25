@@ -1,0 +1,2 @@
+Rosmap_GWAS_15_38530777_40384132.score.txt.gz 0.015348
+Rosmap_GWAS_19_610729_2098396.score.txt.gz 6.26158e-05

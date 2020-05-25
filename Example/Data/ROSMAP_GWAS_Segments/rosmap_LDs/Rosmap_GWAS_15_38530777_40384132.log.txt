@@ -1,0 +1,18 @@
+##
+## Software Version = bfGWAS_SS_MCMC
+##
+## Command Line Input = -g /mnt/YangFSS/data/jchen/BayesianTWAS/Example/Data/Geno/trans.geno -p /mnt/YangFSS/data/jchen/BayesianTWAS/Test/cis_0.5_He2_0.2_trainExpr_11.txt -o trans -LDwindow 1000000 -GTfield DS -saveSS -zipSS 
+##
+## Date = Sun May 24 18:00:24 2020
+
+##
+## Summary Statistics:
+## number_of_total_individuals = 499
+## number_of_analyzed_individuals = 499
+## number_of_total_SNPs = 1001
+## number_of_analyzed_SNPs = 1001
+##
+## Computation Time:
+## total computation time = 0.0758333 min 
+## computation time break down: 
+##

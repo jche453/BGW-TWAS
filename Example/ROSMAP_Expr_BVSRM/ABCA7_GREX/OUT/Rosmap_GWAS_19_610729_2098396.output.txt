@@ -1,0 +1,141 @@
+Not final EM, check 
+
+Load summary statistics ...
+
+Start loading LD correlation file ... 
+Number of variants in LDR2.txt file is 1000
+Load /mnt/YangFSS/data/jchen/BayesianTWAS/Example/Data/ROSMAP_GWAS_Segments/rosmap_LDs/Rosmap_GWAS_19_610729_2098396.LDcorr.txt.gz Success ... 
+
+Loading score statistics file /mnt/YangFSS/data/jchen/BayesianTWAS/Example/ROSMAP_Expr_BVSRM/ABCA7_scores/Rosmap_GWAS_19_610729_2098396.score.txt.gz success ! 
+Total number of variants is 1000
+Number of analyzed variants is 1000
+
+Annotation assignment by position!
+Annotation will be assigned by CHR and BP PositionTarget chr = 19
+Starting annotation assignment...
+chr 19 begin_window 40101; end_window 2065571; 
+target chrom read in correctly
+Number of annotation categories 2
+Number of variants per category: 1000, 0, 
+total snp number = 1000
+snp count 1000
+
+Reading Summary Stat files cost 0.00533333 mints 
+
+
+ns_test from summary stat is 1000
+
+## number of total individuals = 499
+## number of individuals with full phenotypes = 499
+## number of total SNPs = 1000
+## number of analyzed SNPs = 1000
+Pass data check.
+
+
+Obtain LD correlation matrix from LDcorr.txt Success!
+
+Running MCMC with Precalculated Summary Statistics ... 
+pheno_var = 1.02401
+yty is 510.981
+Number of variants with p-value < 5e-8 : 0
+
+Start initializing MCMC ... 
+
+Start with Step-wise selected variants.
+Genome-wide significant LRT is 29.7168
+
+ XtX_cond : 
+107.118, 
+
+ Xty_cond : 
+-40.9834, 
+number of snps = 1
+Initial model with ranks: 
+0, 
+trace_G = 132714
+rv = phenotype variance  = 1.02401
+after set, tau = 0.976553
+Initial causal probability per category = 1e-06, 1e-06, 
+Initial effect-size variance per category = 0.0907992, 0.0909091, 
+Initially selected number of variants in the model = 1
+0, 
+Initial number of selected variants per category : 1, 0, 
+Initial logPost_old = -8.06033
+
+Running MCMC                               0.00%  & acceptance ratio 0.00
+
+ MCMC iteration after burn-ins: 1000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.003182
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+ MCMC iteration after burn-ins: 2000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.003083
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+ MCMC iteration after burn-ins: 3000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.003231
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+ MCMC iteration after burn-ins: 4000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.003000
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+ MCMC iteration after burn-ins: 5000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.002800
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+ MCMC iteration after burn-ins: 6000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.003000
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+ MCMC iteration after burn-ins: 7000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.003235
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+ MCMC iteration after burn-ins: 8000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.003166
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+ MCMC iteration after burn-ins: 9000
+cHyp_old.n_gamma= 0
+acceptance percentage = 0.003316
+# of selected variants per category: 
+0, 0, 
+loglike: -0.001000
+
+Running MCMC ==============================100.00%  & acceptance ratio 0.00
+MCMC completed ... 
+
+region_pip = 0
+gamma acceptance percentage = 0.00
+# of selected variants per category: 0, 0, 
+beta_hat: 
+loglike: -0.00
+k_save_sample = 41
+logpost_max = 1.00
+
+MCMC_SS costs 0.00 minutes 

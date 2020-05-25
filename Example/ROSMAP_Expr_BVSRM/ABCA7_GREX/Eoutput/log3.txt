@@ -1,0 +1,31 @@
+##
+## Software Version = bfGWAS_SS_MCMC
+##
+## Command Line Input = -inputSS -score /mnt/YangFSS/data/jchen/BayesianTWAS/Example/ROSMAP_Expr_BVSRM/ABCA7_scores/Rosmap_GWAS_19_610729_2098396.score.txt.gz -LDcorr /mnt/YangFSS/data/jchen/BayesianTWAS/Example/Data/ROSMAP_GWAS_Segments/rosmap_LDs/Rosmap_GWAS_19_610729_2098396.LDcorr.txt.gz -target_chr 19 -start_pos 1040101 -end_pos 1065571 -hfile /mnt/YangFSS/data/jchen/BayesianTWAS/Example/ROSMAP_Expr_BVSRM/ABCA7_GREX/hypval.current -max_iter 100 -convergence 1e-20 -n 499 -pv 1.02401 -maf 0.01 -r2 0.0001 -smin 0 -smax 100 -win 100 -o Rosmap_GWAS_19_610729_2098396 -w 10000 -s 10000 -bvsrm -initype 3 -seed 20656 
+##
+## Date = Sun May 24 22:11:10 2020
+
+##
+## Summary Statistics:
+## number_of_total_individuals = 499
+## number_of_analyzed_individuals = 499
+## number_of_total_SNPs = 1000
+## number_of_analyzed_SNPs = 1000
+## Phenotype_var = 1.02401
+##
+## MCMC related:
+## initial value of |gamma| = 1
+## random seed = 20656
+## acceptance ratio = 0.00395
+## Region_PIP = 0
+##
+## Computation Time:
+## total computation time = 0.0108333 min 
+## computation time break down: 
+##      time on MCMC = 0.00116667 min 
+##      time on Proposal = 0.000166667 min 
+##      time on Posterior = 203.087 min 
+Accept #add=31, total add step = 6647
+Accept #delete=32, total delete step = 32
+Accept #switch=16, total switch step = 32
+##
