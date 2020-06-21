@@ -1,0 +1,4 @@
+MayoLOADGWAS_CHR1_filtered.dose.geno.gz
+MayoLOADGWAS_CHR2_filtered.dose.geno.gz
+MayoLOADGWAS_CHR3_filtered.dose.geno.gz
+MayoLOADGWAS_CHR4_filtered.dose.geno.gz
